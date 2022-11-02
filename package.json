@@ -1,0 +1,30 @@
+{
+  "name": "sol9000",
+  "version": "0.0.1",
+  "description": "",
+  "license": "MIT",
+  "author": {
+    "name": "Vinta Chen",
+    "email": "vinta.chen@gmail.com",
+    "url": "https://vinta.ws/code/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vinta/SOL-9000.git"
+  },
+  "homepage": "https://github.com/vinta/SOL-9000",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.7.3"
+  },
+  "devDependencies": {
+    "hardhat": "2.12.2",
+    "prettier": "2.7.1",
+    "prettier-plugin-solidity": "1.0.0-rc.1"
+  }
+}
