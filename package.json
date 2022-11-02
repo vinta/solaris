@@ -1,5 +1,5 @@
 {
-  "name": "sol9000",
+  "name": "sol-9000",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
@@ -16,8 +16,9 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "build": "hardhat compile",
-    "test": "hardhat test"
+    "build": "forge build",
+    "test": "forge test",
+    "coverage": "forge coverage"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.7.3"
