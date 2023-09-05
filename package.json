@@ -1,5 +1,5 @@
 {
-  "name": "sol-9000",
+  "name": "@vinta/solaris",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
@@ -10,22 +10,35 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vinta/SOL-9000.git"
+    "url": "https://github.com/vinta/solaris.git"
   },
-  "homepage": "https://github.com/vinta/SOL-9000",
+  "homepage": "https://github.com/vinta/solaris",
   "keywords": [],
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "forge build",
     "test": "forge test",
-    "coverage": "forge coverage"
+    "hardhat:build": "hardhat compile",
+    "hardhat:node": "hardhat node --network hardhat --no-deploy",
+    "hardhat:deploy": "hardhat deploy --network localhost",
+    "clean:foundry": "rm -rf cache/ out/",
+    "clean:hardhat": "rm -rf hardhat-*/ typechain-types/"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.7.3"
+    "@openzeppelin/contracts": "4.9.3",
+    "@openzeppelin/contracts-upgradeable": "4.9.3"
   },
   "devDependencies": {
-    "hardhat": "2.12.2",
-    "prettier": "2.7.1",
-    "prettier-plugin-solidity": "1.0.0-rc.1"
+    "@nomicfoundation/hardhat-ethers": "3.0.4",
+    "@nomicfoundation/hardhat-foundry": "1.1.1",
+    "@nomicfoundation/hardhat-toolbox": "3.0.0",
+    "hardhat": "2.19.0",
+    "hardhat-deploy": "0.11.43",
+    "prettier": "3.0.3",
+    "prettier-plugin-solidity": "1.1.3",
+    "ts-node": "10.9.1"
   }
 }

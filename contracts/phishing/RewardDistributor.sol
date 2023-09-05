@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-contract ERC20 {}
+contract RewardDistributor {
+
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@solaris/spot-arbitrageur",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/*.json'",
+    "typegen": "npm run typegen:core",
+    "deploy": "sls deploy -s prod",
+    "invoke:local": "npx serverless invoke local -s dev --function base",
+    "clean": "rm -rf .esbuild/ .serverless/ types/"
+  },
+  "dependencies": {
+    "ethers": "6.8.0"
+  },
+  "devDependencies": {
+    "@typechain/ethers-v6": "0.5.1",
+    "@types/aws-lambda": "8.10.125",
+    "@types/node": "20.8.6",
+    "esbuild": "0.19.5",
+    "serverless": "3.35.2",
+    "serverless-esbuild": "1.48.5",
+    "typechain": "8.3.2",
+    "typescript": "5.2.2"
+  }
+}

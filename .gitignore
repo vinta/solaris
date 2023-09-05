@@ -103,14 +103,19 @@ dist
 # TernJS port file
 .tern-port
 
+.esbuild/
+
 # Hardhat files
-cache
-artifacts
-typechain
-typechain-types
+hardhat-cache/
+hardhat-artifacts/
+coverage/
+coverage.json
+typechain-types/
+deployments/localhost/
+ignition/deployments/chain-31337/
 
 # Foundry files
-forge-cache
+cache
 out
 
 .env*

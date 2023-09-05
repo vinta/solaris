@@ -1,0 +1,11 @@
+{
+  "name": "@solaris/common",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run compile"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
