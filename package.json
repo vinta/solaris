@@ -21,6 +21,7 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
+    "deploy:base": "hardhat deploy --network base",
     "hardhat:build": "hardhat compile",
     "hardhat:node": "hardhat node --network hardhat --no-deploy",
     "hardhat:deploy": "hardhat deploy --network localhost",
