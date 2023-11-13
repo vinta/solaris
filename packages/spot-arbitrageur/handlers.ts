@@ -5,9 +5,9 @@ import { Arbitrageur__factory, IERC20__factory } from "./types"
 
 export const base: Handler = async (event, context) => {
     const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
-    const SEED_PHRASE = process.env.SEED_PHRASE!
+    const OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
+    const ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
 
-    const ARBITRAGEUR_ADDRESS = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
     const ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
 
     console.log("config", {
@@ -20,27 +20,27 @@ export const base: Handler = async (event, context) => {
         staticNetwork,
     })
 
-    const hdNodeWallet = HDNodeWallet.fromPhrase(SEED_PHRASE)
-    const signer = hdNodeWallet.connect(provider)
+    const hdNodeWallet = HDNodeWallet.fromPhrase(OWNER_SEED_PHRASE)
+    const owner = hdNodeWallet.connect(provider)
 
-    const arbitrageur = Arbitrageur__factory.connect(ARBITRAGEUR_ADDRESS, signer)
+    const arbitrageur = Arbitrageur__factory.connect(ARBITRAGEUR_ADDRESS, owner)
 
     console.log("start", {
         networkName: staticNetwork.name,
         networkChainId: staticNetwork.chainId,
-        signer: signer.address,
+        owner: owner.address,
         contract: ARBITRAGEUR_ADDRESS,
     })
 
     const wethAddr = "0x4200000000000000000000000000000000000006"
     const usdcAddr = "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"
 
-    const tokenIn = IERC20__factory.connect(wethAddr, signer)
-    const tokenOut = IERC20__factory.connect(usdcAddr, signer)
-    const amountIn = await tokenIn.balanceOf(signer.address)
+    const tokenIn = IERC20__factory.connect(wethAddr, owner)
+    const tokenOut = IERC20__factory.connect(usdcAddr, owner)
+    const amountIn = await tokenIn.balanceOf(owner.address)
     const minProfit = parseEther("0.001") // ~= 2 USD
 
-    const allowance = await tokenIn.allowance(signer.address, ARBITRAGEUR_ADDRESS)
+    const allowance = await tokenIn.allowance(owner.address, ARBITRAGEUR_ADDRESS)
     if (allowance < amountIn) {
         const tx = await tokenIn.approve(ARBITRAGEUR_ADDRESS, MaxUint256)
         console.log(`approve tx: ${tx.hash}`)

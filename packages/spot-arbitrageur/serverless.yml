@@ -6,14 +6,17 @@ useDotenv: true
 
 provider:
   name: aws
-  region: eu-west-1
+  stage: prod
+  region: us-west-1
   runtime: nodejs18.x
   memorySize: 512
   timeout: 60
   versionFunctions: false
-  deploymentBucket:
-    name: solaris-serverless-deployment-${sls:stage}
-    blockPublicAccess: true
+  deploymentMethod: direct
+  # deploymentBucket:
+  #   name: solaris-serverless-deploys-prod
+  #   blockPublicAccess: true
+  #   serverSideEncryption: AES256
   logRetentionInDays: 7
   environment:
     SENTRY_DSN: "TODO"
