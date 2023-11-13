@@ -54,7 +54,7 @@ export const base: Handler = async (event, context) => {
         minProfit,
     })
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 100; i++) {
         console.log(`arbitrage start: ${i}`)
         try {
             const tx = await arbitrageur.arbitrageVelodromeV2toUniswapV3(

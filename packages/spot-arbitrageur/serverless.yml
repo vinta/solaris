@@ -13,21 +13,26 @@ provider:
   timeout: 60
   versionFunctions: false
   deploymentMethod: direct
-  # deploymentBucket:
-  #   name: solaris-serverless-deploys-prod
-  #   blockPublicAccess: true
-  #   serverSideEncryption: AES256
+  deploymentBucket:
+    name: solaris-serverless-deploys
+    blockPublicAccess: true
+    serverSideEncryption: AES256
   logRetentionInDays: 7
   environment:
+    RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
+    OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
+    ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
     SENTRY_DSN: "TODO"
 
 functions:
+  # https://us-west-1.console.aws.amazon.com/lambda/home?region=us-west-1#/functions/spot-arbitrageur-prod-base?tab=configure
   base:
     handler: handlers.base
     reservedConcurrency: 1
     maximumRetryAttempts: 0
     events:
-      - schedule: cron(* * * * * *) # every minute
+      - schedule: rate(1 minute)
 
 plugins:
+  - serverless-deployment-bucket
   - serverless-esbuild

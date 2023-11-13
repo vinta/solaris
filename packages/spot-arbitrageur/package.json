@@ -6,8 +6,11 @@
   "scripts": {
     "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/*.json'",
     "typegen": "npm run typegen:core",
-    "deploy": "sls deploy -s prod",
-    "invoke:local": "npx serverless invoke local -s dev --function base",
+    "deploy": "sls deploy -s prod --verbose",
+    "deploy:base": "sls deploy function -s prod --function base",
+    "invoke:prod:base": "sls invoke -s prod --function base --log",
+    "invoke:local:base": "sls invoke local -s dev --function base",
+    "logs:prod:base": "awslogs get -w --aws-region=us-west-1 /aws/lambda/spot-arbitrageur-prod-base --start=\"5m\"",
     "clean": "rm -rf .esbuild/ .serverless/ types/"
   },
   "dependencies": {
@@ -19,6 +22,7 @@
     "@types/node": "20.8.6",
     "esbuild": "0.19.5",
     "serverless": "3.35.2",
+    "serverless-deployment-bucket": "1.6.0",
     "serverless-esbuild": "1.48.5",
     "typechain": "8.3.2",
     "typescript": "5.2.2"
