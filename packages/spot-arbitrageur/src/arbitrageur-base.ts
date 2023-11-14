@@ -6,6 +6,8 @@ import { wrapSentryHandlerIfNeeded } from "./utils"
 
 class ArbitrageurBase {
     async arbitrage() {
+        const startTimestamp = Date.now() / 1000
+
         const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
         const OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
         const ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
@@ -57,7 +59,6 @@ class ArbitrageurBase {
             minProfit,
         })
 
-        const startTimestamp = Date.now() / 1000
         let i = 1
         while (true) {
             console.log(`arbitrage start: ${i++}`)
