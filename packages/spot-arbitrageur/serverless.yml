@@ -22,7 +22,7 @@ provider:
     RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
     OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
     ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
-    SENTRY_DSN: "https://27d3c872bfe6650e6e73d9a93ff7ca47@o1073.ingest.sentry.io/4506214478708736"
+    SENTRY_DSN: ${env:SENTRY_DSN, ""}
 
 functions:
   # https://us-west-1.console.aws.amazon.com/lambda/home?region=us-west-1#/functions/spot-arbitrageur-prod-base?tab=configure

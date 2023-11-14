@@ -1,17 +1,14 @@
-import * as Sentry from "@sentry/serverless"
+import { Handler } from "aws-lambda"
 import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256 } from "ethers"
+import * as Sentry from "@sentry/serverless"
 
 import { Arbitrageur__factory, IERC20__factory } from "./types"
-
-Sentry.AWSLambda.init({
-    dsn: process.env.SENTRY_DSN!,
-})
 
 const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
 const OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
 const ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
 
-export const base = Sentry.AWSLambda.wrapHandler(async (event, context) => {
+const handler: Handler = async (event, context) => {
     const ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
 
     console.log("config", {
@@ -57,8 +54,10 @@ export const base = Sentry.AWSLambda.wrapHandler(async (event, context) => {
         minProfit,
     })
 
-    for (let i = 0; i < 100; i++) {
-        console.log(`arbitrage start: ${i}`)
+    const startTimestamp = Date.now() / 1000
+    let i = 1
+    while (true) {
+        console.log(`arbitrage start: ${i++}`)
         try {
             const tx = await arbitrageur.arbitrageVelodromeV2toUniswapV3(
                 tokenIn.target,
@@ -78,9 +77,26 @@ export const base = Sentry.AWSLambda.wrapHandler(async (event, context) => {
                 throw err
             }
         }
+
+        const nowTimestamp = Date.now() / 1000
+        const timeoutSeconds = 55
+        if (nowTimestamp - startTimestamp >= timeoutSeconds) {
+            break
+        }
     }
 
     return {
         finished: true,
     }
-})
+}
+
+let exportedHandler = handler
+const SENTRY_DSN = process.env.SENTRY_DSN
+if (SENTRY_DSN) {
+    Sentry.AWSLambda.init({
+        dsn: SENTRY_DSN,
+    })
+    exportedHandler = Sentry.AWSLambda.wrapHandler(handler)
+}
+
+export const base = exportedHandler
