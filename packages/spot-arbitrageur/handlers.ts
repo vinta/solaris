@@ -1,13 +1,17 @@
-import { Handler } from "aws-lambda"
+import * as Sentry from "@sentry/serverless"
 import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256 } from "ethers"
 
 import { Arbitrageur__factory, IERC20__factory } from "./types"
 
-export const base: Handler = async (event, context) => {
-    const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
-    const OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
-    const ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
+Sentry.AWSLambda.init({
+    dsn: process.env.SENTRY_DSN!,
+})
 
+const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
+const OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
+const ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
+
+export const base = Sentry.AWSLambda.wrapHandler(async (event, context) => {
     const ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
 
     console.log("config", {
@@ -79,4 +83,4 @@ export const base: Handler = async (event, context) => {
     return {
         finished: true,
     }
-}
+})
