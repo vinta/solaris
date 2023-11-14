@@ -9,6 +9,7 @@ provider:
   stage: prod
   region: us-west-1
   runtime: nodejs18.x
+  architecture: arm64
   memorySize: 512
   timeout: 60
   versionFunctions: false

@@ -63,6 +63,7 @@ class ArbitrageurBase {
         let i = 1
         while (true) {
             console.log(`arbitrage start: ${i++}`)
+
             try {
                 const tx = await arbitrageur.arbitrageVelodromeV2toUniswapV3(
                     tokenIn.target,
