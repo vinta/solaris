@@ -9,7 +9,7 @@ provider:
   stage: prod
   region: us-west-1
   runtime: nodejs18.x
-  memorySize: 256
+  memorySize: 512
   timeout: 60
   versionFunctions: false
   deploymentMethod: direct
@@ -22,6 +22,7 @@ provider:
     RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
     OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
     ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
+    TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
     SENTRY_DSN: ${env:SENTRY_DSN, ""}
 
 functions:
@@ -36,10 +37,3 @@ functions:
 plugins:
   - serverless-deployment-bucket
   - serverless-esbuild
-# custom:
-#   esbuild:
-#     external:
-#       - "@sentry/profiling-node"
-#     packagerOptions:
-#       scripts:
-#         - npm install @sentry/profiling-node
