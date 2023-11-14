@@ -9,7 +9,7 @@ provider:
   stage: prod
   region: us-west-1
   runtime: nodejs18.x
-  memorySize: 512
+  memorySize: 256
   timeout: 60
   versionFunctions: false
   deploymentMethod: direct
