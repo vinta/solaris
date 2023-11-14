@@ -72,7 +72,27 @@ class ArbitrageurBase {
                     500,
                     false,
                 )
-                console.log(`arbitrage tx: ${tx.hash}`)
+                console.log(`arbitrageVelodromeV2toUniswapV3 tx: ${tx.hash}`)
+                await tx.wait()
+            } catch (err: any) {
+                const errMessage = err.message || err.reason || ""
+                if (errMessage.includes(ERROR_NO_PROFIT)) {
+                    // console.log("NoProfit")
+                } else {
+                    throw err
+                }
+            }
+
+            try {
+                const tx = await arbitrageur.arbitrageUniswapV3toVelodromeV2(
+                    tokenIn.target,
+                    tokenOut.target,
+                    amountIn,
+                    minProfit,
+                    500,
+                    false,
+                )
+                console.log(`arbitrageUniswapV3toVelodromeV2 tx: ${tx.hash}`)
                 await tx.wait()
             } catch (err: any) {
                 const errMessage = err.message || err.reason || ""
