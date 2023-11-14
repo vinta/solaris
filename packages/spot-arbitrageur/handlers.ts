@@ -12,29 +12,28 @@ export const base: Handler = async (event, context) => {
 
     console.log("config", {
         RPC_PROVIDER_URL,
+        ARBITRAGEUR_ADDRESS,
     })
 
-    const staticNetwork =
+    const network =
         RPC_PROVIDER_URL === "http://127.0.0.1:8545" ? new Network("hardhat", 31337) : new Network("base", 8453)
-    const provider = new JsonRpcProvider(RPC_PROVIDER_URL, staticNetwork, {
-        staticNetwork,
+    const provider = new JsonRpcProvider(RPC_PROVIDER_URL, network, {
+        staticNetwork: network,
     })
 
     const hdNodeWallet = HDNodeWallet.fromPhrase(OWNER_SEED_PHRASE)
     const owner = hdNodeWallet.connect(provider)
 
-    const arbitrageur = Arbitrageur__factory.connect(ARBITRAGEUR_ADDRESS, owner)
-
     console.log("start", {
-        networkName: staticNetwork.name,
-        networkChainId: staticNetwork.chainId,
+        networkName: network.name,
+        networkChainId: network.chainId,
         owner: owner.address,
-        contract: ARBITRAGEUR_ADDRESS,
     })
 
     const wethAddr = "0x4200000000000000000000000000000000000006"
     const usdcAddr = "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"
 
+    const arbitrageur = Arbitrageur__factory.connect(ARBITRAGEUR_ADDRESS, owner)
     const tokenIn = IERC20__factory.connect(wethAddr, owner)
     const tokenOut = IERC20__factory.connect(usdcAddr, owner)
     const amountIn = await tokenIn.balanceOf(owner.address)
