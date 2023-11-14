@@ -7,7 +7,7 @@ import { console } from "forge-std/console.sol";
 import { BaseTest } from "../BaseTest.sol";
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
-import { IVelodromeV2 } from "../../contracts/arbitrage/interfaces/IVelodromeV2.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
 
 contract ArbitrageurBaseForkTest is BaseTest {
     Arbitrageur arbitrageur;
@@ -141,14 +141,14 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
         vm.startPrank(trader);
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
-        IVelodromeV2.Route[] memory routes = new IVelodromeV2.Route[](1);
-        routes[0] = IVelodromeV2.Route({
+        IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
+        routes[0] = IVelodromeV2Router.Route({
             from: tokenIn,
             to: tokenOut,
             stable: false,
             factory: VELODROME_V2_POOL_FACTORY
         });
-        IVelodromeV2(VELODROME_V2_ROUTER).swapExactTokensForTokens(amountIn, 0, routes, wallet, block.timestamp);
+        IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(amountIn, 0, routes, wallet, block.timestamp);
         vm.stopPrank();
     }
 }

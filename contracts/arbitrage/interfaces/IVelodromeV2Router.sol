@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.19;
 
-interface IVelodromeV2 {
+interface IVelodromeV2Router {
     struct Route {
         address from;
         address to;

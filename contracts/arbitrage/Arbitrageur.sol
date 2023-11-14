@@ -6,12 +6,14 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { IUniswapV3Router } from "./interfaces/IUniswapV3Router.sol";
-import { IVelodromeV2 } from "./interfaces/IVelodromeV2.sol";
+import { IVelodromeV2Router } from "./interfaces/IVelodromeV2Router.sol";
 
 contract Arbitrageur is Ownable {
     using SafeERC20 for IERC20;
 
+    // https://docs.uniswap.org/contracts/v3/reference/deployments
     address public constant UNISWAP_V3_SWAP_ROUTER_02 = address(0x2626664c2603336E57B271c5C0b26F421741e481);
+    // https://aerodrome.finance/security#contracts
     address public constant VELODROME_V2_ROUTER = address(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43);
     address public constant VELODROME_V2_POOL_FACTORY = address(0x420DD381b31aEf6683db6B902084cB0FFECe40Da);
 
@@ -99,14 +101,20 @@ contract Arbitrageur is Ownable {
 
         uint256 tokenOutBalanceBefore = IERC20(tokenOut).balanceOf(address(this));
 
-        IVelodromeV2.Route[] memory routes = new IVelodromeV2.Route[](1);
-        routes[0] = IVelodromeV2.Route({
+        IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
+        routes[0] = IVelodromeV2Router.Route({
             from: tokenIn,
             to: tokenOut,
             stable: stable,
             factory: VELODROME_V2_POOL_FACTORY
         });
-        IVelodromeV2(VELODROME_V2_ROUTER).swapExactTokensForTokens(amountIn, 0, routes, address(this), block.timestamp);
+        IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
+            amountIn,
+            0,
+            routes,
+            address(this),
+            block.timestamp
+        );
 
         uint256 tokenOutBalanceAfter = IERC20(tokenOut).balanceOf(address(this));
 

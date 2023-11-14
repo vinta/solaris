@@ -23,10 +23,10 @@
     "test": "forge test",
     "deploy:base": "hardhat deploy --network base",
     "hardhat:build": "hardhat compile",
-    "hardhat:node": "hardhat node --network hardhat --no-deploy",
+    "hardhat:node": "hardhat node --network hardhat",
     "hardhat:deploy": "hardhat deploy --network localhost",
     "clean:foundry": "rm -rf cache/ out/",
-    "clean:hardhat": "rm -rf hardhat-*/ typechain-types/"
+    "clean:hardhat": "rm -rf deployments/localhost/ hardhat-*/ typechain-types/"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.3",
