@@ -70,12 +70,11 @@ export const base: Handler = async (event, context) => {
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (errMessage.includes(ERROR_NO_PROFIT)) {
-                console.error("NoProfit")
+                // console.log("NoProfit")
             } else {
                 throw err
             }
         }
-        console.log(`arbitrage done: ${i}`)
     }
 
     return {
