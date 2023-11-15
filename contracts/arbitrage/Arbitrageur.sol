@@ -99,8 +99,6 @@ contract Arbitrageur is Ownable {
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
 
-        uint256 tokenOutBalanceBefore = IERC20(tokenOut).balanceOf(address(this));
-
         IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
         routes[0] = IVelodromeV2Router.Route({
             from: tokenIn,
@@ -108,7 +106,7 @@ contract Arbitrageur is Ownable {
             stable: stable,
             factory: VELODROME_V2_POOL_FACTORY
         });
-        IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
+        uint256[] memory amounts = IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
             amountIn,
             0,
             routes,
@@ -116,8 +114,6 @@ contract Arbitrageur is Ownable {
             block.timestamp
         );
 
-        uint256 tokenOutBalanceAfter = IERC20(tokenOut).balanceOf(address(this));
-
-        return tokenOutBalanceAfter - tokenOutBalanceBefore;
+        return amounts[0];
     }
 }
