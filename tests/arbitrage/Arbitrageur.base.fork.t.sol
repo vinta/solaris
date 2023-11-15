@@ -50,14 +50,13 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
         _uniswapV3ExactInputSingle(trader, usdc, weth, 100000e6);
 
-        _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
-
-        assertEq(IERC20(weth).balanceOf(address(arbitrageur)), 0);
+        uint256 amountIn = 1 ether;
+        _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, 1 ether, 0, 500, false);
+        arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, amountIn, 0, 500, false);
 
-        assertEq(IERC20(weth).balanceOf(address(arbitrageur)) > 0, true);
+        assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
 
     function test_arbitrageUniswapV3toVelodromeV2_RevertIf_NotOwner() public {
@@ -77,14 +76,13 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
         _velodromeV2SwapExactTokensForTokens(trader, usdc, weth, 100000e6);
 
-        _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
-
-        assertEq(IERC20(weth).balanceOf(address(arbitrageur)), 0);
+        uint256 amountIn = 1 ether;
+        _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.prank(owner);
-        arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, 1 ether, 0, 500, false);
+        arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, amountIn, 0, 500, false);
 
-        assertEq(IERC20(weth).balanceOf(address(arbitrageur)) > 0, true);
+        assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
 
     function test_arbitrageVelodromeV2toUniswapV3_RevertIf_NotOwner() public {
