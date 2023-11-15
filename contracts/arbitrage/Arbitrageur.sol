@@ -44,7 +44,7 @@ contract Arbitrageur is Ownable {
             revert NoProfit();
         }
 
-        IERC20(tokenIn).safeTransfer(msg.sender, amountIn);
+        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
     function arbitrageVelodromeV2toUniswapV3(
@@ -64,7 +64,7 @@ contract Arbitrageur is Ownable {
             revert NoProfit();
         }
 
-        IERC20(tokenIn).safeTransfer(msg.sender, amountIn);
+        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
     // internal
