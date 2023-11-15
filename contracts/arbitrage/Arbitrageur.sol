@@ -114,6 +114,6 @@ contract Arbitrageur is Ownable {
             block.timestamp
         );
 
-        return amounts[0];
+        return amounts[amounts.length - 1];
     }
 }
