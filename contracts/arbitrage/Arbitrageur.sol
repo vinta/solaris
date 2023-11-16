@@ -12,16 +12,16 @@ contract Arbitrageur is Ownable {
     using SafeERC20 for IERC20;
 
     // https://docs.uniswap.org/contracts/v3/reference/deployments
+    // https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/SwapRouter02.sol
     address public constant UNISWAP_V3_SWAP_ROUTER_02 = address(0x2626664c2603336E57B271c5C0b26F421741e481);
     // https://aerodrome.finance/security#contracts
+    // https://github.com/velodrome-finance/contracts/blob/main/contracts/Router.sol
     address public constant VELODROME_V2_ROUTER = address(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43);
     address public constant VELODROME_V2_POOL_FACTORY = address(0x420DD381b31aEf6683db6B902084cB0FFECe40Da);
 
     error NoProfit();
 
     // external
-
-    constructor() {}
 
     function withdrawAll(address token) external onlyOwner {
         IERC20(token).safeTransfer(owner(), IERC20(token).balanceOf(address(this)));
@@ -34,11 +34,11 @@ contract Arbitrageur is Ownable {
         uint256 minProfit,
         uint24 uniswapV3Fee,
         bool velodromeV2Stable
-    ) external onlyOwner {
+    ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromUniswapV3 = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
-        uint256 amountOut = _swapOnVelodromeV2(tokenOut, tokenIn, amountOutFromUniswapV3, velodromeV2Stable);
+        uint256 amountOutFromFirst = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
+        uint256 amountOut = _swapOnVelodromeV2(tokenOut, tokenIn, amountOutFromFirst, velodromeV2Stable);
 
         if (amountOut <= amountIn + minProfit) {
             revert NoProfit();
@@ -54,11 +54,11 @@ contract Arbitrageur is Ownable {
         uint256 minProfit,
         uint24 uniswapV3Fee,
         bool velodromeV2Stable
-    ) external onlyOwner {
+    ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromVelodromeV2 = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
-        uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromVelodromeV2, uniswapV3Fee);
+        uint256 amountOutFromFirst = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
+        uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
 
         if (amountOut <= amountIn + minProfit) {
             revert NoProfit();
