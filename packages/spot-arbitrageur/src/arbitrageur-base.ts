@@ -1,10 +1,13 @@
-import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256 } from "ethers"
+import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256, ContractTransactionResponse } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { Arbitrageur__factory, IERC20__factory } from "../types"
+import { NonceManager } from "./nonce-manager"
 import { wrapSentryHandlerIfNeeded } from "./utils"
 
 class ArbitrageurBase {
+    nonceManager = new NonceManager()
+
     async arbitrage() {
         const startTimestamp = Date.now() / 1000
 
@@ -29,6 +32,7 @@ class ArbitrageurBase {
 
         const hdNodeWallet = HDNodeWallet.fromPhrase(OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
+        await this.nonceManager.register(owner)
 
         console.log("start", {
             networkName: network.name,
@@ -49,7 +53,11 @@ class ArbitrageurBase {
 
         const allowance = await tokenIn.allowance(owner.address, ARBITRAGEUR_ADDRESS)
         if (allowance < amountIn) {
-            const tx = await tokenIn.approve(ARBITRAGEUR_ADDRESS, MaxUint256)
+            const tx = await this.sendTx(owner, async () =>
+                tokenIn.approve(ARBITRAGEUR_ADDRESS, MaxUint256, {
+                    nonce: this.nonceManager.getNonce(owner),
+                }),
+            )
             console.log(`approve tx: ${tx.hash}`)
             await tx.wait()
         }
@@ -66,13 +74,18 @@ class ArbitrageurBase {
             console.log(`arbitrage start: ${i++}`)
 
             try {
-                const tx = await arbitrageur.arbitrageVelodromeV2toUniswapV3(
-                    tokenIn.target,
-                    tokenOut.target,
-                    amountIn,
-                    minProfit,
-                    500,
-                    false,
+                const tx = await this.sendTx(owner, async () =>
+                    arbitrageur.arbitrageVelodromeV2toUniswapV3(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    ),
                 )
                 console.log(`arbitrageVelodromeV2toUniswapV3 tx: ${tx.hash}`)
                 await tx.wait()
@@ -86,13 +99,18 @@ class ArbitrageurBase {
             }
 
             try {
-                const tx = await arbitrageur.arbitrageUniswapV3toVelodromeV2(
-                    tokenIn.target,
-                    tokenOut.target,
-                    amountIn,
-                    minProfit,
-                    500,
-                    false,
+                const tx = await this.sendTx(owner, async () =>
+                    arbitrageur.arbitrageUniswapV3toVelodromeV2(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    ),
                 )
                 console.log(`arbitrageUniswapV3toVelodromeV2 tx: ${tx.hash}`)
                 await tx.wait()
@@ -109,6 +127,23 @@ class ArbitrageurBase {
             if (nowTimestamp - startTimestamp >= TIMEOUT_SECONDS) {
                 break
             }
+        }
+    }
+
+    async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
+        const release = await this.nonceManager.lock(wallet)
+        try {
+            const tx = await sendTxFn()
+            this.nonceManager.increaseNonce(wallet)
+            return tx
+        } catch (err: any) {
+            if (err.code === "NONCE_EXPIRED" || err.message.includes("invalid transaction nonce")) {
+                await this.nonceManager.resetNonce(wallet)
+                throw new Error("ResetNonce")
+            }
+            throw err
+        } finally {
+            release()
         }
     }
 }
