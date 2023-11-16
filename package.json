@@ -21,7 +21,8 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
-    "deploy:base": "hardhat deploy --network base",
+    "deploy": "hardhat deploy --network base",
+    "verify": "hardhat --network base tenderly:push",
     "hardhat:build": "hardhat compile",
     "hardhat:node": "hardhat node --network hardhat",
     "hardhat:deploy": "hardhat deploy --network localhost",
@@ -39,6 +40,7 @@
     "@types/node": "20.8.6",
     "hardhat": "2.19.0",
     "hardhat-deploy": "0.11.43",
+    "hardhat-deploy-tenderly": "0.2.0",
     "prettier": "3.0.3",
     "prettier-plugin-solidity": "1.1.3",
     "ts-node": "10.9.1",
