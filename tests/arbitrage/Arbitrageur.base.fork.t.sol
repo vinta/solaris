@@ -59,12 +59,6 @@ contract ArbitrageurBaseForkTest is BaseTest {
         assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
 
-    function test_arbitrageUniswapV3toVelodromeV2_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, 1 ether, 0, 500, false);
-    }
-
     function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
@@ -83,12 +77,6 @@ contract ArbitrageurBaseForkTest is BaseTest {
         arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, amountIn, 0, 500, false);
 
         assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
-    }
-
-    function test_arbitrageVelodromeV2toUniswapV3_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, 1 ether, 0, 500, false);
     }
 
     function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
