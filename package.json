@@ -21,6 +21,7 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
+    "coverage": "forge coverage",
     "deploy": "hardhat deploy --network base",
     "verify": "hardhat --network base tenderly:push",
     "hardhat:build": "hardhat compile",
