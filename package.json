@@ -22,6 +22,8 @@
     "build": "forge build",
     "test": "forge test",
     "coverage": "forge coverage",
+    "snapshot": "forge snapshot",
+    "snapshot:check": "forge snapshot --check --tolerance 5",
     "deploy": "hardhat deploy --network base",
     "verify": "hardhat --network base tenderly:push",
     "hardhat:build": "hardhat compile",
