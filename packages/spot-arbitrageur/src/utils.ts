@@ -12,3 +12,7 @@ export function wrapSentryHandlerIfNeeded(handler: Handler): Handler {
 
     return handler
 }
+
+export function sleep(ms: number): Promise<unknown> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
