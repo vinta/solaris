@@ -5,9 +5,10 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
+import { OneInchV5Mixin } from "./mixins/OneInchV5Mixin.sol";
 import { UniswapV3Mixin } from "./mixins/UniswapV3Mixin.sol";
 
-contract ArbitrageurWithAggregator is BaseArbitrageur, UniswapV3Mixin {
+contract ArbitrageurWithAggregator is BaseArbitrageur, OneInchV5Mixin, UniswapV3Mixin {
     using SafeERC20 for IERC20;
 
     // external
@@ -24,7 +25,7 @@ contract ArbitrageurWithAggregator is BaseArbitrageur, UniswapV3Mixin {
 
         // TODO: maybe we should excude uniswap v3 from 1inch api query
         // since we do uniswap v3 in the second step
-        uint256 amountOutFromFirst = _swapOn1inch(tokenIn, tokenOut, amountIn, _1inchData);
+        uint256 amountOutFromFirst = _swapOnOneInch(tokenIn, tokenOut, amountIn, _1inchData);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
 
         if (amountOut <= amountIn + minProfit) {
@@ -33,11 +34,4 @@ contract ArbitrageurWithAggregator is BaseArbitrageur, UniswapV3Mixin {
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
-
-    function _swapOn1inch(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn,
-        bytes calldata _1inchData
-    ) internal returns (uint256) {}
 }
