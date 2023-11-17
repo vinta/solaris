@@ -15,7 +15,6 @@ contract ArbitrageurBaseForkTest is BaseTest {
     Arbitrageur arbitrageur;
     address owner = makeAddr("owner");
     address trader = makeAddr("trader");
-    address nonOwner = makeAddr("nonOwner");
     address weth = 0x4200000000000000000000000000000000000006;
     address usdc = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
 
@@ -70,12 +69,6 @@ contract ArbitrageurBaseForkTest is BaseTest {
     }
 
     // internal
-
-    function _dealAndApprove(address token, uint256 amount, address account, address spender) internal {
-        deal(token, account, amount);
-        vm.prank(account);
-        IERC20(token).approve(spender, amount);
-    }
 
     function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
         address UNISWAP_V3_SWAP_ROUTER_02 = arbitrageur.UNISWAP_V3_SWAP_ROUTER_02();
