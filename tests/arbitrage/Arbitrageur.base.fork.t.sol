@@ -23,6 +23,7 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
     function setUp() public {
         vm.createSelectFork(vm.rpcUrl("base"));
+        console.log(block.number);
 
         vm.prank(owner);
         arbitrageur = new Arbitrageur();
