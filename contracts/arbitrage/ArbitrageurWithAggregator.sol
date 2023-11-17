@@ -6,24 +6,25 @@ import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/Sa
 
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { UniswapV3Mixin } from "./mixins/UniswapV3Mixin.sol";
-import { VelodromeV2Mixin } from "./mixins/VelodromeV2Mixin.sol";
 
-contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
+contract ArbitrageurWithAggregator is BaseArbitrageur, UniswapV3Mixin {
     using SafeERC20 for IERC20;
 
     // external
 
-    function arbitrageVelodromeV2toUniswapV3(
+    function arbitrage1inchToUniswapV3(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minProfit,
         uint24 uniswapV3Fee,
-        bool velodromeV2Stable
+        bytes calldata _1inchData
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
+        // TODO: maybe we should excude uniswap v3 from 1inch api query
+        // since we do uniswap v3 in the second step
+        uint256 amountOutFromFirst = _swapOn1inch(tokenIn, tokenOut, amountIn, _1inchData);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
 
         if (amountOut <= amountIn + minProfit) {
@@ -33,23 +34,10 @@ contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
-    function arbitrageUniswapV3toVelodromeV2(
+    function _swapOn1inch(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
-        uint256 minProfit,
-        uint24 uniswapV3Fee,
-        bool velodromeV2Stable
-    ) external {
-        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
-
-        uint256 amountOutFromFirst = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
-        uint256 amountOut = _swapOnVelodromeV2(tokenOut, tokenIn, amountOutFromFirst, velodromeV2Stable);
-
-        if (amountOut <= amountIn + minProfit) {
-            revert NoProfit();
-        }
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
-    }
+        bytes calldata _1inchData
+    ) internal returns (uint256) {}
 }

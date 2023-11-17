@@ -6,6 +6,7 @@ import { console } from "forge-std/console.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
+import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
 import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
 import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
 
@@ -26,27 +27,6 @@ contract ArbitrageurBaseForkTest is BaseTest {
         arbitrageur = new Arbitrageur();
     }
 
-    function test_owner_Success() public {
-        assertEq(owner, arbitrageur.owner());
-    }
-
-    function test_withdrawAll_Success() public {
-        assertEq(IERC20(weth).balanceOf(owner), 0);
-
-        deal(weth, address(arbitrageur), 1 ether);
-
-        vm.prank(owner);
-        arbitrageur.withdrawAll(weth);
-
-        assertEq(IERC20(weth).balanceOf(owner), 1 ether);
-    }
-
-    function test_withdrawAll_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.withdrawAll(weth);
-    }
-
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
         _uniswapV3ExactInputSingle(trader, usdc, weth, 100000e6);
 
@@ -62,7 +42,7 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(Arbitrageur.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
         arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, 1 ether, 0, 500, false);
     }
@@ -82,7 +62,7 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(Arbitrageur.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, 1 ether, 0, 500, false);
     }
