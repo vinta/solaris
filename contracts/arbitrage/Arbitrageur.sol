@@ -25,10 +25,7 @@ contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
 
         uint256 amountOutFromFirst = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
-
-        if (amountOut <= amountIn + minProfit) {
-            revert NoProfit();
-        }
+        _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
@@ -45,10 +42,7 @@ contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
 
         uint256 amountOutFromFirst = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
         uint256 amountOut = _swapOnVelodromeV2(tokenOut, tokenIn, amountOutFromFirst, velodromeV2Stable);
-
-        if (amountOut <= amountIn + minProfit) {
-            revert NoProfit();
-        }
+        _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }

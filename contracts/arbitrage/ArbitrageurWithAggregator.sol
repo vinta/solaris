@@ -25,12 +25,9 @@ contract ArbitrageurWithAggregator is BaseArbitrageur, OneInchV5Mixin, UniswapV3
 
         // TODO: maybe we should excude uniswap v3 from 1inch api query
         // since we do uniswap v3 in the second step
-        uint256 amountOutFromFirst = _swapOnOneInch(tokenIn, tokenOut, amountIn, _1inchData);
+        uint256 amountOutFromFirst = _swapOnOneInchV5(tokenIn, tokenOut, amountIn, _1inchData);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
-
-        if (amountOut <= amountIn + minProfit) {
-            revert NoProfit();
-        }
+        _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
