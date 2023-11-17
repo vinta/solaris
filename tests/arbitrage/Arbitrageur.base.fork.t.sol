@@ -4,11 +4,12 @@ pragma solidity 0.8.19;
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { console } from "forge-std/console.sol";
 
-import { BaseTest } from "../BaseTest.sol";
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
 import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
 import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
+
+import { BaseTest } from "../BaseTest.sol";
 
 contract ArbitrageurBaseForkTest is BaseTest {
     Arbitrageur arbitrageur;
