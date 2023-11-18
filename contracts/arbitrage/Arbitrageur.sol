@@ -41,8 +41,8 @@ contract Arbitrageur is BaseArbitrageur, PancakeSwapV3Mixin, UniswapV3Mixin, Vel
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnPancakeSwapV3(tokenOut, tokenIn, amountIn, pancakeSwapV3Fee);
-        uint256 amountOut = _swapOnUniswapV3(tokenIn, tokenOut, amountOutFromFirst, uniswapV3Fee);
+        uint256 amountOutFromFirst = _swapOnPancakeSwapV3(tokenIn, tokenOut, amountIn, pancakeSwapV3Fee);
+        uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
         _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
