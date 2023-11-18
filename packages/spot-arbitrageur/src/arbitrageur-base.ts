@@ -133,6 +133,8 @@ class ArbitrageurBase {
             //     }
             // }
 
+            console.log(`arbitrage start: ${i++}`)
+
             try {
                 const tx = await this.sendTx(owner, async () =>
                     arbitrageur.arbitrageUniswapV3toPancakeSwapV3(
