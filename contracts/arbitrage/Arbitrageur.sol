@@ -6,7 +6,7 @@ import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/Sa
 
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { PancakeSwapV3Mixin } from "./mixins/PancakeSwapV3Mixin.sol";
-import { UniswapV3Mixin } from "./mixins/UniswapV3Mixin.sol";
+import { UniswapV3Mixin, IUniswapV3SwapRouter02 } from "./mixins/UniswapV3Mixin.sol";
 import { VelodromeV2Mixin, IVelodromeV2Router } from "./mixins/VelodromeV2Mixin.sol";
 
 contract Arbitrageur is BaseArbitrageur, PancakeSwapV3Mixin, UniswapV3Mixin, VelodromeV2Mixin {
@@ -81,6 +81,28 @@ contract Arbitrageur is BaseArbitrageur, PancakeSwapV3Mixin, UniswapV3Mixin, Vel
 
     //     IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     // }
+
+    function triangularArbitrageUniswapV3(
+        bytes memory path,
+        address tokenIn,
+        uint256 amountIn,
+        uint256 minProfit
+    ) external {
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
+
+        IUniswapV3SwapRouter02.ExactInputParams memory params = IUniswapV3SwapRouter02.ExactInputParams({
+            path: path,
+            recipient: address(this),
+            amountIn: amountIn,
+            amountOutMinimum: 0
+            // amountOutMinimum: amountIn + minProfit
+        });
+        uint256 amountOut = IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInput(params);
+        _requireProfit(amountIn, amountOut, minProfit);
+
+        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
+    }
 
     function triangularArbitrageVelodromeV2(address[] memory tokens, uint256 amountIn, uint256 minProfit) external {
         address tokenIn = tokens[0];
