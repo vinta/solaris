@@ -5,25 +5,43 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
+import { PancakeSwapV3Mixin } from "./mixins/PancakeSwapV3Mixin.sol";
 import { UniswapV3Mixin } from "./mixins/UniswapV3Mixin.sol";
 import { VelodromeV2Mixin } from "./mixins/VelodromeV2Mixin.sol";
 
-contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
+contract Arbitrageur is BaseArbitrageur, PancakeSwapV3Mixin, UniswapV3Mixin, VelodromeV2Mixin {
     using SafeERC20 for IERC20;
 
     // external
 
-    function arbitrageVelodromeV2toUniswapV3(
+    function arbitrageUniswapV3toPancakeSwapV3(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minProfit,
         uint24 uniswapV3Fee,
-        bool velodromeV2Stable
+        uint24 pancakeSwapV3Fee
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
+        uint256 amountOutFromFirst = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
+        uint256 amountOut = _swapOnPancakeSwapV3(tokenOut, tokenIn, amountOutFromFirst, pancakeSwapV3Fee);
+        _requireProfit(amountIn, amountOut, minProfit);
+
+        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
+    }
+
+    function arbitragePancakeSwapV3toUniswapV3(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 minProfit,
+        uint24 uniswapV3Fee,
+        uint24 pancakeSwapV3Fee
+    ) external {
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+
+        uint256 amountOutFromFirst = _swapOnPancakeSwapV3(tokenIn, tokenOut, amountIn, pancakeSwapV3Fee);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
         _requireProfit(amountIn, amountOut, minProfit);
 
@@ -42,6 +60,23 @@ contract Arbitrageur is BaseArbitrageur, VelodromeV2Mixin, UniswapV3Mixin {
 
         uint256 amountOutFromFirst = _swapOnUniswapV3(tokenIn, tokenOut, amountIn, uniswapV3Fee);
         uint256 amountOut = _swapOnVelodromeV2(tokenOut, tokenIn, amountOutFromFirst, velodromeV2Stable);
+        _requireProfit(amountIn, amountOut, minProfit);
+
+        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
+    }
+
+    function arbitrageVelodromeV2toUniswapV3(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn,
+        uint256 minProfit,
+        uint24 uniswapV3Fee,
+        bool velodromeV2Stable
+    ) external {
+        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+
+        uint256 amountOutFromFirst = _swapOnVelodromeV2(tokenIn, tokenOut, amountIn, velodromeV2Stable);
+        uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
         _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);

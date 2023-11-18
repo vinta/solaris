@@ -6,8 +6,8 @@ import { console } from "forge-std/console.sol";
 
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
-import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
+import { IUniswapV3SwapRouter02 } from "../../contracts/arbitrage/mixins/UniswapV3Mixin.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2Mixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
@@ -26,6 +26,26 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
         vm.prank(owner);
         arbitrageur = new Arbitrageur();
+    }
+
+    function testFork_arbitrageUniswapV3toPancakeSwapV3_Success() public {
+        _uniswapV3ExactInputSingle(trader, usdc, weth, 100000e6);
+
+        uint256 amountIn = 1 ether;
+        _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
+
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdc, amountIn, 0, 500, 500);
+
+        assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
+    }
+
+    function testFork_arbitrageUniswapV3toPancakeSwapV3_RevertIf_NoProfit() public {
+        _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
+
+        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdc, 1 ether, 0, 500, 500);
     }
 
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
@@ -76,8 +96,8 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
         vm.startPrank(trader);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
-        IUniswapV3Router(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-            IUniswapV3Router.ExactInputSingleParams({
+        IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
+            IUniswapV3SwapRouter02.ExactInputSingleParams({
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: 500,

@@ -1,7 +1,8 @@
 import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256, ContractTransactionResponse } from "ethers"
 import { Handler } from "aws-lambda"
 
-import { ArbitrageurWithAggregator__factory as Arbitrageur__factory, IERC20__factory } from "../types"
+// import { ArbitrageurWithAggregator__factory as Arbitrageur__factory, IERC20__factory } from "../types"
+import { Arbitrageur__factory, IERC20__factory } from "../types"
 import { NonceManager } from "./nonce-manager"
 import { wrapSentryHandlerIfNeeded, sleep, randomNumberBetween } from "./utils"
 import { PROTOCOLS } from "./constants"
@@ -84,49 +85,101 @@ class ArbitrageurBase {
 
         let i = 1
         while (true) {
-            let oneInchData = ""
-            try {
-                oneInchData = await this.fetch1inchSwapData({
-                    src: tokenIn.target as string,
-                    dst: tokenOut.target as string,
-                    amount: amountIn.toString(),
-                    from: ARBITRAGEUR_ADDRESS,
-                    slippage: "1", // 0 ~ 50
-                    disableEstimate: "true",
-                    protocols: PROTOCOLS.join(","),
-                })
-            } catch (err: any) {
-                if (err.message.includes("Too Many Requests")) {
-                    console.log("Too Many Requests")
-                    await sleep(1000 * randomNumberBetween(0.2, 1))
-                    continue
-                }
-            }
+            // let oneInchData = ""
+            // try {
+            //     oneInchData = await this.fetch1inchSwapData({
+            //         src: tokenIn.target as string,
+            //         dst: tokenOut.target as string,
+            //         amount: amountIn.toString(),
+            //         from: ARBITRAGEUR_ADDRESS,
+            //         slippage: "1", // 0 ~ 50
+            //         disableEstimate: "true",
+            //         protocols: PROTOCOLS.join(","),
+            //     })
+            // } catch (err: any) {
+            //     if (err.message.includes("Too Many Requests")) {
+            //         console.log("Too Many Requests")
+            //         await sleep(1000 * randomNumberBetween(0.2, 1))
+            //         continue
+            //     }
+            // }
+
+            // console.log(`arbitrage start: ${i++}`)
+
+            // try {
+            //     const tx = await this.sendTx(owner, async () =>
+            //         arbitrageur.arbitrage1inchToUniswapV3(
+            //             tokenIn.target,
+            //             tokenOut.target,
+            //             amountIn,
+            //             minProfit,
+            //             500,
+            //             oneInchData,
+            //             {
+            //                 nonce: this.nonceManager.getNonce(owner),
+            //             },
+            //         ),
+            //     )
+            //     console.log(`arbitrage1inchToUniswapV3 tx: ${tx.hash}`)
+            //     await tx.wait()
+            // } catch (err: any) {
+            //     const errMessage = err.message || err.reason || ""
+            //     if (errMessage.includes(ERROR_NO_PROFIT)) {
+            //         // console.log("No Profit")
+            //     } else if (errMessage.includes(ERROR_SWAP_FAIL)) {
+            //         // console.log("Swap Fail")
+            //     } else {
+            //         throw err
+            //     }
+            // }
 
             console.log(`arbitrage start: ${i++}`)
 
             try {
                 const tx = await this.sendTx(owner, async () =>
-                    arbitrageur.arbitrage1inchToUniswapV3(
+                    arbitrageur.arbitrageUniswapV3toPancakeSwapV3(
                         tokenIn.target,
                         tokenOut.target,
                         amountIn,
                         minProfit,
                         500,
-                        oneInchData,
+                        500,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                         },
                     ),
                 )
-                console.log(`arbitrage1inchToUniswapV3 tx: ${tx.hash}`)
+                console.log(`arbitrageUniswapV3toPancakeSwapV3 tx: ${tx.hash}`)
                 await tx.wait()
             } catch (err: any) {
                 const errMessage = err.message || err.reason || ""
                 if (errMessage.includes(ERROR_NO_PROFIT)) {
                     // console.log("No Profit")
-                } else if (errMessage.includes(ERROR_SWAP_FAIL)) {
-                    // console.log("Swap Fail")
+                } else {
+                    throw err
+                }
+            }
+
+            try {
+                const tx = await this.sendTx(owner, async () =>
+                    arbitrageur.arbitragePancakeSwapV3toUniswapV3(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        500,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    ),
+                )
+                console.log(`arbitragePancakeSwapV3toUniswapV3 tx: ${tx.hash}`)
+                await tx.wait()
+            } catch (err: any) {
+                const errMessage = err.message || err.reason || ""
+                if (errMessage.includes(ERROR_NO_PROFIT)) {
+                    // console.log("No Profit")
                 } else {
                     throw err
                 }

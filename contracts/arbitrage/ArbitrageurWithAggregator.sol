@@ -13,19 +13,17 @@ contract ArbitrageurWithAggregator is BaseArbitrageur, OneInchV5Mixin, UniswapV3
 
     // external
 
-    function arbitrage1inchToUniswapV3(
+    function arbitrageOneInchToUniswapV3(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minProfit,
         uint24 uniswapV3Fee,
-        bytes calldata _1inchData
+        bytes calldata oneInchData
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        // TODO: maybe we should excude uniswap v3 from 1inch api query
-        // since we do uniswap v3 in the second step
-        uint256 amountOutFromFirst = _swapOnOneInchV5(tokenIn, tokenOut, amountIn, _1inchData);
+        uint256 amountOutFromFirst = _swapOnOneInchV5(tokenIn, tokenOut, amountIn, oneInchData);
         uint256 amountOut = _swapOnUniswapV3(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
         _requireProfit(amountIn, amountOut, minProfit);
 
