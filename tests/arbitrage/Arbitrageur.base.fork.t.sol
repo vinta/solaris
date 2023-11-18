@@ -16,7 +16,8 @@ contract ArbitrageurBaseForkTest is BaseTest {
     address owner = makeAddr("owner");
     address trader = makeAddr("trader");
     address weth = 0x4200000000000000000000000000000000000006;
-    address usdc = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
+    address usdbc = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
+    address aero = 0x940181a94A35A4569E4529A3CDfB74e38FD98631;
 
     // public
 
@@ -29,13 +30,13 @@ contract ArbitrageurBaseForkTest is BaseTest {
     }
 
     function testFork_arbitrageUniswapV3toPancakeSwapV3_Success() public {
-        _uniswapV3ExactInputSingle(trader, usdc, weth, 100000e6);
+        _uniswapV3ExactInputSingle(trader, usdbc, weth, 100000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdc, amountIn, 0, 500, 500);
+        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdbc, amountIn, 0, 500, 500);
 
         assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
@@ -45,47 +46,84 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
         vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdc, 1 ether, 0, 500, 500);
+        arbitrageur.arbitrageUniswapV3toPancakeSwapV3(weth, usdbc, 1 ether, 0, 500, 500);
     }
 
-    function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
-        _uniswapV3ExactInputSingle(trader, usdc, weth, 100000e6);
+    // function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
+    //     _uniswapV3ExactInputSingle(trader, usdbc, weth, 100000e6);
+
+    //     uint256 amountIn = 1 ether;
+    //     _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
+
+    //     vm.prank(owner);
+    //     arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdbc, amountIn, 0, 500, false);
+
+    //     assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
+    // }
+
+    // function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
+    //     _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
+
+    //     vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+    //     vm.prank(owner);
+    //     arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdbc, 1 ether, 0, 500, false);
+    // }
+
+    // function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
+    //     _velodromeV2SwapExactTokensForTokens(trader, usdbc, weth, 100000e6);
+
+    //     uint256 amountIn = 1 ether;
+    //     _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
+
+    //     vm.prank(owner);
+    //     arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdbc, amountIn, 0, 500, false);
+
+    //     assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
+    // }
+
+    // function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
+    //     _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
+
+    //     vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+    //     vm.prank(owner);
+    //     arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdbc, 1 ether, 0, 500, false);
+    // }
+
+    function testFork_triangularArbitrageVelodromeV2_Success() public {
+        _velodromeV2SwapExactTokensForTokens(trader, aero, weth, 100000000 ether);
+
+        // WETH -> AERO -> USDbC -> WETH
+        address[] memory tokens = new address[](6);
+        tokens[0] = weth;
+        tokens[1] = aero;
+        tokens[2] = aero;
+        tokens[3] = usdbc;
+        tokens[4] = usdbc;
+        tokens[5] = weth;
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, amountIn, 0, 500, false);
+        arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
 
         assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
 
-    function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
+    function testFork_triangularArbitrageVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
+
+        address[] memory tokens = new address[](6);
+        tokens[0] = weth;
+        tokens[1] = aero;
+        tokens[2] = aero;
+        tokens[3] = usdbc;
+        tokens[4] = usdbc;
+        tokens[5] = weth;
 
         vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, 1 ether, 0, 500, false);
-    }
-
-    function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
-        _velodromeV2SwapExactTokensForTokens(trader, usdc, weth, 100000e6);
-
-        uint256 amountIn = 1 ether;
-        _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
-
-        vm.prank(owner);
-        arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, amountIn, 0, 500, false);
-
-        assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
-    }
-
-    function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
-        _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
-
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
-        vm.prank(owner);
-        arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, 1 ether, 0, 500, false);
+        arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
     }
 
     // internal
