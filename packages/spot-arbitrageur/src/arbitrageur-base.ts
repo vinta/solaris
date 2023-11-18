@@ -61,8 +61,8 @@ class ArbitrageurBase {
         const tokenIn = IERC20__factory.connect(wethAddr, owner)
         const tokenOut = IERC20__factory.connect(usdcAddr, owner)
         const amountIn = await tokenIn.balanceOf(owner.address)
-        const minProfit = parseEther("0.002") // ~= 4 USD
-        // const minProfit = parseEther("0.001") // ~= 2 USD
+        // const minProfit = parseEther("0.002") // ~= 4 USD
+        const minProfit = parseEther("0.001") // ~= 2 USD
         // const minProfit = parseEther("0.0005") // ~= 1 USD
 
         const allowance = await tokenIn.allowance(owner.address, ARBITRAGEUR_ADDRESS)
