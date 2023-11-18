@@ -16,3 +16,7 @@ export function wrapSentryHandlerIfNeeded(handler: Handler): Handler {
 export function sleep(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export function randomNumberBetween(min: number, max: number): number {
+    return Math.random() * (max - min) + min
+}

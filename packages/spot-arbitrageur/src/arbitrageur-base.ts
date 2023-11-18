@@ -3,7 +3,8 @@ import { Handler } from "aws-lambda"
 
 import { ArbitrageurWithAggregator__factory as Arbitrageur__factory, IERC20__factory } from "../types"
 import { NonceManager } from "./nonce-manager"
-import { wrapSentryHandlerIfNeeded, sleep } from "./utils"
+import { wrapSentryHandlerIfNeeded, sleep, randomNumberBetween } from "./utils"
+import { PROTOCOLS } from "./constants"
 
 interface Fetch1inchSwapDataParams extends Record<string, string> {
     src: string
@@ -92,11 +93,12 @@ class ArbitrageurBase {
                     from: ARBITRAGEUR_ADDRESS,
                     slippage: "1", // 0 ~ 50
                     disableEstimate: "true",
+                    protocols: PROTOCOLS.join(","),
                 })
             } catch (err: any) {
                 if (err.message.includes("Too Many Requests")) {
                     console.log("Too Many Requests")
-                    await sleep(1000 * 0.2)
+                    await sleep(1000 * randomNumberBetween(0.2, 1))
                     continue
                 }
             }
