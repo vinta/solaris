@@ -6,8 +6,8 @@ import { console } from "forge-std/console.sol";
 
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
-import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
+import { IUniswapV3SwapRouter02 } from "../../contracts/arbitrage/mixins/UniswapV3Mixin.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2Mixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
@@ -76,8 +76,8 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
         vm.startPrank(trader);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
-        IUniswapV3Router(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-            IUniswapV3Router.ExactInputSingleParams({
+        IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
+            IUniswapV3SwapRouter02.ExactInputSingleParams({
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: 500,

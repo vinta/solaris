@@ -3,7 +3,19 @@ pragma solidity 0.8.19;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { IUniswapV3Router } from "../interfaces/IUniswapV3Router.sol";
+interface IUniswapV3SwapRouter02 {
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
+
+    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
+}
 
 abstract contract UniswapV3Mixin {
     // https://docs.uniswap.org/contracts/v3/reference/deployments
@@ -21,8 +33,8 @@ abstract contract UniswapV3Mixin {
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
 
         return
-            IUniswapV3Router(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-                IUniswapV3Router.ExactInputSingleParams({
+            IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
+                IUniswapV3SwapRouter02.ExactInputSingleParams({
                     tokenIn: tokenIn,
                     tokenOut: tokenOut,
                     fee: fee,

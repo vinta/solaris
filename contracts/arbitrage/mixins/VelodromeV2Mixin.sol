@@ -3,7 +3,22 @@ pragma solidity 0.8.19;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { IVelodromeV2Router } from "../interfaces/IVelodromeV2Router.sol";
+interface IVelodromeV2Router {
+    struct Route {
+        address from;
+        address to;
+        bool stable;
+        address factory;
+    }
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        Route[] calldata routes,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
+}
 
 abstract contract VelodromeV2Mixin {
     // https://aerodrome.finance/security#contracts

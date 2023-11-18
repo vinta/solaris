@@ -6,7 +6,7 @@ import { console } from "forge-std/console.sol";
 
 import { ArbitrageurWithAggregator } from "../../contracts/arbitrage/ArbitrageurWithAggregator.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
+import { IUniswapV3SwapRouter02 } from "../../contracts/arbitrage/mixins/UniswapV3Mixin.sol";
 import { OneInchV5Mixin } from "../../contracts/arbitrage/mixins/OneInchV5Mixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
@@ -28,14 +28,14 @@ contract ArbitrageurWithAggregatorBaseForkTest is BaseTest {
         arbitrageur = new ArbitrageurWithAggregator();
     }
 
-    function testFork_arbitrage1inchToUniswapV3_Success() public {
+    function testFork_arbitrageOneInchToUniswapV3_Success() public {
         _uniswapV3ExactInputSingle(trader, weth, usdc, 100 ether);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.prank(owner);
-        arbitrageur.arbitrage1inchToUniswapV3(
+        arbitrageur.arbitrageOneInchToUniswapV3(
             weth,
             usdc,
             1 ether,
@@ -50,14 +50,14 @@ contract ArbitrageurWithAggregatorBaseForkTest is BaseTest {
         assertEq(IERC20(weth).balanceOf(address(owner)) > amountIn, true);
     }
 
-    function testFork_arbitrage1inchToUniswapV3_RevertIf_NoProfit() public {
+    function testFork_arbitrageOneInchToUniswapV3_RevertIf_NoProfit() public {
         console.logAddress(owner);
 
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
         vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
-        arbitrageur.arbitrage1inchToUniswapV3(
+        arbitrageur.arbitrageOneInchToUniswapV3(
             weth,
             usdc,
             1 ether,
@@ -68,13 +68,13 @@ contract ArbitrageurWithAggregatorBaseForkTest is BaseTest {
         );
     }
 
-    function testFork_arbitrage1inchToUniswapV3_RevertIf_SwapFail() public {
+    function testFork_arbitrageOneInchToUniswapV3_RevertIf_SwapFail() public {
         uint256 amountIn = 1 ether;
         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
         vm.expectRevert(abi.encodeWithSelector(OneInchV5Mixin.SwapFail.selector));
         vm.prank(owner);
-        arbitrageur.arbitrage1inchToUniswapV3(
+        arbitrageur.arbitrageOneInchToUniswapV3(
             weth,
             usdc,
             1 ether,
@@ -95,8 +95,8 @@ contract ArbitrageurWithAggregatorBaseForkTest is BaseTest {
 
         vm.startPrank(trader);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
-        IUniswapV3Router(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-            IUniswapV3Router.ExactInputSingleParams({
+        IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
+            IUniswapV3SwapRouter02.ExactInputSingleParams({
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: 500,
