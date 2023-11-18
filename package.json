@@ -1,6 +1,6 @@
 {
   "name": "@vinta/solaris",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "license": "MIT",
   "author": {
@@ -21,13 +21,16 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
+    "coverage": "forge coverage",
+    "snapshot": "forge snapshot",
+    "snapshot:check": "forge snapshot --check --tolerance 5",
     "deploy": "hardhat deploy --network base",
     "verify": "hardhat --network base tenderly:push",
+    "clean:foundry": "rm -rf cache/ out/",
+    "clean:hardhat": "rm -rf deployments/localhost/ hardhat-*/ typechain-types/",
     "hardhat:build": "hardhat compile",
     "hardhat:node": "hardhat node --network hardhat",
-    "hardhat:deploy": "hardhat deploy --network localhost",
-    "clean:foundry": "rm -rf cache/ out/",
-    "clean:hardhat": "rm -rf deployments/localhost/ hardhat-*/ typechain-types/"
+    "hardhat:deploy": "hardhat deploy --network localhost"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.3",

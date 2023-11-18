@@ -4,16 +4,17 @@ pragma solidity 0.8.19;
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { console } from "forge-std/console.sol";
 
-import { BaseTest } from "../BaseTest.sol";
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
+import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
 import { IUniswapV3Router } from "../../contracts/arbitrage/interfaces/IUniswapV3Router.sol";
 import { IVelodromeV2Router } from "../../contracts/arbitrage/interfaces/IVelodromeV2Router.sol";
+
+import { BaseTest } from "../BaseTest.sol";
 
 contract ArbitrageurBaseForkTest is BaseTest {
     Arbitrageur arbitrageur;
     address owner = makeAddr("owner");
     address trader = makeAddr("trader");
-    address nonOwner = makeAddr("nonOwner");
     address weth = 0x4200000000000000000000000000000000000006;
     address usdc = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
 
@@ -21,30 +22,10 @@ contract ArbitrageurBaseForkTest is BaseTest {
 
     function setUp() public {
         vm.createSelectFork(vm.rpcUrl("base"));
+        console.log(block.number);
 
         vm.prank(owner);
         arbitrageur = new Arbitrageur();
-    }
-
-    function test_owner_Success() public {
-        assertEq(owner, arbitrageur.owner());
-    }
-
-    function test_withdrawAll_Success() public {
-        assertEq(IERC20(weth).balanceOf(owner), 0);
-
-        deal(weth, address(arbitrageur), 1 ether);
-
-        vm.prank(owner);
-        arbitrageur.withdrawAll(weth);
-
-        assertEq(IERC20(weth).balanceOf(owner), 1 ether);
-    }
-
-    function test_withdrawAll_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.withdrawAll(weth);
     }
 
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
@@ -62,7 +43,7 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(Arbitrageur.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
         arbitrageur.arbitrageUniswapV3toVelodromeV2(weth, usdc, 1 ether, 0, 500, false);
     }
@@ -82,18 +63,12 @@ contract ArbitrageurBaseForkTest is BaseTest {
     function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
         _dealAndApprove(weth, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(Arbitrageur.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(weth, usdc, 1 ether, 0, 500, false);
     }
 
     // internal
-
-    function _dealAndApprove(address token, uint256 amount, address account, address spender) internal {
-        deal(token, account, amount);
-        vm.prank(account);
-        IERC20(token).approve(spender, amount);
-    }
 
     function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
         address UNISWAP_V3_SWAP_ROUTER_02 = arbitrageur.UNISWAP_V3_SWAP_ROUTER_02();

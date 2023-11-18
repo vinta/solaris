@@ -1,11 +1,23 @@
 import { Network, JsonRpcProvider, HDNodeWallet, parseEther, MaxUint256, ContractTransactionResponse } from "ethers"
 import { Handler } from "aws-lambda"
 
-import { Arbitrageur__factory, IERC20__factory } from "../types"
+import { ArbitrageurWithAggregator__factory as Arbitrageur__factory, IERC20__factory } from "../types"
 import { NonceManager } from "./nonce-manager"
-import { wrapSentryHandlerIfNeeded } from "./utils"
+import { wrapSentryHandlerIfNeeded, sleep, randomNumberBetween } from "./utils"
+import { PROTOCOLS } from "./constants"
+
+interface Fetch1inchSwapDataParams extends Record<string, string> {
+    src: string
+    dst: string
+    amount: string
+    from: string
+    slippage: string
+    disableEstimate: string
+}
 
 class ArbitrageurBase {
+    ONEINCH_API_KEY = process.env.ONEINCH_API_KEY!
+
     nonceManager = new NonceManager()
 
     async arbitrage() {
@@ -17,6 +29,7 @@ class ArbitrageurBase {
         const TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
 
         const ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
+        const ERROR_SWAP_FAIL = "0xb70946b8" // SwapFail()
 
         console.log("config", {
             RPC_PROVIDER_URL,
@@ -47,7 +60,7 @@ class ArbitrageurBase {
         const tokenIn = IERC20__factory.connect(wethAddr, owner)
         const tokenOut = IERC20__factory.connect(usdcAddr, owner)
         const amountIn = await tokenIn.balanceOf(owner.address)
-        const minProfit = parseEther("0.0015") // ~= 3 USD
+        const minProfit = parseEther("0.002") // ~= 4 USD
         // const minProfit = parseEther("0.001") // ~= 2 USD
         // const minProfit = parseEther("0.0005") // ~= 1 USD
 
@@ -62,62 +75,58 @@ class ArbitrageurBase {
             await tx.wait()
         }
 
-        console.log("arbitrage parameters", {
-            tokenIn: tokenIn.target,
-            tokenOut: tokenOut.target,
-            amountIn,
-            minProfit,
-        })
+        // console.log("arbitrage parameters", {
+        //     tokenIn: tokenIn.target,
+        //     tokenOut: tokenOut.target,
+        //     amountIn,
+        //     minProfit,
+        // })
 
         let i = 1
         while (true) {
+            let oneInchData = ""
+            try {
+                oneInchData = await this.fetch1inchSwapData({
+                    src: tokenIn.target as string,
+                    dst: tokenOut.target as string,
+                    amount: amountIn.toString(),
+                    from: ARBITRAGEUR_ADDRESS,
+                    slippage: "1", // 0 ~ 50
+                    disableEstimate: "true",
+                    protocols: PROTOCOLS.join(","),
+                })
+            } catch (err: any) {
+                if (err.message.includes("Too Many Requests")) {
+                    console.log("Too Many Requests")
+                    await sleep(1000 * randomNumberBetween(0.2, 1))
+                    continue
+                }
+            }
+
             console.log(`arbitrage start: ${i++}`)
 
             try {
                 const tx = await this.sendTx(owner, async () =>
-                    arbitrageur.arbitrageVelodromeV2toUniswapV3(
+                    arbitrageur.arbitrage1inchToUniswapV3(
                         tokenIn.target,
                         tokenOut.target,
                         amountIn,
                         minProfit,
                         500,
-                        false,
+                        oneInchData,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                         },
                     ),
                 )
-                console.log(`arbitrageVelodromeV2toUniswapV3 tx: ${tx.hash}`)
+                console.log(`arbitrage1inchToUniswapV3 tx: ${tx.hash}`)
                 await tx.wait()
             } catch (err: any) {
                 const errMessage = err.message || err.reason || ""
                 if (errMessage.includes(ERROR_NO_PROFIT)) {
-                    // console.log("NoProfit")
-                } else {
-                    throw err
-                }
-            }
-
-            try {
-                const tx = await this.sendTx(owner, async () =>
-                    arbitrageur.arbitrageUniswapV3toVelodromeV2(
-                        tokenIn.target,
-                        tokenOut.target,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                        },
-                    ),
-                )
-                console.log(`arbitrageUniswapV3toVelodromeV2 tx: ${tx.hash}`)
-                await tx.wait()
-            } catch (err: any) {
-                const errMessage = err.message || err.reason || ""
-                if (errMessage.includes(ERROR_NO_PROFIT)) {
-                    // console.log("NoProfit")
+                    // console.log("No Profit")
+                } else if (errMessage.includes(ERROR_SWAP_FAIL)) {
+                    // console.log("Swap Fail")
                 } else {
                     throw err
                 }
@@ -128,6 +137,38 @@ class ArbitrageurBase {
                 break
             }
         }
+    }
+
+    async fetch1inchSwapData(params: Fetch1inchSwapDataParams) {
+        const urlParams = new URLSearchParams(params)
+        const url = `https://api.1inch.dev/swap/v5.2/8453/swap?${urlParams}`
+
+        const res = await fetch(url, {
+            method: "get",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${this.ONEINCH_API_KEY}`,
+            },
+        })
+
+        if (res.status === 429) {
+            throw new Error("Too Many Requests")
+        }
+
+        if (!res.ok) {
+            const err = new Error("Fetch1inchSwapDataError")
+            err.message = await res.text()
+            throw err
+        }
+
+        const response = await res.json()
+        if (!response.tx?.data) {
+            const err = new Error("Fetch1inchSwapAPIDataNoData")
+            err.message = await res.text()
+            throw err
+        }
+
+        return response.tx.data
     }
 
     async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
