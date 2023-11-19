@@ -1,6 +1,6 @@
 {
   "name": "@vinta/solaris",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "license": "MIT",
   "author": {
@@ -24,8 +24,8 @@
     "coverage": "forge coverage",
     "snapshot": "forge snapshot",
     "snapshot:check": "forge snapshot --check --tolerance 5",
-    "deploy": "hardhat deploy --network base",
-    "verify": "hardhat --network base tenderly:push",
+    "deploy": "hardhat deploy --network optimism",
+    "verify": "hardhat --network optimism tenderly:push",
     "clean:foundry": "rm -rf cache/ out/",
     "clean:hardhat": "rm -rf deployments/localhost/ hardhat-*/ typechain-types/",
     "hardhat:build": "hardhat compile",

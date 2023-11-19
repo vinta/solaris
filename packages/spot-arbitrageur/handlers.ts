@@ -1,3 +1,3 @@
-import { handlerBase } from "./src/arbitrageur-base"
+import { handlerOptimism } from "./src/arbitrageur"
 
-export const base = handlerBase
+export const optimism = handlerOptimism
