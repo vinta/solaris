@@ -66,7 +66,7 @@ class ArbitrageurOptimism {
         )
         const minProfit = parseEther("0.001") // ~= 2 USD
 
-        await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
+        // await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
 
         console.log("arbitrageParameters", {
             tokenIn: tokenIn.target,
