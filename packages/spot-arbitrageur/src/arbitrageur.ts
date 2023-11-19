@@ -1,11 +1,11 @@
 import {
-    Network,
-    JsonRpcProvider,
-    HDNodeWallet,
-    parseEther,
-    MaxUint256,
-    solidityPacked,
     ContractTransactionResponse,
+    HDNodeWallet,
+    JsonRpcProvider,
+    MaxUint256,
+    Network,
+    parseEther,
+    solidityPacked,
 } from "ethers"
 import { Handler } from "aws-lambda"
 
@@ -13,14 +13,14 @@ import { Arbitrageur__factory, IERC20__factory } from "../types"
 import { NonceManager } from "./nonce-manager"
 import { wrapSentryHandlerIfNeeded } from "./utils"
 
-interface Fetch1inchSwapDataParams extends Record<string, string> {
-    src: string
-    dst: string
-    amount: string
-    from: string
-    slippage: string
-    disableEstimate: string
-}
+// interface Fetch1inchSwapDataParams extends Record<string, string> {
+//     src: string
+//     dst: string
+//     amount: string
+//     from: string
+//     slippage: string
+//     disableEstimate: string
+// }
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
