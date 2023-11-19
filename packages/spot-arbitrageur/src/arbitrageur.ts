@@ -40,10 +40,10 @@ class ArbitrageurOptimism {
     async arbitrage() {
         const startTimestamp = Date.now() / 1000
 
-        console.log("config", {
-            ARBITRAGEUR_ADDRESS: this.ARBITRAGEUR_ADDRESS,
-            TIMEOUT_SECONDS: this.TIMEOUT_SECONDS,
-        })
+        // console.log("config", {
+        //     ARBITRAGEUR_ADDRESS: this.ARBITRAGEUR_ADDRESS,
+        //     TIMEOUT_SECONDS: this.TIMEOUT_SECONDS,
+        // })
 
         const owner = await this.getOwner()
 
@@ -68,14 +68,14 @@ class ArbitrageurOptimism {
 
         // await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
 
-        console.log("arbitrageParameters", {
-            tokenIn: tokenIn.target,
-            tokenOut: tokenOut.target,
-            amountIn,
-            path1,
-            path2,
-            minProfit,
-        })
+        // console.log("arbitrageParameters", {
+        //     tokenIn: tokenIn.target,
+        //     tokenOut: tokenOut.target,
+        //     amountIn,
+        //     path1,
+        //     path2,
+        //     minProfit,
+        // })
 
         let i = 1
         while (true) {
@@ -184,12 +184,12 @@ class ArbitrageurOptimism {
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
 
-        console.log("owner", {
-            rpcProviderUrl: this.RPC_PROVIDER_URL,
-            networkName: network.name,
-            networkChainId: network.chainId,
-            owner: owner.address,
-        })
+        // console.log("owner", {
+        //     rpcProviderUrl: this.RPC_PROVIDER_URL,
+        //     networkName: network.name,
+        //     networkChainId: network.chainId,
+        //     owner: owner.address,
+        // })
 
         await this.nonceManager.register(owner)
 
