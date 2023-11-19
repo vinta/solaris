@@ -53,7 +53,8 @@ class ArbitrageurOptimism {
         const arbitrageur = Arbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
         const tokenIn = IERC20__factory.connect(WETH_ADDRESS, owner)
         const tokenOut = IERC20__factory.connect(USDCe_ADDRESS, owner)
-        const amountIn = await tokenIn.balanceOf(owner.address)
+        // const amountIn = await tokenIn.balanceOf(owner.address)
+        const amountIn = parseEther("1")
         const path1 = solidityPacked(
             ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
             [WETH_ADDRESS, 500, USDCe_ADDRESS, 3000, OP_ADDRESS, 3000, WETH_ADDRESS],
@@ -64,7 +65,7 @@ class ArbitrageurOptimism {
         )
         const minProfit = parseEther("0.001") // ~= 2 USD
 
-        await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
+        // await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
 
         console.log("arbitrageParameters", {
             tokenIn: tokenIn.target,
@@ -80,38 +81,78 @@ class ArbitrageurOptimism {
             console.log(`arbitrage start: ${i++}`)
 
             await Promise.all([
-                this.arbitrageTx(owner, async () =>
-                    arbitrageur.arbitrageUniswapV3toVelodromeV2(
-                        tokenIn.target,
-                        tokenOut.target,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                        },
-                    ),
-                ),
-                this.arbitrageTx(owner, async () =>
-                    arbitrageur.arbitrageVelodromeV2toUniswapV3(
-                        tokenIn.target,
-                        tokenOut.target,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                        },
-                    ),
-                ),
                 this.arbitrageTx(owner, async () => {
+                    await arbitrageur.arbitrageUniswapV3toVelodromeV2.staticCall(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
+                    return arbitrageur.arbitrageUniswapV3toVelodromeV2(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
+                }),
+                this.arbitrageTx(owner, async () => {
+                    await arbitrageur.arbitrageVelodromeV2toUniswapV3.staticCall(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
+                    return arbitrageur.arbitrageVelodromeV2toUniswapV3(
+                        tokenIn.target,
+                        tokenOut.target,
+                        amountIn,
+                        minProfit,
+                        500,
+                        false,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
+                }),
+                this.arbitrageTx(owner, async () => {
+                    await arbitrageur.triangularArbitrageUniswapV3.staticCall(
+                        path1,
+                        tokenIn.target,
+                        amountIn,
+                        minProfit,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
                     return arbitrageur.triangularArbitrageUniswapV3(path1, tokenIn.target, amountIn, minProfit, {
                         nonce: this.nonceManager.getNonce(owner),
                     })
                 }),
                 this.arbitrageTx(owner, async () => {
+                    await arbitrageur.triangularArbitrageUniswapV3.staticCall(
+                        path2,
+                        tokenIn.target,
+                        amountIn,
+                        minProfit,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                        },
+                    )
                     return arbitrageur.triangularArbitrageUniswapV3(path2, tokenIn.target, amountIn, minProfit, {
                         nonce: this.nonceManager.getNonce(owner),
                     })
@@ -169,7 +210,7 @@ class ArbitrageurOptimism {
             console.log(`arbitrageTx mined: ${tx.hash}`)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
-            if (errMessage.includes(this.ERROR_NO_PROFIT)) {
+            if (errMessage.includes(this.ERROR_NO_PROFIT) || errMessage.includes("NoProfit")) {
                 // console.log("No Profit")
             } else {
                 throw err
