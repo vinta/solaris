@@ -20,6 +20,8 @@ provider:
     serverSideEncryption: AES256
   logRetentionInDays: 7
   environment:
+    NETWORK_NAME: ${env:NETWORK_NAME}
+    NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
     RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
     OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
     ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
@@ -29,8 +31,8 @@ provider:
 
 functions:
   # https://us-west-1.console.aws.amazon.com/lambda/home?region=us-west-1#/functions/spot-arbitrageur-prod-base?tab=configure
-  base:
-    handler: handlers.base
+  optimism:
+    handler: handlers.optimism
     reservedConcurrency: 1
     maximumRetryAttempts: 0
     events:
