@@ -30,6 +30,7 @@ class ArbitrageurOptimism {
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     ONEINCH_API_KEY = process.env.ONEINCH_API_KEY!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
+    GAS_LIMIT_PER_BLOCK = BigInt(15_000_000)
 
     ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
     ERROR_SWAP_FAIL = "0xb70946b8" // SwapFail()
@@ -65,7 +66,7 @@ class ArbitrageurOptimism {
         )
         const minProfit = parseEther("0.001") // ~= 2 USD
 
-        // await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
+        await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
 
         console.log("arbitrageParameters", {
             tokenIn: tokenIn.target,
@@ -91,6 +92,7 @@ class ArbitrageurOptimism {
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                     return arbitrageur.arbitrageUniswapV3toVelodromeV2(
@@ -102,6 +104,7 @@ class ArbitrageurOptimism {
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                 }),
@@ -115,6 +118,7 @@ class ArbitrageurOptimism {
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                     return arbitrageur.arbitrageVelodromeV2toUniswapV3(
@@ -126,6 +130,7 @@ class ArbitrageurOptimism {
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                 }),
@@ -137,10 +142,12 @@ class ArbitrageurOptimism {
                         minProfit,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                     return arbitrageur.triangularArbitrageUniswapV3(path1, tokenIn.target, amountIn, minProfit, {
                         nonce: this.nonceManager.getNonce(owner),
+                        gasLimit: this.GAS_LIMIT_PER_BLOCK,
                     })
                 }),
                 this.arbitrageTx(owner, async () => {
@@ -151,10 +158,12 @@ class ArbitrageurOptimism {
                         minProfit,
                         {
                             nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                     return arbitrageur.triangularArbitrageUniswapV3(path2, tokenIn.target, amountIn, minProfit, {
                         nonce: this.nonceManager.getNonce(owner),
+                        gasLimit: this.GAS_LIMIT_PER_BLOCK,
                     })
                 }),
             ])
