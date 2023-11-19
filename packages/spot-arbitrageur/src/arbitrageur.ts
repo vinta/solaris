@@ -40,7 +40,6 @@ class ArbitrageurOptimism {
         const startTimestamp = Date.now() / 1000
 
         console.log("config", {
-            RPC_PROVIDER_URL: this.RPC_PROVIDER_URL,
             ARBITRAGEUR_ADDRESS: this.ARBITRAGEUR_ADDRESS,
             TIMEOUT_SECONDS: this.TIMEOUT_SECONDS,
         })
@@ -55,19 +54,24 @@ class ArbitrageurOptimism {
         const tokenIn = IERC20__factory.connect(WETH_ADDRESS, owner)
         const tokenOut = IERC20__factory.connect(USDCe_ADDRESS, owner)
         const amountIn = await tokenIn.balanceOf(owner.address)
-        const path = solidityPacked(
+        const path1 = solidityPacked(
             ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
             [WETH_ADDRESS, 500, USDCe_ADDRESS, 3000, OP_ADDRESS, 3000, WETH_ADDRESS],
+        )
+        const path2 = solidityPacked(
+            ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+            [WETH_ADDRESS, 3000, OP_ADDRESS, 3000, USDCe_ADDRESS, 500, WETH_ADDRESS],
         )
         const minProfit = parseEther("0.001") // ~= 2 USD
 
         await this.approve(owner, WETH_ADDRESS, this.ARBITRAGEUR_ADDRESS, amountIn)
 
-        console.log("arbitrage parameters", {
+        console.log("arbitrageParameters", {
             tokenIn: tokenIn.target,
             tokenOut: tokenOut.target,
             amountIn,
-            path,
+            path1,
+            path2,
             minProfit,
         })
 
@@ -103,7 +107,12 @@ class ArbitrageurOptimism {
                     ),
                 ),
                 this.arbitrageTx(owner, async () => {
-                    return arbitrageur.triangularArbitrageUniswapV3(path, tokenIn.target, amountIn, minProfit, {
+                    return arbitrageur.triangularArbitrageUniswapV3(path1, tokenIn.target, amountIn, minProfit, {
+                        nonce: this.nonceManager.getNonce(owner),
+                    })
+                }),
+                this.arbitrageTx(owner, async () => {
+                    return arbitrageur.triangularArbitrageUniswapV3(path2, tokenIn.target, amountIn, minProfit, {
                         nonce: this.nonceManager.getNonce(owner),
                     })
                 }),
@@ -125,7 +134,8 @@ class ArbitrageurOptimism {
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
 
-        console.log("getOwner", {
+        console.log("owner", {
+            rpcProviderUrl: this.RPC_PROVIDER_URL,
             networkName: network.name,
             networkChainId: network.chainId,
             owner: owner.address,
