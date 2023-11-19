@@ -6,11 +6,11 @@
   "scripts": {
     "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/*.json'",
     "typegen": "npm run typegen:core",
-    "deploy:full": "sls deploy -s prod --verbose",
+    "deploy": "sls deploy -s prod --verbose",
     "deploy:fast": "sls deploy function -s prod --function optimism",
-    "invoke:prod": "sls invoke -s prod --function optimism --log",
+    "invoke": "sls invoke -s prod --function optimism --log",
     "invoke:local": "sls invoke local -s dev --function optimism",
-    "logs": "awslogs get -w --aws-region=us-west-1 /aws/lambda/spot-arbitrageur-prod-optimism --start=\"5m\"",
+    "logs": "awslogs get -w --profile=solaris --aws-region=us-west-1 /aws/lambda/spot-arbitrageur-prod-optimism --start=\"5m\"",
     "clean": "rm -rf .esbuild/ .serverless/ types/"
   },
   "dependencies": {
