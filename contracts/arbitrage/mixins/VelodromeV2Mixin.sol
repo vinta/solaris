@@ -21,10 +21,10 @@ interface IVelodromeV2Router {
 }
 
 abstract contract VelodromeV2Mixin {
-    // https://aerodrome.finance/security#contracts
+    // https://velodrome.finance/security#contracts
     // https://github.com/velodrome-finance/contracts/blob/main/contracts/Router.sol
-    address public constant VELODROME_V2_ROUTER = address(0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43);
-    address public constant VELODROME_V2_POOL_FACTORY = address(0x420DD381b31aEf6683db6B902084cB0FFECe40Da);
+    address public constant VELODROME_V2_ROUTER = address(0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858);
+    address public constant VELODROME_V2_POOL_FACTORY = address(0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a);
 
     // internal
 
