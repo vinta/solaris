@@ -1,12 +1,4 @@
-import {
-    ContractTransactionResponse,
-    HDNodeWallet,
-    JsonRpcProvider,
-    MaxUint256,
-    Network,
-    parseEther,
-    solidityPacked,
-} from "ethers"
+import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, MaxUint256, Network, parseEther } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { Arbitrageur, Arbitrageur__factory, IERC20__factory } from "../types"
@@ -56,7 +48,7 @@ class ArbitrageurOptimism {
         // const tokenIn = IERC20__factory.connect(TOKENS.WETH, owner)
         // const amountIn = await tokenIn.balanceOf(owner.address)
         const amountIn = parseEther("1")
-        const minProfit = parseEther("0.003") // 6 USD
+        const minProfit = parseEther("0.002") // 4 USD
 
         await this.approve(this.owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
 
