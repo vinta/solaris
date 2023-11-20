@@ -56,7 +56,7 @@ class ArbitrageurOptimism {
         // const tokenIn = IERC20__factory.connect(TOKENS.WETH, owner)
         // const amountIn = await tokenIn.balanceOf(owner.address)
         const amountIn = parseEther("1")
-        const minProfit = parseEther("0.002") // 4 USD
+        const minProfit = parseEther("0.003") // 6 USD
 
         await this.approve(this.owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
 
