@@ -41,3 +41,8 @@ functions:
 plugins:
   - serverless-deployment-bucket
   - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
