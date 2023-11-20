@@ -60,14 +60,14 @@ class ArbitrageurOptimism {
 
         await this.approve(this.owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
 
-        // console.log("arbitrageParameters", {
-        //     tokenIn: tokenIn.target,
-        //     tokenOut: tokenOut.target,
-        //     amountIn,
-        //     path1,
-        //     path2,
-        //     minProfit,
-        // })
+        console.log("arbitrageParameters", {
+            // tokenIn: tokenIn.target,
+            // tokenOut: tokenOut.target,
+            amountIn,
+            // path1,
+            // path2,
+            minProfit,
+        })
 
         let i = 1
         while (true) {
