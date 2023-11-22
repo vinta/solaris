@@ -27,8 +27,8 @@ class ArbitrageurOptimism {
         const arbitrageur = Arbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
         const amountIn = parseEther("1")
-        const minProfitForStaticCall = parseEther("0.005") // 10 USD
-        const minProfit = parseEther("0.001") // 2 USD
+        const minProfitForStaticCall = parseEther("0.004") // 8 USD
+        const minProfit = parseEther("0.0005") // 1 USD
 
         // await this.approve(owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
 
