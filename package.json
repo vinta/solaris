@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "forge build",
-    "test": "forge test",
+    "test": "forge test -vvv",
     "coverage": "forge coverage",
     "snapshot": "forge snapshot",
     "snapshot:check": "forge snapshot --check --tolerance 5",

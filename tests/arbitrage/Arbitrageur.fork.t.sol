@@ -22,7 +22,7 @@ contract ArbitrageurForkTest is BaseTest {
     // public
 
     function setUp() public {
-        vm.createSelectFork(vm.rpcUrl("optimism"));
+        vm.createSelectFork(vm.rpcUrl("optimism"), 112538453);
         console.log(block.number);
 
         vm.prank(owner);
@@ -32,7 +32,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageUniswapV3toVelodromeV2
 
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
-        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 1000000e6);
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -55,7 +55,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageVelodromeV2toUniswapV3
 
     function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
-        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 1000000e6);
+        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -137,7 +137,7 @@ contract ArbitrageurForkTest is BaseTest {
     // triangularArbitrageUniswapV3
 
     function testFork_triangularArbitrageUniswapV3_Success() public {
-        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 1000000e6);
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));

@@ -6,9 +6,9 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import "forge-std/Test.sol";
 
 contract BaseTest is Test {
-    function test_excludeFromCoverageReport() public virtual {
-        // workaround: https://github.com/foundry-rs/foundry/issues/2988#issuecomment-1437784542
-    }
+    // public
+
+    function test_excludeFromCoverage() public virtual {}
 
     // internal
 
