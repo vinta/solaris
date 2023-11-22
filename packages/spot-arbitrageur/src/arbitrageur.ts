@@ -15,7 +15,8 @@ class ArbitrageurOptimism {
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
     GAS_LIMIT_PER_BLOCK = BigInt(15_000_000)
 
-    ERROR_NO_PROFIT = "0xe39aafee" // NoProfit()
+    ERROR_TOO_LITTLE_RECEIVED = "Too little received"
+    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
 
     nonceManager = new NonceManager()
 
@@ -202,7 +203,10 @@ class ArbitrageurOptimism {
             console.log(`arbitrageTx mined: ${tx.hash}`)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
-            if (errMessage.includes("NoProfit") || errMessage.includes(this.ERROR_NO_PROFIT)) {
+            if (
+                errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
+                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT)
+            ) {
                 // console.log("No Profit")
             } else {
                 throw err
