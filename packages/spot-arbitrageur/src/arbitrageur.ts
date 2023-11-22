@@ -4,7 +4,7 @@ import { Handler } from "aws-lambda"
 import { Arbitrageur__factory, IERC20__factory } from "../types"
 import { NonceManager } from "./nonce-manager"
 import { TOKENS } from "./constants"
-import { wrapSentryHandlerIfNeeded } from "./utils"
+// import { wrapSentryHandlerIfNeeded } from "./utils"
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -237,4 +237,5 @@ const handler: Handler = async (event, context) => {
     }
 }
 
-export const handlerOptimism = wrapSentryHandlerIfNeeded(handler)
+// export const handlerOptimism = wrapSentryHandlerIfNeeded(handler)
+export const handlerOptimism = handler
