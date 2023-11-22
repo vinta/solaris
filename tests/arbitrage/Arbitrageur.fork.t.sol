@@ -6,8 +6,8 @@ import { console } from "forge-std/console.sol";
 
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { IUniswapV3SwapRouter02 } from "../../contracts/arbitrage/mixins/UniswapV3Mixin.sol";
-import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2Mixin.sol";
+import { IUniswapV3SwapRouter } from "../../contracts/arbitrage/mixins/UniswapV3SwapRouterMixin.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2RouterMixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
@@ -117,7 +117,7 @@ contract ArbitrageurForkTest is BaseTest {
     //         uint256 amountIn = 1 ether;
     //         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
-    //         vm.expectRevert(abi.encodeWithSelector(OneInchV5Mixin.SwapFail.selector));
+    //         vm.expectRevert(abi.encodeWithSelector(OneInchRouterV5Mixin.SwapFail.selector));
     //         vm.prank(owner);
     //         arbitrageur.arbitrageOneInchToUniswapV3(
     //             weth,
@@ -200,17 +200,18 @@ contract ArbitrageurForkTest is BaseTest {
     // internal
 
     function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
-        address UNISWAP_V3_SWAP_ROUTER_02 = arbitrageur.UNISWAP_V3_SWAP_ROUTER_02();
+        address UNISWAP_V3_SWAP_ROUTER = arbitrageur.UNISWAP_V3_SWAP_ROUTER();
         deal(tokenIn, wallet, amountIn);
 
         vm.startPrank(trader);
-        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
-        IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-            IUniswapV3SwapRouter02.ExactInputSingleParams({
+        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
+        IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInputSingle(
+            IUniswapV3SwapRouter.ExactInputSingleParams({
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: 500,
                 recipient: address(this),
+                deadline: block.timestamp,
                 amountIn: amountIn,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
