@@ -24,16 +24,22 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnUniswapV3SwapRouter(tokenIn, tokenOut, amountIn, 0, uniswapV3Fee);
-        uint256 amountOut = _swapOnVelodromeV2Router(
+        uint256 amountOutFromFirst = _swapOnUniswapV3SwapRouter(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            0,
+            uniswapV3Fee,
+            address(this)
+        );
+        _swapOnVelodromeV2Router(
             tokenOut,
             tokenIn,
             amountOutFromFirst,
             amountIn + minProfit,
-            velodromeV2Stable
+            velodromeV2Stable,
+            msg.sender // transfer amountOut directly to msg.sender
         );
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
     function arbitrageVelodromeV2toUniswapV3(
@@ -46,16 +52,22 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnVelodromeV2Router(tokenIn, tokenOut, amountIn, 0, velodromeV2Stable);
-        uint256 amountOut = _swapOnUniswapV3SwapRouter(
+        uint256 amountOutFromFirst = _swapOnVelodromeV2Router(
+            tokenIn,
+            tokenOut,
+            amountIn,
+            0,
+            velodromeV2Stable,
+            address(this)
+        );
+        _swapOnUniswapV3SwapRouter(
             tokenOut,
             tokenIn,
             amountOutFromFirst,
             amountIn + minProfit,
-            uniswapV3Fee
+            uniswapV3Fee,
+            msg.sender // transfer amountOut directly to msg.sender
         );
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
     function arbitrageOneInchToUniswapV3(
@@ -69,15 +81,14 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
         uint256 amountOutFromFirst = _swapOnOneInchRouterV5(tokenIn, tokenOut, amountIn, oneInchData);
-        uint256 amountOut = _swapOnUniswapV3SwapRouter(
+        _swapOnUniswapV3SwapRouter(
             tokenOut,
             tokenIn,
             amountOutFromFirst,
             amountIn + minProfit,
-            uniswapV3Fee
+            uniswapV3Fee,
+            msg.sender // transfer amountOut directly to msg.sender
         );
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 
     function triangularArbitrageUniswapV3(
@@ -89,16 +100,15 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
 
-        IUniswapV3SwapRouter.ExactInputParams memory params = IUniswapV3SwapRouter.ExactInputParams({
-            path: path,
-            recipient: address(this),
-            deadline: block.timestamp,
-            amountIn: amountIn,
-            amountOutMinimum: amountIn + minProfit
-        });
-        uint256 amountOut = IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInput(params);
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
+        IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInput(
+            IUniswapV3SwapRouter.ExactInputParams({
+                path: path,
+                recipient: msg.sender, // transfer amountOut directly to msg.sender
+                deadline: block.timestamp,
+                amountIn: amountIn,
+                amountOutMinimum: amountIn + minProfit
+            })
+        );
     }
 
     function triangularArbitrageVelodromeV2(address[] memory tokens, uint256 amountIn, uint256 minProfit) external {
@@ -116,15 +126,12 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
                 factory: VELODROME_V2_POOL_FACTORY
             });
         }
-        uint256[] memory amounts = IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
+        IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
             amountIn,
             amountIn + minProfit,
             routes,
-            address(this),
+            msg.sender, // transfer amountOut directly to msg.sender
             block.timestamp
         );
-        uint256 amountOut = amounts[amounts.length - 1];
-
-        IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
 }

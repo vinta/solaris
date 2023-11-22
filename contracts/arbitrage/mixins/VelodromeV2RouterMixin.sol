@@ -35,7 +35,8 @@ abstract contract VelodromeV2RouterMixin {
         address tokenOut,
         uint256 amountIn,
         uint256 amountOutMin,
-        bool stable
+        bool stable,
+        address to
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
 
@@ -50,7 +51,7 @@ abstract contract VelodromeV2RouterMixin {
             amountIn,
             amountOutMin,
             routes,
-            address(this),
+            to,
             block.timestamp
         );
 

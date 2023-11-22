@@ -40,7 +40,8 @@ abstract contract UniswapV3SwapRouterMixin {
         address tokenOut,
         uint256 amountIn,
         uint256 amountOutMinimum,
-        uint24 fee
+        uint24 fee,
+        address recipient
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
 
@@ -50,7 +51,7 @@ abstract contract UniswapV3SwapRouterMixin {
                     tokenIn: tokenIn,
                     tokenOut: tokenOut,
                     fee: fee,
-                    recipient: address(this),
+                    recipient: recipient,
                     deadline: block.timestamp,
                     amountIn: amountIn,
                     amountOutMinimum: amountOutMinimum,
