@@ -15,12 +15,4 @@ abstract contract BaseArbitrageur is Ownable, IErrors {
     function withdrawAll(address token) external onlyOwner {
         IERC20(token).safeTransfer(owner(), IERC20(token).balanceOf(address(this)));
     }
-
-    // internal
-
-    function _requireProfit(uint256 amountIn, uint256 amountOut, uint256 minProfit) internal pure {
-        if (amountOut <= amountIn + minProfit) {
-            revert NoProfit();
-        }
-    }
 }

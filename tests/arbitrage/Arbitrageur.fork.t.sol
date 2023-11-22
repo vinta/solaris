@@ -6,8 +6,8 @@ import { console } from "forge-std/console.sol";
 
 import { Arbitrageur } from "../../contracts/arbitrage/Arbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { IUniswapV3SwapRouter02 } from "../../contracts/arbitrage/mixins/UniswapV3Mixin.sol";
-import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2Mixin.sol";
+import { IUniswapV3SwapRouter } from "../../contracts/arbitrage/mixins/UniswapV3SwapRouterMixin.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2RouterMixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
@@ -32,7 +32,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageUniswapV3toVelodromeV2
 
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
-        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 100000e6);
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 1000000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -46,7 +46,7 @@ contract ArbitrageurForkTest is BaseTest {
     function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         vm.prank(owner);
         arbitrageur.arbitrageUniswapV3toVelodromeV2(WETH, USDCe, 1 ether, 0, 500, false);
     }
@@ -54,7 +54,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageVelodromeV2toUniswapV3
 
     function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
-        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 100000e6);
+        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 1000000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -68,7 +68,7 @@ contract ArbitrageurForkTest is BaseTest {
     function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(WETH, USDCe, 1 ether, 0, 500, false);
     }
@@ -117,7 +117,7 @@ contract ArbitrageurForkTest is BaseTest {
     //         uint256 amountIn = 1 ether;
     //         _dealAndApprove(weth, amountIn, owner, address(arbitrageur));
 
-    //         vm.expectRevert(abi.encodeWithSelector(OneInchV5Mixin.SwapFail.selector));
+    //         vm.expectRevert(abi.encodeWithSelector(OneInchRouterV5Mixin.SwapFail.selector));
     //         vm.prank(owner);
     //         arbitrageur.arbitrageOneInchToUniswapV3(
     //             weth,
@@ -153,7 +153,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         bytes memory path = abi.encodePacked(WETH, uint24(500), USDCe, uint24(3000), OP, uint24(3000), WETH);
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
         arbitrageur.triangularArbitrageUniswapV3(path, WETH, 1 ether, 0);
     }
@@ -192,7 +192,7 @@ contract ArbitrageurForkTest is BaseTest {
         tokens[4] = USDCe;
         tokens[5] = WETH;
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         vm.prank(owner);
         arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
     }
@@ -200,17 +200,18 @@ contract ArbitrageurForkTest is BaseTest {
     // internal
 
     function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
-        address UNISWAP_V3_SWAP_ROUTER_02 = arbitrageur.UNISWAP_V3_SWAP_ROUTER_02();
+        address UNISWAP_V3_SWAP_ROUTER = arbitrageur.UNISWAP_V3_SWAP_ROUTER();
         deal(tokenIn, wallet, amountIn);
 
         vm.startPrank(trader);
-        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
-        IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
-            IUniswapV3SwapRouter02.ExactInputSingleParams({
+        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
+        IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInputSingle(
+            IUniswapV3SwapRouter.ExactInputSingleParams({
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: 500,
                 recipient: address(this),
+                deadline: block.timestamp,
                 amountIn: amountIn,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
