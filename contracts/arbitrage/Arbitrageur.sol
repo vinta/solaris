@@ -24,9 +24,14 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnUniswapV3SwapRouter(tokenIn, tokenOut, amountIn, uniswapV3Fee);
-        uint256 amountOut = _swapOnVelodromeV2Router(tokenOut, tokenIn, amountOutFromFirst, velodromeV2Stable);
-        _requireProfit(amountIn, amountOut, minProfit);
+        uint256 amountOutFromFirst = _swapOnUniswapV3SwapRouter(tokenIn, tokenOut, amountIn, 0, uniswapV3Fee);
+        uint256 amountOut = _swapOnVelodromeV2Router(
+            tokenOut,
+            tokenIn,
+            amountOutFromFirst,
+            amountIn + minProfit,
+            velodromeV2Stable
+        );
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
@@ -41,9 +46,14 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
     ) external {
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
-        uint256 amountOutFromFirst = _swapOnVelodromeV2Router(tokenIn, tokenOut, amountIn, velodromeV2Stable);
-        uint256 amountOut = _swapOnUniswapV3SwapRouter(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
-        _requireProfit(amountIn, amountOut, minProfit);
+        uint256 amountOutFromFirst = _swapOnVelodromeV2Router(tokenIn, tokenOut, amountIn, 0, velodromeV2Stable);
+        uint256 amountOut = _swapOnUniswapV3SwapRouter(
+            tokenOut,
+            tokenIn,
+            amountOutFromFirst,
+            amountIn + minProfit,
+            uniswapV3Fee
+        );
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
@@ -59,8 +69,13 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
         uint256 amountOutFromFirst = _swapOnOneInchRouterV5(tokenIn, tokenOut, amountIn, oneInchData);
-        uint256 amountOut = _swapOnUniswapV3SwapRouter(tokenOut, tokenIn, amountOutFromFirst, uniswapV3Fee);
-        _requireProfit(amountIn, amountOut, minProfit);
+        uint256 amountOut = _swapOnUniswapV3SwapRouter(
+            tokenOut,
+            tokenIn,
+            amountOutFromFirst,
+            amountIn + minProfit,
+            uniswapV3Fee
+        );
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
@@ -79,10 +94,9 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
             recipient: address(this),
             deadline: block.timestamp,
             amountIn: amountIn,
-            amountOutMinimum: 0 // amountOutMinimum: amountIn + minProfit
+            amountOutMinimum: amountIn + minProfit
         });
         uint256 amountOut = IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInput(params);
-        _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }
@@ -104,13 +118,12 @@ contract Arbitrageur is BaseArbitrageur, OneInchRouterV5Mixin, UniswapV3SwapRout
         }
         uint256[] memory amounts = IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
             amountIn,
-            0,
+            amountIn + minProfit,
             routes,
             address(this),
             block.timestamp
         );
         uint256 amountOut = amounts[amounts.length - 1];
-        _requireProfit(amountIn, amountOut, minProfit);
 
         IERC20(tokenIn).safeTransfer(msg.sender, amountOut);
     }

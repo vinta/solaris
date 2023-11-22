@@ -32,7 +32,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageUniswapV3toVelodromeV2
 
     function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
-        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 100000e6);
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 1000000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -46,7 +46,7 @@ contract ArbitrageurForkTest is BaseTest {
     function testFork_arbitrageUniswapV3toVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         vm.prank(owner);
         arbitrageur.arbitrageUniswapV3toVelodromeV2(WETH, USDCe, 1 ether, 0, 500, false);
     }
@@ -54,7 +54,7 @@ contract ArbitrageurForkTest is BaseTest {
     // arbitrageVelodromeV2toUniswapV3
 
     function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
-        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 100000e6);
+        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 1000000e6);
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
@@ -68,7 +68,7 @@ contract ArbitrageurForkTest is BaseTest {
     function testFork_arbitrageVelodromeV2toUniswapV3_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(WETH, USDCe, 1 ether, 0, 500, false);
     }
@@ -153,7 +153,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         bytes memory path = abi.encodePacked(WETH, uint24(500), USDCe, uint24(3000), OP, uint24(3000), WETH);
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
         arbitrageur.triangularArbitrageUniswapV3(path, WETH, 1 ether, 0);
     }
@@ -192,7 +192,7 @@ contract ArbitrageurForkTest is BaseTest {
         tokens[4] = USDCe;
         tokens[5] = WETH;
 
-        vm.expectRevert(abi.encodeWithSelector(IErrors.NoProfit.selector));
+        vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         vm.prank(owner);
         arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
     }
