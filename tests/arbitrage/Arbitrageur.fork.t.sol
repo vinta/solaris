@@ -36,6 +36,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
+        assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
 
         vm.prank(owner);
         arbitrageur.arbitrageUniswapV3toVelodromeV2(WETH, USDCe, amountIn, 0, 500, false);
@@ -58,6 +59,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
+        assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
 
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(WETH, USDCe, amountIn, 0, 500, false);
@@ -139,6 +141,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
+        assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
 
         bytes memory path = abi.encodePacked(WETH, uint24(500), USDCe, uint24(3000), OP, uint24(3000), WETH);
 
@@ -165,6 +168,7 @@ contract ArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 1 ether;
         _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
+        assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
 
         // WETH -> USDCe -> OP -> WETH
         address[] memory tokens = new address[](6);
