@@ -32,8 +32,10 @@ class ArbitrageurOptimism {
 
         // await this.approve(owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
 
-        console.log("arbitrageParameters", {
+        console.log("start", {
+            rpcProviderUrl: this.RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
+            owner: owner.address,
             amountIn,
             minProfit,
         })
@@ -168,14 +170,6 @@ class ArbitrageurOptimism {
 
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
-
-        console.log("owner", {
-            rpcProviderUrl: this.RPC_PROVIDER_URL,
-            networkName: network.name,
-            networkChainId: network.chainId,
-            owner: owner.address,
-        })
-
         await this.nonceManager.register(owner)
 
         return owner
@@ -191,7 +185,7 @@ class ArbitrageurOptimism {
                     nonce: this.nonceManager.getNonce(signer),
                 }),
             )
-            console.log(`approveTx: ${tx.hash}`)
+            // console.log(`approveTx: ${tx.hash}`)
             await tx.wait()
         }
     }
@@ -199,9 +193,9 @@ class ArbitrageurOptimism {
     private async arbitrageTx(owner: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
         try {
             const tx = await this.sendTx(owner, sendTxFn)
-            console.log(`arbitrageTx sent: ${tx.hash}`)
+            // console.log(`arbitrageTx sent: ${tx.hash}`)
             await tx.wait()
-            console.log(`arbitrageTx mined: ${tx.hash}`)
+            // console.log(`arbitrageTx mined: ${tx.hash}`)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
