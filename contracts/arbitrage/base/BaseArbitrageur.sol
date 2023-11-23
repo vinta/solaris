@@ -12,6 +12,12 @@ abstract contract BaseArbitrageur is Ownable, IErrors {
 
     // external
 
+    function approveAll(address token, address[] memory spenders, uint256 amount) external onlyOwner {
+        for (uint256 i = 0; i < spenders.length; i++) {
+            IERC20(token).approve(spenders[i], amount);
+        }
+    }
+
     function withdrawAll(address token) external onlyOwner {
         IERC20(token).safeTransfer(owner(), IERC20(token).balanceOf(address(this)));
     }

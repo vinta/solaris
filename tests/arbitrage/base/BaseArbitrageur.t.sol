@@ -2,7 +2,6 @@
 pragma solidity 0.8.19;
 
 import { ERC20 } from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import { BaseArbitrageur } from "../../../contracts/arbitrage/base/BaseArbitrageur.sol";
 
@@ -15,6 +14,8 @@ contract BaseArbitrageurTest is BaseTest {
     ERC20 token = new ERC20("Test Token", "TEST");
     address owner = makeAddr("owner");
     address nonOwner = makeAddr("nonOwner");
+    address spender1 = makeAddr("spender1");
+    address spender2 = makeAddr("spender2");
 
     // public
 
@@ -25,6 +26,28 @@ contract BaseArbitrageurTest is BaseTest {
 
     function test_owner_Success() public {
         assertEq(owner, arbitrageur.owner());
+    }
+
+    function test_approveAll_Success() public {
+        address[] memory spenders = new address[](2);
+        spenders[0] = spender1;
+        spenders[1] = spender2;
+
+        vm.prank(owner);
+        arbitrageur.approveAll(address(token), spenders, 1 ether);
+
+        assertEq(token.allowance(address(arbitrageur), spender1), 1 ether);
+        assertEq(token.allowance(address(arbitrageur), spender2), 1 ether);
+    }
+
+    function test_approveAll_RevertIf_NotOwner() public {
+        address[] memory spenders = new address[](2);
+        spenders[0] = spender1;
+        spenders[1] = spender2;
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(nonOwner);
+        arbitrageur.approveAll(address(token), spenders, 1 ether);
     }
 
     function test_withdrawAll_Success() public {
