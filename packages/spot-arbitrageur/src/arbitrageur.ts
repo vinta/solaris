@@ -38,9 +38,9 @@ class ArbitrageurOptimism {
             minProfit,
         })
 
-        let i = 1
+        let i = 0
         while (true) {
-            console.log(`arbitrage start: ${i++}`)
+            i++
 
             await Promise.all([
                 // WETH/USDCe
@@ -154,6 +154,7 @@ class ArbitrageurOptimism {
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
+                console.log(`arbitrage end: ${i}`)
                 return
             }
         }
