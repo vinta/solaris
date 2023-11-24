@@ -30,8 +30,6 @@ class ArbitrageurOptimism {
         const minProfitForStaticCall = parseEther("0.004") // 8 USD
         const minProfit = parseEther("0.0005") // 1 USD
 
-        // await this.approve(owner, TOKENS.WETH, this.ARBITRAGEUR_ADDRESS, amountIn)
-
         console.log("start", {
             rpcProviderUrl: this.RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
@@ -173,21 +171,6 @@ class ArbitrageurOptimism {
         await this.nonceManager.register(owner)
 
         return owner
-    }
-
-    private async approve(signer: HDNodeWallet, tokenAddress: string, spenderAddress: string, amount: bigint) {
-        const token = IERC20__factory.connect(tokenAddress, signer)
-        const allowance = await token.allowance(signer.address, spenderAddress)
-
-        if (allowance < amount) {
-            const tx = await this.sendTx(signer, async () =>
-                token.approve(spenderAddress, MaxUint256, {
-                    nonce: this.nonceManager.getNonce(signer),
-                }),
-            )
-            // console.log(`approveTx: ${tx.hash}`)
-            await tx.wait()
-        }
     }
 
     private async arbitrageTx(owner: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
