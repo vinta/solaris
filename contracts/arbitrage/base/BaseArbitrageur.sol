@@ -3,13 +3,8 @@ pragma solidity 0.8.19;
 
 import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IErrors } from "../interfaces/IErrors.sol";
-
-abstract contract BaseArbitrageur is Ownable, IErrors {
-    using SafeERC20 for IERC20;
-
+abstract contract BaseArbitrageur is Ownable {
     // external
 
     function approveAll(address token, address[] memory spenders, uint256 amount) external onlyOwner {
@@ -19,6 +14,6 @@ abstract contract BaseArbitrageur is Ownable, IErrors {
     }
 
     function withdrawAll(address token) external onlyOwner {
-        IERC20(token).safeTransfer(owner(), IERC20(token).balanceOf(address(this)));
+        IERC20(token).transfer(owner(), IERC20(token).balanceOf(address(this)));
     }
 }
