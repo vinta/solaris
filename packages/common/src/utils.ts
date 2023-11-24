@@ -1,5 +1,5 @@
-import { Handler } from "aws-lambda"
 import * as Sentry from "@sentry/serverless"
+import { Handler } from "aws-lambda"
 
 export function wrapSentryHandlerIfNeeded(handler: Handler): Handler {
     const SENTRY_DSN = process.env.SENTRY_DSN

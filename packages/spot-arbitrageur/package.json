@@ -14,13 +14,10 @@
     "clean": "rm -rf .esbuild/ .serverless/ types/"
   },
   "dependencies": {
-    "@sentry/serverless": "7.80.1",
-    "async-mutex": "0.4.0",
-    "ethers": "6.8.0"
+    "@solaris/common": "*"
   },
   "devDependencies": {
     "@typechain/ethers-v6": "0.5.1",
-    "@types/aws-lambda": "8.10.125",
     "esbuild": "0.19.5",
     "serverless": "3.35.2",
     "serverless-deployment-bucket": "1.6.0",

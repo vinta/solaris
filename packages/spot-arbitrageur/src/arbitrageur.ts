@@ -1,10 +1,10 @@
-import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, MaxUint256, Network, parseEther } from "ethers"
+import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network, parseEther } from "ethers"
 import { Handler } from "aws-lambda"
 
-import { Arbitrageur__factory, IERC20__factory } from "../types"
-import { NonceManager } from "./nonce-manager"
-import { TOKENS } from "./constants"
-// import { wrapSentryHandlerIfNeeded } from "./utils"
+import { TOKENS } from "@solaris/common/src/constants"
+import { NonceManager } from "@solaris/common/src/nonce-manager"
+
+import { Arbitrageur__factory } from "../types"
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
