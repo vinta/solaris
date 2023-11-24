@@ -3,6 +3,7 @@ import { Handler } from "aws-lambda"
 
 import { TOKENS } from "@solaris/common/src/constants"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
+import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { Arbitrageur__factory } from "../types"
 
@@ -219,5 +220,4 @@ const handler: Handler = async (event, context) => {
     }
 }
 
-// export const handlerOptimism = wrapSentryHandlerIfNeeded(handler)
-export const handlerOptimism = handler
+export const handlerOptimism = wrapSentryHandlerIfNeeded(handler)
