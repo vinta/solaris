@@ -5,7 +5,7 @@ import { TOKENS } from "@solaris/common/src/constants"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { Arbitrageur__factory } from "../types"
+import { ArbitrageurLite__factory } from "../types"
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -25,7 +25,7 @@ class ArbitrageurOptimism {
         const startTimestamp = Date.now() / 1000
 
         const owner = await this.getOwner()
-        const arbitrageur = Arbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
+        const arbitrageur = ArbitrageurLite__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
         const amountIn = parseEther("1")
         const minProfitForStaticCall = parseEther("0.004") // 8 USD
