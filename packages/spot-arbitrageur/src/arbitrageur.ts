@@ -28,7 +28,7 @@ class ArbitrageurOptimism {
         const arbitrageur = ArbitrageurLite__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
         const amountIn = parseEther("1")
-        const minProfitForStaticCall = parseEther("0.004") // 8 USD
+        const minProfitForStaticCall = parseEther("0.001") // 2 USD
         const minProfit = parseEther("0.0005") // 1 USD
 
         console.log("start", {
