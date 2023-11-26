@@ -36,6 +36,7 @@ class ArbitrageurOptimism {
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: owner.address,
             amountIn,
+            minProfitForStaticCall,
             minProfit,
         })
 
