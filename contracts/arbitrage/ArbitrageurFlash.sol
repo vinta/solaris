@@ -7,12 +7,22 @@ import { IErrors } from "./interfaces/IErrors.sol";
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { UniswapV3FlashSwapMixin } from "./mixins/UniswapV3FlashSwapMixin.sol";
 import { VelodromeV2RouterMixin } from "./mixins/VelodromeV2RouterMixin.sol";
-import { console } from "forge-std/console.sol";
+import { WOOFiV2RouterMixin } from "./mixins/WOOFiV2RouterMixin.sol";
+import { MummyRouterMixin } from "./mixins/MummyRouterMixin.sol";
 
-contract ArbitrageurFlash is IErrors, BaseArbitrageur, UniswapV3FlashSwapMixin, VelodromeV2RouterMixin {
+contract ArbitrageurFlash is
+    IErrors,
+    BaseArbitrageur,
+    UniswapV3FlashSwapMixin,
+    VelodromeV2RouterMixin,
+    WOOFiV2RouterMixin,
+    MummyRouterMixin
+{
     // uint8
     enum ArbitrageFunc {
-        VelodromeV2Router // 0
+        VelodromeV2Router, // 0
+        WOOFiV2Router, // 1
+        MummyRouter // 2
     }
 
     struct SwapCallbackData {
@@ -66,7 +76,23 @@ contract ArbitrageurFlash is IErrors, BaseArbitrageur, UniswapV3FlashSwapMixin, 
                 amountOutFromFirst,
                 decoded.amountIn + decoded.minProfit,
                 false,
-                address(this) // transfer amountOut directly to msg.sender
+                address(this)
+            );
+        } else if (decoded.secondArbitrageFunc == ArbitrageFunc.WOOFiV2Router) {
+            amountOut = _swapOnWOOFiV2Router(
+                decoded.tokenOut,
+                decoded.tokenIn,
+                amountOutFromFirst,
+                decoded.amountIn + decoded.minProfit,
+                address(this)
+            );
+        } else if (decoded.secondArbitrageFunc == ArbitrageFunc.MummyRouter) {
+            amountOut = _swapOnMummyRouter(
+                decoded.tokenOut,
+                decoded.tokenIn,
+                amountOutFromFirst,
+                decoded.amountIn + decoded.minProfit,
+                address(this)
             );
         } else {
             revert InvalidBranch();

@@ -32,9 +32,9 @@ contract ArbitrageurFlashForkTest is BaseTest {
         arbitrageur = new ArbitrageurFlash();
     }
 
-    // arbitrageUniswapV3FlashSwap
+    // VelodromeV2Router
 
-    function testFork_arbitrageUniswapV3FlashSwap() public {
+    function testFork_VelodromeV2Router() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
@@ -51,7 +51,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
     }
 
-    function testFork_arbitrageUniswapV3FlashSwap_2() public {
+    function testFork_VelodromeV2Router_2() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 4000e6;
@@ -68,26 +68,41 @@ contract ArbitrageurFlashForkTest is BaseTest {
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
     }
 
-    // function testFork_arbitrageUniswapV3toVelodromeV2() public {
-    //     // _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
+    // WOOFiV2Router
 
-    //     // uint256 amountIn = 1 ether;
-    //     // _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
-    //     // assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
+    function testFork_WOOFiV2Router() public {
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
-    //     deal(WETH, address(arbitrageur), 1 ether);
+        uint256 amountIn = 2 ether;
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3FlashSwap(
+            UNISWAP_V3_POOL,
+            WETH,
+            USDCe,
+            amountIn,
+            minProfit,
+            ArbitrageurFlash.ArbitrageFunc.WOOFiV2Router
+        );
 
-    //     ArbitrageurFlash.FlashParams memory params = ArbitrageurFlash.FlashParams({
-    //         token0: WETH,
-    //         token1: USDCe,
-    //         fee1: 500,
-    //         amount0: 10 ether,
-    //         amount1: 0
-    //     });
+        assertEq(IERC20(WETH).balanceOf(address(owner)), 17026219616002745);
+    }
 
-    //     vm.prank(owner);
-    //     arbitrageur.arbitrageFlash(params);
+    // MummyRouter
 
-    //     // assertEq(IERC20(WETH).balanceOf(address(owner)) > amountIn, true);
-    // }
+    function testFork_MummyRouter() public {
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
+
+        uint256 amountIn = 2 ether;
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3FlashSwap(
+            UNISWAP_V3_POOL,
+            WETH,
+            USDCe,
+            amountIn,
+            minProfit,
+            ArbitrageurFlash.ArbitrageFunc.MummyRouter
+        );
+
+        assertEq(IERC20(WETH).balanceOf(address(owner)), 12111809400000000);
+    }
 }

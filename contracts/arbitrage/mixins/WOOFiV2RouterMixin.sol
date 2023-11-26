@@ -26,11 +26,18 @@ abstract contract WOOFiV2RouterMixin {
         address tokenOut,
         uint256 amountIn,
         uint256 amountOutMinimum,
-        address payable recipient
+        address recipient
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(WOOFI_V2_ROUTER, amountIn);
 
         return
-            IWOOFiV2Router(WOOFI_V2_ROUTER).swap(tokenIn, tokenOut, amountIn, amountOutMinimum, recipient, recipient);
+            IWOOFiV2Router(WOOFI_V2_ROUTER).swap(
+                tokenIn,
+                tokenOut,
+                amountIn,
+                amountOutMinimum,
+                payable(recipient),
+                recipient
+            );
     }
 }
