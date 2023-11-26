@@ -7,9 +7,10 @@ interface IMummyRouter {
     function swap(address[] memory _path, uint256 _amountIn, uint256 _minOut, address _receiver) external;
 }
 
+// forked GMX
 abstract contract MummyRouterMixin {
-    // https://learn.woo.org/v/woofi-dev-docs/guides/integrate-woofi-as-liquidity-source#integrating-woorouterv2.sol
-    // https://github.com/woonetwork/WooPoolV2/blob/main/contracts/WooRouterV2.sol
+    // https://docs.mummy.finance/contracts
+    // https://github.com/mummy-finance/mummy-contracts/blob/master/contracts/core/Router.sol
     address constant MUMMY_ROUTER = 0x68d1CA32Aee9a73534429D8376743Bf222ff1870;
 
     // internal
