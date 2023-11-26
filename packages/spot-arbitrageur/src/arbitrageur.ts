@@ -159,12 +159,8 @@ class ArbitrageurOptimism {
 }
 
 const handler: Handler = async (event, context) => {
-    const arbitrageurOptimism = new ArbitrageurOptimism()
-    await arbitrageurOptimism.arbitrage()
-
-    return {
-        success: true,
-    }
+    const service = new ArbitrageurOptimism()
+    await service.arbitrage()
 }
 
-export const handlerOptimism = wrapSentryHandlerIfNeeded(handler)
+export const optimism = wrapSentryHandlerIfNeeded(handler)
