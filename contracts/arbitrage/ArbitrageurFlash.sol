@@ -3,12 +3,18 @@ pragma solidity 0.8.19;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+import { IErrors } from "./interfaces/IErrors.sol";
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { UniswapV3FlashSwapMixin } from "./mixins/UniswapV3FlashSwapMixin.sol";
 import { VelodromeV2RouterMixin } from "./mixins/VelodromeV2RouterMixin.sol";
 import { console } from "forge-std/console.sol";
 
-contract ArbitrageurFlash is BaseArbitrageur, UniswapV3FlashSwapMixin, VelodromeV2RouterMixin {
+contract ArbitrageurFlash is IErrors, BaseArbitrageur, UniswapV3FlashSwapMixin, VelodromeV2RouterMixin {
+    // uint8
+    enum ArbitrageFunc {
+        VelodromeV2Router // 0
+    }
+
     struct SwapCallbackData {
         address caller;
         address pool;
@@ -16,55 +22,60 @@ contract ArbitrageurFlash is BaseArbitrageur, UniswapV3FlashSwapMixin, Velodrome
         address tokenOut;
         uint256 amountIn;
         uint256 minProfit;
-        bool velodromeV2Stable;
+        ArbitrageFunc secondArbitrageFunc;
     }
 
     // external
 
-    function arbitrageUniswapV3FlashSwapToVelodromeV2(
-        address uniswapV3Pool,
+    function arbitrageUniswapV3FlashSwap(
+        address pool,
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minProfit,
-        bool velodromeV2Stable
+        ArbitrageFunc secondArbitrageFunc
     ) external {
         bytes memory swapCallbackData = abi.encode(
             SwapCallbackData({
                 caller: msg.sender,
-                pool: uniswapV3Pool,
+                pool: pool,
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 amountIn: amountIn,
                 minProfit: minProfit,
-                velodromeV2Stable: velodromeV2Stable
+                secondArbitrageFunc: secondArbitrageFunc
             })
         );
-        _swapOnUniswapV3FlashSwap(uniswapV3Pool, tokenIn, tokenOut, amountIn, swapCallbackData);
+        _swapOnUniswapV3FlashSwap(pool, tokenIn, tokenOut, amountIn, swapCallbackData);
     }
 
-    // callback
-
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
-        SwapCallbackData memory decodedData = abi.decode(data, (SwapCallbackData));
-        require(msg.sender == decodedData.pool, "not authorized");
+        SwapCallbackData memory decoded = abi.decode(data, (SwapCallbackData));
+        if (msg.sender != decoded.pool) {
+            revert InvalidCaller();
+        }
 
         // negative means it's amountOut
-        uint256 amountOutFromFirst = (decodedData.tokenIn < decodedData.tokenOut) ? uint(-amount1) : uint(-amount0);
+        uint256 amountOutFromFirst = (decoded.tokenIn < decoded.tokenOut) ? uint(-amount1) : uint(-amount0);
 
-        uint256 amountOut = _swapOnVelodromeV2Router(
-            decodedData.tokenOut,
-            decodedData.tokenIn,
-            amountOutFromFirst,
-            decodedData.amountIn + decodedData.minProfit,
-            decodedData.velodromeV2Stable,
-            address(this) // transfer amountOut directly to msg.sender
-        );
+        uint256 amountOut;
+        if (decoded.secondArbitrageFunc == ArbitrageFunc.VelodromeV2Router) {
+            amountOut = _swapOnVelodromeV2Router(
+                decoded.tokenOut,
+                decoded.tokenIn,
+                amountOutFromFirst,
+                decoded.amountIn + decoded.minProfit,
+                false,
+                address(this) // transfer amountOut directly to msg.sender
+            );
+        } else {
+            revert InvalidBranch();
+        }
 
         // pay back flash swap
-        IERC20(decodedData.tokenIn).transfer(decodedData.pool, decodedData.amountIn);
+        IERC20(decoded.tokenIn).transfer(decoded.pool, decoded.amountIn);
 
-        uint256 profit = amountOut - decodedData.amountIn;
-        IERC20(decodedData.tokenIn).transfer(decodedData.caller, profit);
+        uint256 profit = amountOut - decoded.amountIn;
+        IERC20(decoded.tokenIn).transfer(decoded.caller, profit);
     }
 }

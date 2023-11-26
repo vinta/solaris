@@ -20,6 +20,8 @@ contract ArbitrageurFlashForkTest is BaseTest {
     // WETH/USDCe 500
     address UNISWAP_V3_POOL = 0x85149247691df622eaF1a8Bd0CaFd40BC45154a9;
 
+    uint256 minProfit = 0;
+
     // public
 
     function setUp() public {
@@ -40,24 +42,38 @@ contract ArbitrageurFlashForkTest is BaseTest {
         // vm.stopPrank();
     }
 
-    // arbitrageUniswapV3FlashSwapToVelodromeV2
+    // arbitrageUniswapV3FlashSwap
 
-    function testFork_arbitrageUniswapV3FlashSwapToVelodromeV2_Success() public {
+    function testFork_arbitrageUniswapV3FlashSwap_Success() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwapToVelodromeV2(UNISWAP_V3_POOL, WETH, USDCe, amountIn, 0, false);
+        arbitrageur.arbitrageUniswapV3FlashSwap(
+            UNISWAP_V3_POOL,
+            WETH,
+            USDCe,
+            amountIn,
+            minProfit,
+            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+        );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
     }
 
-    function testFork_arbitrageUniswapV3FlashSwapToVelodromeV2_Success_2() public {
+    function testFork_arbitrageUniswapV3FlashSwap_Success_2() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 4000e6;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwapToVelodromeV2(UNISWAP_V3_POOL, USDCe, WETH, amountIn, 0, false);
+        arbitrageur.arbitrageUniswapV3FlashSwap(
+            UNISWAP_V3_POOL,
+            USDCe,
+            WETH,
+            amountIn,
+            minProfit,
+            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+        );
 
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
     }
