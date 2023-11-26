@@ -16,9 +16,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
     address WETH = 0x4200000000000000000000000000000000000006;
     address USDCe = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
     address OP = 0x4200000000000000000000000000000000000042;
-
-    // WETH/USDCe 500
-    address UNISWAP_V3_POOL = 0x85149247691df622eaF1a8Bd0CaFd40BC45154a9;
+    address UNISWAP_V3_POOL = 0x85149247691df622eaF1a8Bd0CaFd40BC45154a9; // WETH/USDCe 500
 
     uint256 minProfit = 0;
 
@@ -30,6 +28,10 @@ contract ArbitrageurFlashForkTest is BaseTest {
 
         vm.prank(owner);
         arbitrageur = new ArbitrageurFlash();
+
+        assertEq(IERC20(WETH).balanceOf(address(owner)), 0);
+        assertEq(IERC20(USDCe).balanceOf(address(owner)), 0);
+        assertEq(IERC20(OP).balanceOf(address(owner)), 0);
     }
 
     // VelodromeV2Router
