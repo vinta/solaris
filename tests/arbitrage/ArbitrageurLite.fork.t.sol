@@ -14,7 +14,7 @@ import { BaseTest } from "../BaseTest.sol";
 contract ArbitrageurLiteForkTest is BaseTest {
     ArbitrageurLite arbitrageur;
     address owner = makeAddr("owner");
-    address trader = makeAddr("trader");
+
     address WETH = 0x4200000000000000000000000000000000000006;
     address USDCe = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
     address OP = 0x4200000000000000000000000000000000000042;
@@ -83,51 +83,5 @@ contract ArbitrageurLiteForkTest is BaseTest {
         vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
         arbitrageur.arbitrageVelodromeV2toUniswapV3(WETH, USDCe, 1 ether, 0, 500, false);
-    }
-
-    // internal
-
-    function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
-        address UNISWAP_V3_SWAP_ROUTER = arbitrageur.UNISWAP_V3_SWAP_ROUTER();
-        deal(tokenIn, wallet, amountIn);
-
-        vm.startPrank(trader);
-        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
-        IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInputSingle(
-            IUniswapV3SwapRouter.ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                fee: 500,
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountIn: amountIn,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            })
-        );
-        vm.stopPrank();
-    }
-
-    function _velodromeV2SwapExactTokensForTokens(
-        address wallet,
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn
-    ) internal {
-        address VELODROME_V2_ROUTER = arbitrageur.VELODROME_V2_ROUTER();
-        address VELODROME_V2_POOL_FACTORY = arbitrageur.VELODROME_V2_POOL_FACTORY();
-        deal(tokenIn, wallet, amountIn);
-
-        vm.startPrank(trader);
-        IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
-        IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
-        routes[0] = IVelodromeV2Router.Route({
-            from: tokenIn,
-            to: tokenOut,
-            stable: false,
-            factory: VELODROME_V2_POOL_FACTORY
-        });
-        IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(amountIn, 0, routes, wallet, block.timestamp);
-        vm.stopPrank();
     }
 }
