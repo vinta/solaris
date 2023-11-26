@@ -1,6 +1,6 @@
 # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
 # https://github.com/serverless/examples
-service: solaris-spot-arbitrageur
+service: solaris-rpc-benchmark
 frameworkVersion: "3"
 useDotenv: true
 
@@ -11,8 +11,8 @@ provider:
   region: eu-central-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 512
-  timeout: 60
+  memorySize: 256
+  timeout: 10
   versionFunctions: false
   deploymentMethod: direct
   deploymentBucket:
@@ -20,23 +20,20 @@ provider:
     blockPublicAccess: true
     serverSideEncryption: AES256
   logRetentionInDays: 7
-  environment:
-    NETWORK_NAME: ${env:NETWORK_NAME}
-    NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
-    RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
-    OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
-    ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
-    ONEINCH_API_KEY: ${env:ONEINCH_API_KEY}
-    TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
-    SENTRY_DSN: ${env:SENTRY_DSN, ""}
 
 functions:
+  base:
+    handler: handlers.base
+    reservedConcurrency: 1
+    maximumRetryAttempts: 0
+    events:
+      - schedule: rate(10 minutes)
   optimism:
     handler: handlers.optimism
     reservedConcurrency: 1
     maximumRetryAttempts: 0
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(10 minutes)
 
 plugins:
   - serverless-deployment-bucket
