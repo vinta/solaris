@@ -1,6 +1,6 @@
 # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
 # https://github.com/serverless/examples
-service: spot-arbitrageur
+service: solaris-spot-arbitrageur
 frameworkVersion: "3"
 useDotenv: true
 
