@@ -1,3 +1,1 @@
-import { handlerOptimism } from "./src/benchmark"
-
-export const optimism = handlerOptimism
+export * from "./src/benchmark"

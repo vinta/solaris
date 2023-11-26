@@ -11,7 +11,7 @@ provider:
   region: eu-central-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 512
+  memorySize: 256
   timeout: 10
   versionFunctions: false
   deploymentMethod: direct
@@ -22,12 +22,18 @@ provider:
   logRetentionInDays: 7
 
 functions:
+  base:
+    handler: handlers.base
+    reservedConcurrency: 1
+    maximumRetryAttempts: 0
+    events:
+      - schedule: rate(10 minutes)
   optimism:
     handler: handlers.optimism
     reservedConcurrency: 1
     maximumRetryAttempts: 0
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(10 minutes)
 
 plugins:
   - serverless-deployment-bucket
