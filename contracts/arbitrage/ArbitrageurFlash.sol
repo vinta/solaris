@@ -61,47 +61,47 @@ contract ArbitrageurFlash is
 
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
         SwapCallbackData memory decoded = abi.decode(data, (SwapCallbackData));
-        if (msg.sender != decoded.pool) {
+        address pool = decoded.pool;
+        if (msg.sender != pool) {
             revert InvalidCaller();
         }
 
+        address tokenIn = decoded.tokenIn;
+        address tokenOut = decoded.tokenOut;
+        uint256 amountIn = decoded.amountIn;
+        uint256 minProfit = decoded.minProfit;
+        ArbitrageFunc secondArbitrageFunc = decoded.secondArbitrageFunc;
+
         // negative means it's amountOut
-        uint256 amountOutFromFirst = (decoded.tokenIn < decoded.tokenOut) ? uint(-amount1) : uint(-amount0);
+        uint256 amountOutFromFirst = (tokenIn < tokenOut) ? uint(-amount1) : uint(-amount0);
 
         uint256 amountOut;
-        if (decoded.secondArbitrageFunc == ArbitrageFunc.VelodromeV2Router) {
+        if (secondArbitrageFunc == ArbitrageFunc.VelodromeV2Router) {
             amountOut = _swapOnVelodromeV2Router(
-                decoded.tokenOut,
-                decoded.tokenIn,
+                tokenOut,
+                tokenIn,
                 amountOutFromFirst,
-                decoded.amountIn + decoded.minProfit,
+                amountIn + minProfit,
                 false,
                 address(this)
             );
-        } else if (decoded.secondArbitrageFunc == ArbitrageFunc.WOOFiV2Router) {
+        } else if (secondArbitrageFunc == ArbitrageFunc.WOOFiV2Router) {
             amountOut = _swapOnWOOFiV2Router(
-                decoded.tokenOut,
-                decoded.tokenIn,
+                tokenOut,
+                tokenIn,
                 amountOutFromFirst,
-                decoded.amountIn + decoded.minProfit,
+                amountIn + minProfit,
                 address(this)
             );
-        } else if (decoded.secondArbitrageFunc == ArbitrageFunc.MummyRouter) {
-            amountOut = _swapOnMummyRouter(
-                decoded.tokenOut,
-                decoded.tokenIn,
-                amountOutFromFirst,
-                decoded.amountIn + decoded.minProfit,
-                address(this)
-            );
+        } else if (secondArbitrageFunc == ArbitrageFunc.MummyRouter) {
+            amountOut = _swapOnMummyRouter(tokenOut, tokenIn, amountOutFromFirst, amountIn + minProfit, address(this));
         } else {
             revert InvalidBranch();
         }
 
         // pay back flash swap
-        IERC20(decoded.tokenIn).transfer(decoded.pool, decoded.amountIn);
+        IERC20(tokenIn).transfer(pool, amountIn);
 
-        uint256 profit = amountOut - decoded.amountIn;
-        IERC20(decoded.tokenIn).transfer(decoded.caller, profit);
+        IERC20(tokenIn).transfer(decoded.caller, amountOut - amountIn);
     }
 }
