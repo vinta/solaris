@@ -29,7 +29,7 @@ interface IUniswapV3SwapRouter02 {
 abstract contract UniswapV3SwapRouter02Mixin {
     // https://docs.uniswap.org/contracts/v3/reference/deployments
     // https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/SwapRouter02.sol
-    address public constant UNISWAP_V3_SWAP_ROUTER_02 = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
+    address constant UNISWAP_V3_SWAP_ROUTER_02 = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
 
     // internal
 

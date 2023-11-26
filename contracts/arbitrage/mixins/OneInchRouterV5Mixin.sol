@@ -6,7 +6,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 abstract contract OneInchRouterV5Mixin {
     // https://optimistic.etherscan.io/address/0x1111111254eeb25477b68fb85ed929f73a960582#code
     // https://github.com/1inch/limit-order-protocol-utils/blob/master/src/limit-order-protocol.const.ts
-    address public constant ONEINCH_AGGREGATION_ROUTER_V5 = 0x1111111254EEB25477B68fb85Ed929f73A960582;
+    address constant ONEINCH_AGGREGATION_ROUTER_V5 = 0x1111111254EEB25477B68fb85Ed929f73A960582;
 
     error SwapFail();
 

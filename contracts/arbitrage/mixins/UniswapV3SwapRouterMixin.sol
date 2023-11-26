@@ -31,7 +31,7 @@ interface IUniswapV3SwapRouter {
 abstract contract UniswapV3SwapRouterMixin {
     // https://docs.uniswap.org/contracts/v3/reference/deployments
     // https://github.com/Uniswap/v3-periphery/blob/v1.0.0/contracts/SwapRouter.sol
-    address public constant UNISWAP_V3_SWAP_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+    address constant UNISWAP_V3_SWAP_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
     // internal
 

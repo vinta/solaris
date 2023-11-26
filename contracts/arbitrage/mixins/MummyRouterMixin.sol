@@ -10,7 +10,7 @@ interface IMummyRouter {
 abstract contract MummyRouterMixin {
     // https://learn.woo.org/v/woofi-dev-docs/guides/integrate-woofi-as-liquidity-source#integrating-woorouterv2.sol
     // https://github.com/woonetwork/WooPoolV2/blob/main/contracts/WooRouterV2.sol
-    address public constant MUMMY_ROUTER = 0x68d1CA32Aee9a73534429D8376743Bf222ff1870;
+    address constant MUMMY_ROUTER = 0x68d1CA32Aee9a73534429D8376743Bf222ff1870;
 
     // internal
 
