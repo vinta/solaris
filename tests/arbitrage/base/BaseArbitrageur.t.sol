@@ -40,7 +40,7 @@ contract BaseArbitrageurTest is BaseTest {
     }
 
     function test_withdrawAll_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("UNAUTHORIZED");
         vm.prank(nonOwner);
         arbitrageur.withdrawAll(address(token));
     }
