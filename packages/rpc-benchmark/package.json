@@ -7,7 +7,8 @@
     "deploy": "sls deploy -s prod --verbose",
     "deploy:fast": "sls deploy function -s prod --function optimism",
     "invoke": "sls invoke -s prod --function optimism --log",
-    "invoke:local": "sls invoke local -s dev --function optimism"
+    "invoke:local": "sls invoke local -s dev --function optimism",
+    "logs": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-rpc-benchmark-prod-optimism --start=\"5m\""
   },
   "dependencies": {
     "@solaris/common": "*"
