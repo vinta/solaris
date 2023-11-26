@@ -28,7 +28,7 @@ class ArbitrageurOptimism {
         const arbitrageur = ArbitrageurLite__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
         const amountIn = parseEther("1")
-        const minProfitForStaticCall = parseEther("0.001") // 2 USD
+        const minProfitForStaticCall = parseEther("0.003") // 8 USD
         const minProfit = parseEther("0.0005") // 1 USD
 
         console.log("start", {
@@ -46,32 +46,6 @@ class ArbitrageurOptimism {
             await Promise.all([
                 // WETH/USDCe
                 this.arbitrageTx(owner, async () => {
-                    await arbitrageur.arbitrageUniswapV3toVelodromeV2.staticCall(
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        amountIn,
-                        minProfitForStaticCall,
-                        500,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrageUniswapV3toVelodromeV2(
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                this.arbitrageTx(owner, async () => {
                     await arbitrageur.arbitrageVelodromeV2toUniswapV3.staticCall(
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -97,15 +71,13 @@ class ArbitrageurOptimism {
                         },
                     )
                 }),
-
-                // WETH/OP
                 this.arbitrageTx(owner, async () => {
                     await arbitrageur.arbitrageUniswapV3toVelodromeV2.staticCall(
                         TOKENS.WETH,
-                        TOKENS.OP,
+                        TOKENS.USDCe,
                         amountIn,
                         minProfitForStaticCall,
-                        3000,
+                        500,
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
@@ -114,36 +86,10 @@ class ArbitrageurOptimism {
                     )
                     return arbitrageur.arbitrageUniswapV3toVelodromeV2(
                         TOKENS.WETH,
-                        TOKENS.OP,
+                        TOKENS.USDCe,
                         amountIn,
                         minProfit,
-                        3000,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                this.arbitrageTx(owner, async () => {
-                    await arbitrageur.arbitrageVelodromeV2toUniswapV3.staticCall(
-                        TOKENS.WETH,
-                        TOKENS.OP,
-                        amountIn,
-                        minProfitForStaticCall,
-                        3000,
-                        false,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrageVelodromeV2toUniswapV3(
-                        TOKENS.WETH,
-                        TOKENS.OP,
-                        amountIn,
-                        minProfit,
-                        3000,
+                        500,
                         false,
                         {
                             nonce: this.nonceManager.getNonce(owner),
