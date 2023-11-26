@@ -10,7 +10,7 @@
     "deploy:fast": "sls deploy function -s prod --function optimism",
     "invoke": "sls invoke -s prod --function optimism --log",
     "invoke:local": "sls invoke local -s dev --function optimism",
-    "logs": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/spot-arbitrageur-prod-optimism --start=\"5m\"",
+    "logs": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-spot-arbitrageur-prod-optimism --start=\"5m\"",
     "clean": "rm -rf .esbuild/ .serverless/ types/"
   },
   "dependencies": {
