@@ -27,16 +27,6 @@ contract ArbitrageurLiteForkTest is BaseTest {
 
         vm.prank(owner);
         arbitrageur = new ArbitrageurLite();
-
-        address[] memory spenders = new address[](2);
-        spenders[0] = arbitrageur.UNISWAP_V3_SWAP_ROUTER();
-        spenders[1] = arbitrageur.VELODROME_V2_ROUTER();
-
-        vm.startPrank(owner);
-        arbitrageur.approveAll(WETH, spenders, type(uint256).max);
-        arbitrageur.approveAll(USDCe, spenders, type(uint256).max);
-        arbitrageur.approveAll(OP, spenders, type(uint256).max);
-        vm.stopPrank();
     }
 
     // arbitrageUniswapV3toVelodromeV2

@@ -28,28 +28,6 @@ contract BaseArbitrageurTest is BaseTest {
         assertEq(owner, arbitrageur.owner());
     }
 
-    function test_approveAll_Success() public {
-        address[] memory spenders = new address[](2);
-        spenders[0] = spender1;
-        spenders[1] = spender2;
-
-        vm.prank(owner);
-        arbitrageur.approveAll(address(token), spenders, 1 ether);
-
-        assertEq(token.allowance(address(arbitrageur), spender1), 1 ether);
-        assertEq(token.allowance(address(arbitrageur), spender2), 1 ether);
-    }
-
-    function test_approveAll_RevertIf_NotOwner() public {
-        address[] memory spenders = new address[](2);
-        spenders[0] = spender1;
-        spenders[1] = spender2;
-
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.approveAll(address(token), spenders, 1 ether);
-    }
-
     function test_withdrawAll_Success() public {
         assertEq(token.balanceOf(owner), 0);
 
