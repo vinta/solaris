@@ -34,7 +34,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
 
     // arbitrageUniswapV3FlashSwap
 
-    function testFork_arbitrageUniswapV3FlashSwap_Success() public {
+    function testFork_arbitrageUniswapV3FlashSwap() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
@@ -51,7 +51,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
     }
 
-    function testFork_arbitrageUniswapV3FlashSwap_Success_2() public {
+    function testFork_arbitrageUniswapV3FlashSwap_2() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 4000e6;
@@ -68,7 +68,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
     }
 
-    // function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
+    // function testFork_arbitrageUniswapV3toVelodromeV2() public {
     //     // _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
     //     // uint256 amountIn = 1 ether;

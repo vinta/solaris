@@ -31,7 +31,7 @@ contract ArbitrageurForkTest is BaseTest {
 
     // arbitrageUniswapV3toVelodromeV2
 
-    function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
+    function testFork_arbitrageUniswapV3toVelodromeV2() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
@@ -54,7 +54,7 @@ contract ArbitrageurForkTest is BaseTest {
 
     // arbitrageVelodromeV2toUniswapV3
 
-    function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
+    function testFork_arbitrageVelodromeV2toUniswapV3() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
@@ -75,7 +75,7 @@ contract ArbitrageurForkTest is BaseTest {
         arbitrageur.arbitrageVelodromeV2toUniswapV3(WETH, USDCe, 1 ether, 0, 500, false);
     }
 
-    //     function testFork_arbitrageOneInchToUniswapV3_Success() public {
+    //     function testFork_arbitrageOneInchToUniswapV3() public {
     //         _uniswapV3ExactInputSingle(trader, weth, usdc, 100 ether);
 
     //         uint256 amountIn = 1 ether;
@@ -136,7 +136,7 @@ contract ArbitrageurForkTest is BaseTest {
 
     // triangularArbitrageUniswapV3
 
-    function testFork_triangularArbitrageUniswapV3_Success() public {
+    function testFork_triangularArbitrageUniswapV3() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
@@ -163,7 +163,7 @@ contract ArbitrageurForkTest is BaseTest {
 
     // triangularArbitrageVelodromeV2
 
-    function testFork_triangularArbitrageVelodromeV2_Success() public {
+    function testFork_triangularArbitrageVelodromeV2() public {
         _velodromeV2SwapExactTokensForTokens(trader, OP, WETH, 100000000 ether);
 
         uint256 amountIn = 1 ether;

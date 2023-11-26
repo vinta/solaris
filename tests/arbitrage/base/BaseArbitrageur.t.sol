@@ -24,11 +24,11 @@ contract BaseArbitrageurTest is BaseTest {
         arbitrageur = new TestArbitrageur();
     }
 
-    function test_owner_Success() public {
+    function test_owner() public {
         assertEq(owner, arbitrageur.owner());
     }
 
-    function test_withdrawAll_Success() public {
+    function test_withdrawAll() public {
         assertEq(token.balanceOf(owner), 0);
 
         deal(address(token), address(arbitrageur), 1 ether);

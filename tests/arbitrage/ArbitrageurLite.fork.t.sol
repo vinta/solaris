@@ -31,7 +31,7 @@ contract ArbitrageurLiteForkTest is BaseTest {
 
     // arbitrageUniswapV3toVelodromeV2
 
-    function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
+    function testFork_arbitrageUniswapV3toVelodromeV2() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
@@ -54,7 +54,7 @@ contract ArbitrageurLiteForkTest is BaseTest {
 
     // arbitrageVelodromeV2toUniswapV3
 
-    function testFork_arbitrageVelodromeV2toUniswapV3_Success() public {
+    function testFork_arbitrageVelodromeV2toUniswapV3() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
