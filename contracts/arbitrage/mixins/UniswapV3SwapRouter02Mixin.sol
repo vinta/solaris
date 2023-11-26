@@ -39,6 +39,8 @@ abstract contract UniswapV3SwapRouter02Mixin {
         uint256 amountIn,
         uint24 fee
     ) internal returns (uint256) {
+        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
+
         return
             IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
                 IUniswapV3SwapRouter02.ExactInputSingleParams({

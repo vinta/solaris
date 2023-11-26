@@ -19,6 +19,8 @@ contract ArbitrageurFlashForkTest is BaseTest {
     address USDCe = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
     address OP = 0x4200000000000000000000000000000000000042;
 
+    address uniswapV3Pool = 0x85149247691df622eaF1a8Bd0CaFd40BC45154a9;
+
     // public
 
     function setUp() public {
@@ -39,30 +41,50 @@ contract ArbitrageurFlashForkTest is BaseTest {
         // vm.stopPrank();
     }
 
-    // arbitrageUniswapV3toVelodromeV2
+    // arbitrageUniswapV3FlashSwapToVelodromeV2
 
-    function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
-        // _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
+    function testFork_arbitrageUniswapV3FlashSwapToVelodromeV2_Success() public {
+        _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
-        // uint256 amountIn = 1 ether;
-        // _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
-        // assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
-
-        deal(WETH, address(arbitrageur), 1 ether);
-
-        ArbitrageurFlash.FlashParams memory params = ArbitrageurFlash.FlashParams({
-            token0: WETH,
-            token1: USDCe,
-            fee1: 500,
-            amount0: 10 ether,
-            amount1: 0
-        });
-
+        uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageFlash(params);
+        arbitrageur.arbitrageUniswapV3FlashSwapToVelodromeV2(uniswapV3Pool, WETH, USDCe, amountIn, 0, false);
 
-        // assertEq(IERC20(WETH).balanceOf(address(owner)) > amountIn, true);
+        assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
     }
+
+    function testFork_arbitrageUniswapV3FlashSwapToVelodromeV2_Success_2() public {
+        _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
+
+        uint256 amountIn = 4000e6;
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3FlashSwapToVelodromeV2(uniswapV3Pool, USDCe, WETH, amountIn, 0, false);
+
+        assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
+    }
+
+    // function testFork_arbitrageUniswapV3toVelodromeV2_Success() public {
+    //     // _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
+
+    //     // uint256 amountIn = 1 ether;
+    //     // _dealAndApprove(WETH, amountIn, owner, address(arbitrageur));
+    //     // assertEq(IERC20(WETH).balanceOf(address(owner)), amountIn);
+
+    //     deal(WETH, address(arbitrageur), 1 ether);
+
+    //     ArbitrageurFlash.FlashParams memory params = ArbitrageurFlash.FlashParams({
+    //         token0: WETH,
+    //         token1: USDCe,
+    //         fee1: 500,
+    //         amount0: 10 ether,
+    //         amount1: 0
+    //     });
+
+    //     vm.prank(owner);
+    //     arbitrageur.arbitrageFlash(params);
+
+    //     // assertEq(IERC20(WETH).balanceOf(address(owner)) > amountIn, true);
+    // }
 
     // internal
 

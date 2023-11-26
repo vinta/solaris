@@ -13,11 +13,13 @@ abstract contract OneInchRouterV5Mixin {
     // internal
 
     function _swapOnOneInchRouterV5(
-        address,
+        address tokenIn,
         address tokenOut,
-        uint256,
+        uint256 amountIn,
         bytes calldata oneInchData
     ) internal returns (uint256) {
+        IERC20(tokenIn).approve(ONEINCH_AGGREGATION_ROUTER_V5, amountIn);
+
         uint256 tokenOutBalanceBefore = IERC20(tokenOut).balanceOf(address(this));
 
         (bool success, ) = ONEINCH_AGGREGATION_ROUTER_V5.call{ value: 0 }(oneInchData);

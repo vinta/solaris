@@ -38,6 +38,8 @@ abstract contract VelodromeV2RouterMixin {
         bool stable,
         address to
     ) internal returns (uint256) {
+        IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
+
         IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
         routes[0] = IVelodromeV2Router.Route({
             from: tokenIn,
