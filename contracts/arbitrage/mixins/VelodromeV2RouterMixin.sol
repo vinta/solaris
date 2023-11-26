@@ -25,8 +25,8 @@ interface IVelodromeV2Router {
 abstract contract VelodromeV2RouterMixin {
     // https://velodrome.finance/security#contracts
     // https://github.com/velodrome-finance/contracts/blob/main/contracts/Router.sol
-    address public constant VELODROME_V2_ROUTER = address(0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858);
-    address public constant VELODROME_V2_POOL_FACTORY = address(0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a);
+    address public constant VELODROME_V2_ROUTER = 0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858;
+    address public constant VELODROME_V2_POOL_FACTORY = 0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
 
     // internal
 
@@ -34,9 +34,9 @@ abstract contract VelodromeV2RouterMixin {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
-        uint256 amountOutMin,
+        uint256 amountOutMinimum,
         bool stable,
-        address to
+        address recipient
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
 
@@ -49,9 +49,9 @@ abstract contract VelodromeV2RouterMixin {
         });
         uint256[] memory amounts = IVelodromeV2Router(VELODROME_V2_ROUTER).swapExactTokensForTokens(
             amountIn,
-            amountOutMin,
+            amountOutMinimum,
             routes,
-            to,
+            recipient,
             block.timestamp
         );
 
