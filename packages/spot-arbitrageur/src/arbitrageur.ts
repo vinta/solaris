@@ -1,11 +1,17 @@
-import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network, parseEther } from "ethers"
+import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { TOKENS } from "@solaris/common/src/constants"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
-import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
+import { randomInt, randomNumber, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { ArbitrageurLite__factory } from "../types"
+import { ArbitrageurFlash__factory } from "../types"
+
+enum ArbitrageFunc {
+    VelodromeV2Router, // 0
+    WOOFiV2Router, // 1
+    MummyRouter, // 2
+}
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -14,10 +20,10 @@ class ArbitrageurOptimism {
     OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
-    GAS_LIMIT_PER_BLOCK = BigInt(15_000_000)
+    GAS_LIMIT_PER_BLOCK = BigInt(8000000)
 
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
-    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
+    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // VelodromeV2Router InsufficientOutputAmount()
 
     nonceManager = new NonceManager()
 
@@ -25,73 +31,80 @@ class ArbitrageurOptimism {
         const startTimestamp = Date.now() / 1000
 
         const owner = await this.getOwner()
-        const arbitrageur = ArbitrageurLite__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
+        const arbitrageur = ArbitrageurFlash__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
-        const amountIn = parseEther("1")
-        const minProfitForStaticCall = parseEther("0.003") // 8 USD
-        const minProfit = parseEther("0.0005") // 1 USD
+        const uniswapV3PoolAddress = "0x85149247691df622eaF1a8Bd0CaFd40BC45154a9" // WETH/USDCe 500
+
+        const ethMinProfitForStaticCall = parseUnits("0.002", 18) // 4 USD
+        const ethMinProfit = parseUnits("0.0005", 18) // 1 USD
+        const usdMinProfitForStaticCall = parseUnits("4", 6)
+        const usdMinProfit = parseUnits("1", 6)
 
         console.log("start", {
             rpcProviderUrl: this.RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: owner.address,
-            amountIn,
-            minProfitForStaticCall,
-            minProfit,
         })
 
         let i = 0
         while (true) {
             i++
 
+            const ethAmountIn = parseUnits(randomNumber(0.1, 3, 1).toString(), 18)
+            const usdAmountIn = parseUnits(randomInt(200, 4000).toString(), 6)
+            // console.log(`randomEthAmount: ${formatUnits(ethAmountIn, 18)}`)
+            // console.log(`randomUsdAmount: ${formatUnits(usdAmountIn, 6)}`)
+
             await Promise.all([
-                // WETH/USDCe
+                // WETH -> USDCe, second: VelodromeV2Router
                 this.arbitrageTx(owner, async () => {
-                    await arbitrageur.arbitrageVelodromeV2toUniswapV3.staticCall(
+                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                        uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
-                        amountIn,
-                        minProfitForStaticCall,
-                        500,
-                        false,
+                        ethAmountIn,
+                        ethMinProfitForStaticCall,
+                        ArbitrageFunc.VelodromeV2Router,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageVelodromeV2toUniswapV3(
+                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                        uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
+                        ethAmountIn,
+                        ethMinProfit,
+                        ArbitrageFunc.VelodromeV2Router,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
                 }),
+
+                // USDCe -> WETH, second: VelodromeV2Router
                 this.arbitrageTx(owner, async () => {
-                    await arbitrageur.arbitrageUniswapV3toVelodromeV2.staticCall(
-                        TOKENS.WETH,
+                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                        uniswapV3PoolAddress,
                         TOKENS.USDCe,
-                        amountIn,
-                        minProfitForStaticCall,
-                        500,
-                        false,
+                        TOKENS.WETH,
+                        usdAmountIn,
+                        usdMinProfitForStaticCall,
+                        ArbitrageFunc.VelodromeV2Router,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageUniswapV3toVelodromeV2(
-                        TOKENS.WETH,
+                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                        uniswapV3PoolAddress,
                         TOKENS.USDCe,
-                        amountIn,
-                        minProfit,
-                        500,
-                        false,
+                        TOKENS.WETH,
+                        usdAmountIn,
+                        usdMinProfit,
+                        ArbitrageFunc.VelodromeV2Router,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
@@ -124,7 +137,7 @@ class ArbitrageurOptimism {
     private async arbitrageTx(owner: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
         try {
             const tx = await this.sendTx(owner, sendTxFn)
-            // console.log(`arbitrageTx sent: ${tx.hash}`)
+            console.log(`arbitrageTx sent: ${tx.hash}`)
             await tx.wait()
             // console.log(`arbitrageTx mined: ${tx.hash}`)
         } catch (err: any) {
