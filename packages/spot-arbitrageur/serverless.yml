@@ -11,7 +11,7 @@ provider:
   region: eu-central-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 512
+  memorySize: 1024
   timeout: 60
   versionFunctions: false
   deploymentMethod: direct
