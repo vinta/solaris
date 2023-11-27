@@ -14,8 +14,8 @@ interface IUniswapV3Pool {
 }
 
 abstract contract UniswapV3FlashSwapMixin {
-    uint160 internal constant MIN_SQRT_RATIO = 4295128739;
-    uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
+    uint160 constant MIN_SQRT_RATIO = 4295128739;
+    uint160 constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
 
     // internal
 
@@ -27,12 +27,11 @@ abstract contract UniswapV3FlashSwapMixin {
         bytes memory swapCallbackData
     ) internal {
         bool zeroForOne = tokenIn < tokenOut;
-        uint160 sqrtPriceLimitX96 = zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1;
         IUniswapV3Pool(uniswapV3Pool).swap(
             address(this),
             zeroForOne,
             int(amountIn),
-            sqrtPriceLimitX96,
+            zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1,
             swapCallbackData
         );
     }
