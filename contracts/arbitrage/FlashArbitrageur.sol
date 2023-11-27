@@ -10,7 +10,7 @@ import { VelodromeV2RouterMixin } from "./mixins/VelodromeV2RouterMixin.sol";
 import { WOOFiV2RouterMixin } from "./mixins/WOOFiV2RouterMixin.sol";
 import { MummyRouterMixin } from "./mixins/MummyRouterMixin.sol";
 
-contract ArbitrageurFlash is
+contract FlashArbitrageur is
     IErrors,
     BaseArbitrageur,
     UniswapV3FlashSwapMixin,

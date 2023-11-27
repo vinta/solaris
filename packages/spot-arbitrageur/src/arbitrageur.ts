@@ -5,7 +5,7 @@ import { TOKENS } from "@solaris/common/src/constants"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 import { randomInt, randomNumber, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { ArbitrageurFlash__factory } from "../types"
+import { FlashArbitrageur__factory } from "../types"
 
 enum ArbitrageFunc {
     VelodromeV2Router, // 0
@@ -42,7 +42,7 @@ class ArbitrageurOptimism {
         const startTimestamp = Date.now() / 1000
 
         const owner = await this.getOwner()
-        const arbitrageur = ArbitrageurFlash__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
+        const arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
 
         const uniswapV3PoolAddress = "0x85149247691df622eaF1a8Bd0CaFd40BC45154a9" // WETH/USDCe 500
 

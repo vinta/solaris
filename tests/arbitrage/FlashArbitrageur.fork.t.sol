@@ -4,14 +4,14 @@ pragma solidity 0.8.19;
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { console } from "forge-std/console.sol";
 
-import { ArbitrageurFlash } from "../../contracts/arbitrage/ArbitrageurFlash.sol";
+import { FlashArbitrageur } from "../../contracts/arbitrage/FlashArbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
 import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2RouterMixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
-contract ArbitrageurFlashForkTest is BaseTest {
-    ArbitrageurFlash arbitrageur;
+contract FlashArbitrageurForkTest is BaseTest {
+    FlashArbitrageur arbitrageur;
     address owner = makeAddr("owner");
 
     address WETH = 0x4200000000000000000000000000000000000006;
@@ -28,7 +28,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
         console.log(block.number);
 
         vm.prank(owner);
-        arbitrageur = new ArbitrageurFlash();
+        arbitrageur = new FlashArbitrageur();
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 0);
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 0);
@@ -48,7 +48,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
@@ -65,7 +65,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
             WETH,
             amountIn,
             minProfit,
-            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
         );
 
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
@@ -83,7 +83,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
         );
     }
 
@@ -100,7 +100,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            ArbitrageurFlash.ArbitrageFunc.WOOFiV2Router
+            FlashArbitrageur.ArbitrageFunc.WOOFiV2Router
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 17026219616002745);
@@ -119,7 +119,7 @@ contract ArbitrageurFlashForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            ArbitrageurFlash.ArbitrageFunc.MummyRouter
+            FlashArbitrageur.ArbitrageFunc.MummyRouter
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 12111809400000000);
