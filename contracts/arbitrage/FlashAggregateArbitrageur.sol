@@ -2,7 +2,6 @@
 pragma solidity 0.8.19;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { IErrors } from "./interfaces/IErrors.sol";
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
@@ -22,7 +21,7 @@ contract FlashAggregateArbitrageur is IErrors, BaseArbitrageur, UniswapV3FlashSw
 
     // external
 
-    function arbitrageUniswapV3FlashSwap(
+    function arbitrage(
         address borrowFromPool,
         address tokenIn,
         address tokenOut,

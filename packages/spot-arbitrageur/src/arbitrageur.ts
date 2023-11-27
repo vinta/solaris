@@ -81,7 +81,7 @@ class ArbitrageurOptimism {
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                    return arbitrageur.arbitrage(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -108,7 +108,7 @@ class ArbitrageurOptimism {
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                    return arbitrageur.arbitrage(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -135,7 +135,7 @@ class ArbitrageurOptimism {
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                    return arbitrageur.arbitrage(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -163,7 +163,7 @@ class ArbitrageurOptimism {
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                         },
                     )
-                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                    return arbitrageur.arbitrage(
                         uniswapV3PoolAddress,
                         TOKENS.USDCe,
                         TOKENS.WETH,
@@ -191,7 +191,7 @@ class ArbitrageurOptimism {
                 //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 //         },
                 //     )
-                //     return arbitrageur.arbitrageUniswapV3FlashSwap(
+                //     return arbitrageur.arbitrage(
                 //         uniswapV3PoolAddress,
                 //         TOKENS.USDCe,
                 //         TOKENS.WETH,
@@ -219,7 +219,7 @@ class ArbitrageurOptimism {
                 //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 //         },
                 //     )
-                //     return arbitrageur.arbitrageUniswapV3FlashSwap(
+                //     return arbitrageur.arbitrage(
                 //         uniswapV3PoolAddress,
                 //         TOKENS.USDCe,
                 //         TOKENS.WETH,

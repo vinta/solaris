@@ -38,90 +38,55 @@ contract FlashArbitrageurForkTest is BaseTest {
 
     // VelodromeV2Router
 
-    function testFork_VelodromeV2Router() public {
+    function testFork_arbitrage_VelodromeV2Router() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwap(
-            UNISWAP_V3_POOL,
-            WETH,
-            USDCe,
-            amountIn,
-            minProfit,
-            ArbitrageFunc.VelodromeV2Router
-        );
+        arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.VelodromeV2Router);
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
     }
 
-    function testFork_VelodromeV2Router_2() public {
+    function testFork_arbitrage_VelodromeV2Router_2() public {
         _velodromeV2SwapExactTokensForTokens(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 4000e6;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwap(
-            UNISWAP_V3_POOL,
-            USDCe,
-            WETH,
-            amountIn,
-            minProfit,
-            ArbitrageFunc.VelodromeV2Router
-        );
+        arbitrageur.arbitrage(UNISWAP_V3_POOL, USDCe, WETH, amountIn, minProfit, ArbitrageFunc.VelodromeV2Router);
 
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
     }
 
-    function testFork_VelodromeV2Router_RevertIf_NoProfit() public {
+    function testFork_arbitrage_VelodromeV2Router_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
         vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwap(
-            UNISWAP_V3_POOL,
-            WETH,
-            USDCe,
-            amountIn,
-            minProfit,
-            ArbitrageFunc.VelodromeV2Router
-        );
+        arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.VelodromeV2Router);
     }
 
     // WOOFiV2Router
 
-    function testFork_WOOFiV2Router() public {
+    function testFork_arbitrage_WOOFiV2Router() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwap(
-            UNISWAP_V3_POOL,
-            WETH,
-            USDCe,
-            amountIn,
-            minProfit,
-            ArbitrageFunc.WOOFiV2Router
-        );
+        arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.WOOFiV2Router);
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 17026219616002745);
     }
 
     // MummyRouter
 
-    function testFork_MummyRouter() public {
+    function testFork_arbitrage_MummyRouter() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrageUniswapV3FlashSwap(
-            UNISWAP_V3_POOL,
-            WETH,
-            USDCe,
-            amountIn,
-            minProfit,
-            ArbitrageFunc.MummyRouter
-        );
+        arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.MummyRouter);
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 12111809400000000);
     }

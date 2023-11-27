@@ -10,12 +10,7 @@ import { VelodromeV2RouterMixin, IVelodromeV2Router } from "./mixins/VelodromeV2
 contract TriangularArbitrageur is BaseArbitrageur, UniswapV3SwapRouterMixin, VelodromeV2RouterMixin {
     // external
 
-    function triangularArbitrageUniswapV3(
-        bytes memory path,
-        address tokenIn,
-        uint256 amountIn,
-        uint256 minProfit
-    ) external {
+    function arbitrageUniswapV3(bytes memory path, address tokenIn, uint256 amountIn, uint256 minProfit) external {
         IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
 
@@ -30,7 +25,7 @@ contract TriangularArbitrageur is BaseArbitrageur, UniswapV3SwapRouterMixin, Vel
         );
     }
 
-    function triangularArbitrageVelodromeV2(address[] memory tokens, uint256 amountIn, uint256 minProfit) external {
+    function arbitrageVelodromeV2(address[] memory tokens, uint256 amountIn, uint256 minProfit) external {
         address tokenIn = tokens[0];
         IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);

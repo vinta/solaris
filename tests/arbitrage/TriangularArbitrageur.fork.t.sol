@@ -29,9 +29,9 @@ contract TriangularArbitrageurForkTest is BaseTest {
         arbitrageur = new TriangularArbitrageur();
     }
 
-    // triangularArbitrageUniswapV3
+    // arbitrageUniswapV3
 
-    function testFork_triangularArbitrageUniswapV3() public {
+    function testFork_arbitrageUniswapV3() public {
         _uniswapV3ExactInputSingle(trader, USDCe, WETH, 200000e6);
 
         uint256 amountIn = 1 ether;
@@ -41,24 +41,24 @@ contract TriangularArbitrageurForkTest is BaseTest {
         bytes memory path = abi.encodePacked(WETH, uint24(500), USDCe, uint24(3000), OP, uint24(3000), WETH);
 
         vm.prank(owner);
-        arbitrageur.triangularArbitrageUniswapV3(path, WETH, 1 ether, 0);
+        arbitrageur.arbitrageUniswapV3(path, WETH, 1 ether, 0);
 
         assertEq(IERC20(WETH).balanceOf(address(owner)) > amountIn, true);
     }
 
-    function testFork_triangularArbitrageUniswapV3_RevertIf_NoProfit() public {
+    function testFork_arbitrageUniswapV3_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
         bytes memory path = abi.encodePacked(WETH, uint24(500), USDCe, uint24(3000), OP, uint24(3000), WETH);
 
         vm.expectRevert(bytes("Too little received"));
         vm.prank(owner);
-        arbitrageur.triangularArbitrageUniswapV3(path, WETH, 1 ether, 0);
+        arbitrageur.arbitrageUniswapV3(path, WETH, 1 ether, 0);
     }
 
-    // triangularArbitrageVelodromeV2
+    // arbitrageVelodromeV2
 
-    function testFork_triangularArbitrageVelodromeV2() public {
+    function testFork_arbitrageVelodromeV2() public {
         _velodromeV2SwapExactTokensForTokens(trader, OP, WETH, 100000000 ether);
 
         uint256 amountIn = 1 ether;
@@ -75,12 +75,12 @@ contract TriangularArbitrageurForkTest is BaseTest {
         tokens[5] = WETH;
 
         vm.prank(owner);
-        arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
+        arbitrageur.arbitrageVelodromeV2(tokens, 1 ether, 0);
 
         assertEq(IERC20(WETH).balanceOf(address(owner)) > amountIn, true);
     }
 
-    function testFork_triangularArbitrageVelodromeV2_RevertIf_NoProfit() public {
+    function testFork_arbitrageVelodromeV2_RevertIf_NoProfit() public {
         _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
 
         address[] memory tokens = new address[](6);
@@ -93,6 +93,6 @@ contract TriangularArbitrageurForkTest is BaseTest {
 
         vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
         vm.prank(owner);
-        arbitrageur.triangularArbitrageVelodromeV2(tokens, 1 ether, 0);
+        arbitrageur.arbitrageVelodromeV2(tokens, 1 ether, 0);
     }
 }

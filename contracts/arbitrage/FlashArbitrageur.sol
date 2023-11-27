@@ -31,7 +31,7 @@ contract FlashArbitrageur is
 
     // external
 
-    function arbitrageUniswapV3FlashSwap(
+    function arbitrage(
         address borrowFromPool,
         address tokenIn,
         address tokenOut,
