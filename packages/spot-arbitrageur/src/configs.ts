@@ -16,7 +16,7 @@ const minProfitMap = {
 
 function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
     const amount = parseUnits(randomNumber(min, max, precision).toString(), decimals)
-    console.log(`getRandomAmount: ${formatUnits(amount, decimals)}`)
+    // console.log(`getRandomAmount: ${formatUnits(amount, decimals)}`)
     return amount
 }
 
@@ -64,7 +64,7 @@ export function getRandomIntentions(size: number) {
             borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.OP,
-            amountIn: getRandomAmount(1000, 2000, 18),
+            amountIn: getRandomAmount(0.5, 2, 18),
             minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
@@ -84,10 +84,10 @@ export function getRandomIntentions(size: number) {
             borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.PERP,
-            amountIn: getRandomAmount(1000, 2000, 18),
+            amountIn: getRandomAmount(0.5, 2, 18),
             minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
             minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
+            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         },
         {
             pair: "WETH/PERP",
@@ -99,26 +99,26 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.PERP],
             secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         },
-        {
-            pair: "WETH/SNX",
-            borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.SNX,
-            amountIn: getRandomAmount(1000, 2000, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        },
-        {
-            pair: "WETH/SNX",
-            borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
-            tokenIn: TOKENS.SNX,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(1000, 2000, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.SNX] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.SNX],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        },
+        // {
+        //     pair: "WETH/SNX",
+        //     borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
+        //     tokenIn: TOKENS.WETH,
+        //     tokenOut: TOKENS.SNX,
+        //     amountIn: getRandomAmount(0.5, 2, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.WETH],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
+        // },
+        // {
+        //     pair: "WETH/SNX",
+        //     borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
+        //     tokenIn: TOKENS.SNX,
+        //     tokenOut: TOKENS.WETH,
+        //     amountIn: getRandomAmount(1000, 2000, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.SNX] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.SNX],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
+        // },
     ]
 
     return sampleSize(intentions, size)

@@ -4,8 +4,13 @@ import { Handler } from "aws-lambda"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { getRandomIntentions } from "./configs"
-import { FlashArbitrageur__factory } from "../types"
+import { getRandomIntentions, Intention } from "./configs"
+import { ArbitrageFunc } from "./constants"
+import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
+
+interface MyIntention extends Intention {
+    secondArbitrageFunc: ArbitrageFunc
+}
 
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -33,7 +38,7 @@ class ArbitrageurOptimism {
 
     nonceManager = new NonceManager()
 
-    async arbitrage() {
+    async start() {
         const startTimestamp = Date.now() / 1000
 
         const owner = await this.getOwner()
@@ -50,41 +55,15 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(5)
-            console.dir(intentions, { depth: 3 })
-
-            const arbitragePromises = intentions.flatMap((intention) => {
-                return intention.secondArbitrageFuncs.map(async (secondArbitrageFunc) => {
-                    return this.arbitrageTx(owner, async () => {
-                        console.log("intention", intention.pair, "secondArbitrageFunc", secondArbitrageFunc)
-                        await arbitrageur.arbitrage.staticCall(
-                            intention.borrowFromUniswapPool,
-                            intention.tokenIn,
-                            intention.tokenOut,
-                            intention.amountIn,
-                            intention.minProfitForStaticCall,
-                            secondArbitrageFunc,
-                            {
-                                nonce: this.nonceManager.getNonce(owner),
-                                gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                            },
-                        )
-                        return arbitrageur.arbitrage(
-                            intention.borrowFromUniswapPool,
-                            intention.tokenIn,
-                            intention.tokenOut,
-                            intention.amountIn,
-                            intention.minProfit,
-                            secondArbitrageFunc,
-                            {
-                                nonce: this.nonceManager.getNonce(owner),
-                                gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                            },
-                        )
-                    })
+            const myIntentions: MyIntention[] = intentions.flatMap((intention) => {
+                return intention.secondArbitrageFuncs.map((secondArbitrageFunc) => {
+                    return {
+                        ...intention,
+                        secondArbitrageFunc,
+                    }
                 })
             })
-            console.log(arbitragePromises.length)
-            await Promise.all(arbitragePromises)
+            await Promise.all(myIntentions.map((myIntention) => this.tryArbitrage(owner, arbitrageur, myIntention)))
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -107,12 +86,21 @@ class ArbitrageurOptimism {
         return owner
     }
 
-    private async arbitrageTx(owner: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
+    private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
         try {
-            const tx = await this.sendTx(owner, sendTxFn)
-            console.log(`arbitrageTx sent: ${tx.hash}`)
-            await tx.wait()
-            // console.log(`arbitrageTx mined: ${tx.hash}`)
+            await arbitrageur.arbitrage.staticCall(
+                myIntention.borrowFromUniswapPool,
+                myIntention.tokenIn,
+                myIntention.tokenOut,
+                myIntention.amountIn,
+                myIntention.minProfitForStaticCall,
+                myIntention.secondArbitrageFunc,
+                {
+                    nonce: this.nonceManager.getNonce(owner),
+                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                },
+            )
+            await this.arbitrage(owner, arbitrageur, myIntention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -129,8 +117,25 @@ class ArbitrageurOptimism {
                 throw err
             }
         }
+    }
 
-        return true
+    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
+        const tx = await this.sendTx(owner, async () => {
+            return arbitrageur.arbitrage(
+                myIntention.borrowFromUniswapPool,
+                myIntention.tokenIn,
+                myIntention.tokenOut,
+                myIntention.amountIn,
+                myIntention.minProfit,
+                myIntention.secondArbitrageFunc,
+                {
+                    nonce: this.nonceManager.getNonce(owner),
+                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                },
+            )
+        })
+        console.log(`arbitrageTx sent: ${tx.hash}`)
+        return await tx.wait()
     }
 
     private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
@@ -153,7 +158,7 @@ class ArbitrageurOptimism {
 
 const handler: Handler = async (event, context) => {
     const service = new ArbitrageurOptimism()
-    await service.arbitrage()
+    await service.start()
 }
 
 export const optimism = wrapSentryHandlerIfNeeded(handler)
