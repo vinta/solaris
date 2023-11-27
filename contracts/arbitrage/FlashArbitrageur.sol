@@ -38,7 +38,7 @@ contract FlashArbitrageur is
     // external
 
     function arbitrageUniswapV3FlashSwap(
-        address pool,
+        address borrowFromPool,
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
@@ -46,14 +46,14 @@ contract FlashArbitrageur is
         ArbitrageFunc secondArbitrageFunc
     ) external {
         _swapOnUniswapV3FlashSwap(
-            pool,
+            borrowFromPool,
             tokenIn,
             tokenOut,
             amountIn,
             abi.encode(
                 SwapCallbackData({
                     caller: msg.sender,
-                    pool: pool,
+                    pool: borrowFromPool,
                     tokenIn: tokenIn,
                     tokenOut: tokenOut,
                     amountIn: amountIn,
@@ -71,6 +71,7 @@ contract FlashArbitrageur is
             revert InvalidCaller();
         }
 
+        address recipient = address(this);
         address tokenIn = decoded.tokenIn;
         address tokenOut = decoded.tokenOut;
         uint256 amountIn = decoded.amountIn;
@@ -88,18 +89,12 @@ contract FlashArbitrageur is
                 amountOutFromFirst,
                 amountIn + minProfit,
                 false,
-                address(this)
+                recipient
             );
         } else if (secondArbitrageFunc == ArbitrageFunc.WOOFiV2Router) {
-            amountOut = _swapOnWOOFiV2Router(
-                tokenOut,
-                tokenIn,
-                amountOutFromFirst,
-                amountIn + minProfit,
-                address(this)
-            );
+            amountOut = _swapOnWOOFiV2Router(tokenOut, tokenIn, amountOutFromFirst, amountIn + minProfit, recipient);
         } else if (secondArbitrageFunc == ArbitrageFunc.MummyRouter) {
-            amountOut = _swapOnMummyRouter(tokenOut, tokenIn, amountOutFromFirst, amountIn + minProfit, address(this));
+            amountOut = _swapOnMummyRouter(tokenOut, tokenIn, amountOutFromFirst, amountIn + minProfit, recipient);
         } else {
             revert InvalidBranch();
         }
