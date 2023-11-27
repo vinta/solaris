@@ -21,7 +21,3 @@ export function randomNumber(min: number, max: number, percision = 18): number {
     const fixed = (Math.random() * (max - min) + min).toFixed(percision)
     return Number(fixed)
 }
-
-export function randomInt(min: number, max: number): number {
-    return Math.round(randomNumber(min, max, 6))
-}
