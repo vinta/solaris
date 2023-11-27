@@ -7,50 +7,30 @@ import { BaseArbitrageur } from "../../../contracts/arbitrage/base/BaseArbitrage
 
 import { BaseTest } from "../../BaseTest.sol";
 
-contract TestArbitrageur is BaseArbitrageur {}
+contract TestBaseArbitrageur is BaseArbitrageur {}
 
 contract BaseArbitrageurTest is BaseTest {
-    TestArbitrageur arbitrageur;
+    TestBaseArbitrageur arbitrageur;
     ERC20 token = new ERC20("Test Token", "TEST");
     address owner = makeAddr("owner");
     address nonOwner = makeAddr("nonOwner");
-    address spender1 = makeAddr("spender1");
-    address spender2 = makeAddr("spender2");
 
     // public
 
     function setUp() public {
         vm.prank(owner);
-        arbitrageur = new TestArbitrageur();
+        arbitrageur = new TestBaseArbitrageur();
     }
 
-    function test_owner_Success() public {
+    // owner
+
+    function test_owner() public {
         assertEq(owner, arbitrageur.owner());
     }
 
-    function test_approveAll_Success() public {
-        address[] memory spenders = new address[](2);
-        spenders[0] = spender1;
-        spenders[1] = spender2;
+    // withdrawAll
 
-        vm.prank(owner);
-        arbitrageur.approveAll(address(token), spenders, 1 ether);
-
-        assertEq(token.allowance(address(arbitrageur), spender1), 1 ether);
-        assertEq(token.allowance(address(arbitrageur), spender2), 1 ether);
-    }
-
-    function test_approveAll_RevertIf_NotOwner() public {
-        address[] memory spenders = new address[](2);
-        spenders[0] = spender1;
-        spenders[1] = spender2;
-
-        vm.expectRevert("Ownable: caller is not the owner");
-        vm.prank(nonOwner);
-        arbitrageur.approveAll(address(token), spenders, 1 ether);
-    }
-
-    function test_withdrawAll_Success() public {
+    function test_withdrawAll() public {
         assertEq(token.balanceOf(owner), 0);
 
         deal(address(token), address(arbitrageur), 1 ether);
@@ -62,7 +42,7 @@ contract BaseArbitrageurTest is BaseTest {
     }
 
     function test_withdrawAll_RevertIf_NotOwner() public {
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("UNAUTHORIZED");
         vm.prank(nonOwner);
         arbitrageur.withdrawAll(address(token));
     }

@@ -16,14 +16,11 @@ async function main() {
         Arbitrageur__factory.createInterface().getFunction("arbitrageOneInchToUniswapV3").selector,
     )
 
-    console.log(
-        "triangularArbitrageUniswapV3",
-        Arbitrageur__factory.createInterface().getFunction("triangularArbitrageUniswapV3").selector,
-    )
+    console.log("arbitrageUniswapV3", Arbitrageur__factory.createInterface().getFunction("arbitrageUniswapV3").selector)
 
     console.log(
-        "triangularArbitrageVelodromeV2",
-        Arbitrageur__factory.createInterface().getFunction("triangularArbitrageVelodromeV2").selector,
+        "arbitrageVelodromeV2",
+        Arbitrageur__factory.createInterface().getFunction("arbitrageVelodromeV2").selector,
     )
 }
 
@@ -36,5 +33,5 @@ main().catch((error) => {
 // arbitrageUniswapV3toVelodromeV2 0x7cedde61
 // arbitrageVelodromeV2toUniswapV3 0x14b44482
 // arbitrageOneInchToUniswapV3 0x552852b9
-// triangularArbitrageUniswapV3 0x8123a68d
-// triangularArbitrageVelodromeV2 0x937b4966
+// arbitrageUniswapV3 0x8123a68d
+// arbitrageVelodromeV2 0x937b4966

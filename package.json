@@ -1,6 +1,6 @@
 {
   "name": "@vinta/solaris",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "",
   "license": "MIT",
   "author": {
@@ -19,7 +19,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "forge build",
+    "build": "forge build --sizes",
     "test": "forge test -vvv",
     "coverage": "forge coverage --report summary --report lcov && rm -rf coverage && genhtml --branch-coverage --output coverage lcov.info",
     "snapshot": "forge snapshot",
@@ -43,6 +43,7 @@
     "@types/node": "20.8.6",
     "ethers": "6.8.0",
     "hardhat": "2.19.0",
+    "hardhat-contract-sizer": "2.10.0",
     "hardhat-deploy": "0.11.43",
     "hardhat-deploy-tenderly": "0.2.0",
     "prettier": "3.0.3",

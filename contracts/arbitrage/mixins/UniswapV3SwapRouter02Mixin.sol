@@ -29,7 +29,7 @@ interface IUniswapV3SwapRouter02 {
 abstract contract UniswapV3SwapRouter02Mixin {
     // https://docs.uniswap.org/contracts/v3/reference/deployments
     // https://github.com/Uniswap/swap-router-contracts/blob/main/contracts/SwapRouter02.sol
-    address public constant UNISWAP_V3_SWAP_ROUTER_02 = address(0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45);
+    address constant UNISWAP_V3_SWAP_ROUTER_02 = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
 
     // internal
 
@@ -39,6 +39,8 @@ abstract contract UniswapV3SwapRouter02Mixin {
         uint256 amountIn,
         uint24 fee
     ) internal returns (uint256) {
+        IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER_02, amountIn);
+
         return
             IUniswapV3SwapRouter02(UNISWAP_V3_SWAP_ROUTER_02).exactInputSingle(
                 IUniswapV3SwapRouter02.ExactInputSingleParams({

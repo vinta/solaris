@@ -17,6 +17,11 @@ export function sleep(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export function randomNumberBetween(min: number, max: number): number {
-    return Math.random() * (max - min) + min
+export function randomNumber(min: number, max: number, percision = 18): number {
+    const fixed = (Math.random() * (max - min) + min).toFixed(percision)
+    return Number(fixed)
+}
+
+export function randomInt(min: number, max: number): number {
+    return Math.round(randomNumber(min, max, 6))
 }
