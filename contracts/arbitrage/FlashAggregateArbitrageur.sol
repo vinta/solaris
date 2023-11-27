@@ -9,7 +9,7 @@ import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { UniswapV3FlashSwapMixin } from "./mixins/UniswapV3FlashSwapMixin.sol";
 import { OneInchRouterV5Mixin } from "./mixins/OneInchRouterV5Mixin.sol";
 
-contract AggregateArbitrageur is IErrors, BaseArbitrageur, UniswapV3FlashSwapMixin, OneInchRouterV5Mixin {
+contract FlashAggregateArbitrageur is IErrors, BaseArbitrageur, UniswapV3FlashSwapMixin, OneInchRouterV5Mixin {
     struct SwapCallbackData {
         address caller;
         address pool;

@@ -5,13 +5,13 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { console } from "forge-std/console.sol";
 
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
-import { AggregateArbitrageur } from "../../contracts/arbitrage/AggregateArbitrageur.sol";
+import { FlashAggregateArbitrageur } from "../../contracts/arbitrage/FlashAggregateArbitrageur.sol";
 import { OneInchRouterV5Mixin } from "../../contracts/arbitrage/mixins/OneInchRouterV5Mixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
-contract AggregateArbitrageurForkTest is BaseTest {
-    AggregateArbitrageur arbitrageur;
+contract FlashAggregateArbitrageurForkTest is BaseTest {
+    FlashAggregateArbitrageur arbitrageur;
     address owner = makeAddr("owner");
 
     address WETH = 0x4200000000000000000000000000000000000006;
@@ -28,7 +28,7 @@ contract AggregateArbitrageurForkTest is BaseTest {
         console.log(block.number);
 
         vm.prank(owner);
-        arbitrageur = new AggregateArbitrageur();
+        arbitrageur = new FlashAggregateArbitrageur();
     }
 
     // arbitrageUniswapV3FlashSwap
