@@ -6,6 +6,7 @@ import { console } from "forge-std/console.sol";
 
 import { ArbitrageurFlash } from "../../contracts/arbitrage/ArbitrageurFlash.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
+import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2RouterMixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
 
@@ -68,6 +69,22 @@ contract ArbitrageurFlashForkTest is BaseTest {
         );
 
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
+    }
+
+    function testFork_VelodromeV2Router_RevertIf_NoProfit() public {
+        _dealAndApprove(WETH, 1 ether, owner, address(arbitrageur));
+
+        vm.expectRevert(abi.encodeWithSelector(IVelodromeV2Router.InsufficientOutputAmount.selector));
+        uint256 amountIn = 2 ether;
+        vm.prank(owner);
+        arbitrageur.arbitrageUniswapV3FlashSwap(
+            UNISWAP_V3_POOL,
+            WETH,
+            USDCe,
+            amountIn,
+            minProfit,
+            ArbitrageurFlash.ArbitrageFunc.VelodromeV2Router
+        );
     }
 
     // WOOFiV2Router
