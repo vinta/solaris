@@ -8,7 +8,7 @@ abstract contract OneInchRouterV5Mixin {
     // https://github.com/1inch/limit-order-protocol-utils/blob/master/src/limit-order-protocol.const.ts
     address constant ONEINCH_AGGREGATION_ROUTER_V5 = 0x1111111254EEB25477B68fb85Ed929f73A960582;
 
-    error SwapFail();
+    error OneInchSwapFail();
 
     // internal
 
@@ -24,12 +24,9 @@ abstract contract OneInchRouterV5Mixin {
 
         (bool success, ) = ONEINCH_AGGREGATION_ROUTER_V5.call{ value: 0 }(oneInchData);
         if (!success) {
-            // ex: due to slippage
-            revert SwapFail();
+            revert OneInchSwapFail(); // ex: due to slippage
         }
 
-        uint256 tokenOutBalanceAfter = IERC20(tokenOut).balanceOf(address(this));
-
-        return tokenOutBalanceAfter - tokenOutBalanceBefore;
+        return IERC20(tokenOut).balanceOf(address(this)) - tokenOutBalanceBefore;
     }
 }

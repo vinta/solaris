@@ -31,8 +31,6 @@ abstract contract MummyRouterMixin {
         path[1] = tokenOut;
         IMummyRouter(MUMMY_ROUTER).swap(path, amountIn, amountOutMinimum, recipient);
 
-        uint256 tokenOutBalanceAfter = IERC20(tokenOut).balanceOf(recipient);
-
-        return tokenOutBalanceAfter - tokenOutBalanceBefore;
+        return IERC20(tokenOut).balanceOf(recipient) - tokenOutBalanceBefore;
     }
 }

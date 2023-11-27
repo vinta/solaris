@@ -45,18 +45,23 @@ contract ArbitrageurFlash is
         uint256 minProfit,
         ArbitrageFunc secondArbitrageFunc
     ) external {
-        bytes memory swapCallbackData = abi.encode(
-            SwapCallbackData({
-                caller: msg.sender,
-                pool: pool,
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                amountIn: amountIn,
-                minProfit: minProfit,
-                secondArbitrageFunc: secondArbitrageFunc
-            })
+        _swapOnUniswapV3FlashSwap(
+            pool,
+            tokenIn,
+            tokenOut,
+            amountIn,
+            abi.encode(
+                SwapCallbackData({
+                    caller: msg.sender,
+                    pool: pool,
+                    tokenIn: tokenIn,
+                    tokenOut: tokenOut,
+                    amountIn: amountIn,
+                    minProfit: minProfit,
+                    secondArbitrageFunc: secondArbitrageFunc
+                })
+            )
         );
-        _swapOnUniswapV3FlashSwap(pool, tokenIn, tokenOut, amountIn, swapCallbackData);
     }
 
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
