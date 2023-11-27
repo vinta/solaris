@@ -193,7 +193,6 @@ class ArbitrageurOptimism {
                     )
                 }),
                 // USDCe -> WETH, second: WOOFiV2Router
-                // TODO: WooPPV2: !ORACLE_FEASIBLE
                 this.arbitrageTx(owner, async () => {
                     const usdAmountIn = this.getRandomUsdAmount()
 
@@ -223,7 +222,6 @@ class ArbitrageurOptimism {
                     )
                 }),
                 // USDCe -> WETH, second: MummyRouter
-                // TODO: Vault: poolAmount < buffer
                 this.arbitrageTx(owner, async () => {
                     const usdAmountIn = this.getRandomUsdAmount()
 
