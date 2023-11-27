@@ -7,11 +7,11 @@ import { randomInt, randomNumber, wrapSentryHandlerIfNeeded } from "@solaris/com
 
 import { FlashArbitrageur__factory } from "../types"
 
-// TODO: update this
 enum ArbitrageFunc {
-    VelodromeV2Router, // 0
-    WOOFiV2Router, // 1
-    MummyRouter, // 2
+    UniswapV3SwapRouter, // 0
+    VelodromeV2Router, // 1
+    WOOFiV2Router, // 2
+    MummyRouter, // 3
 }
 
 class ArbitrageurOptimism {
@@ -31,6 +31,7 @@ class ArbitrageurOptimism {
 
     // WOOFiV2Router
     ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
+    ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
     ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
 
     // MummyRouter
@@ -78,7 +79,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const ethAmountIn = this.getRandomEthAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -107,7 +108,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const ethAmountIn = this.getRandomEthAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -136,7 +137,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const ethAmountIn = this.getRandomEthAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.WETH,
                         TOKENS.USDCe,
@@ -166,7 +167,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const usdAmountIn = this.getRandomUsdAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.USDCe,
                         TOKENS.WETH,
@@ -196,7 +197,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const usdAmountIn = this.getRandomUsdAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.USDCe,
                         TOKENS.WETH,
@@ -226,7 +227,7 @@ class ArbitrageurOptimism {
                 this.arbitrageTx(owner, async () => {
                     const usdAmountIn = this.getRandomUsdAmount()
 
-                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                    await arbitrageur.arbitrage.staticCall(
                         uniswapV3PoolAddress,
                         TOKENS.USDCe,
                         TOKENS.WETH,
@@ -286,6 +287,7 @@ class ArbitrageurOptimism {
                 errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
                 errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
                 errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
+                errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
                 errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
                 errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
                 errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
