@@ -7,26 +7,28 @@ import { BaseArbitrageur } from "../../../contracts/arbitrage/base/BaseArbitrage
 
 import { BaseTest } from "../../BaseTest.sol";
 
-contract TestArbitrageur is BaseArbitrageur {}
+contract TestBaseArbitrageur is BaseArbitrageur {}
 
 contract BaseArbitrageurTest is BaseTest {
-    TestArbitrageur arbitrageur;
+    TestBaseArbitrageur arbitrageur;
     ERC20 token = new ERC20("Test Token", "TEST");
     address owner = makeAddr("owner");
     address nonOwner = makeAddr("nonOwner");
-    address spender1 = makeAddr("spender1");
-    address spender2 = makeAddr("spender2");
 
     // public
 
     function setUp() public {
         vm.prank(owner);
-        arbitrageur = new TestArbitrageur();
+        arbitrageur = new TestBaseArbitrageur();
     }
+
+    // owner
 
     function test_owner() public {
         assertEq(owner, arbitrageur.owner());
     }
+
+    // withdrawAll
 
     function test_withdrawAll() public {
         assertEq(token.balanceOf(owner), 0);
