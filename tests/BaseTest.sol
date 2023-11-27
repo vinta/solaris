@@ -33,7 +33,7 @@ contract BaseTest is Test {
     function _uniswapV3ExactInputSingle(address wallet, address tokenIn, address tokenOut, uint256 amountIn) internal {
         deal(tokenIn, wallet, amountIn);
 
-        vm.startPrank(trader);
+        vm.startPrank(wallet);
         IERC20(tokenIn).approve(UNISWAP_V3_SWAP_ROUTER, amountIn);
         IUniswapV3SwapRouter(UNISWAP_V3_SWAP_ROUTER).exactInputSingle(
             IUniswapV3SwapRouter.ExactInputSingleParams({
@@ -58,7 +58,7 @@ contract BaseTest is Test {
     ) internal {
         deal(tokenIn, wallet, amountIn);
 
-        vm.startPrank(trader);
+        vm.startPrank(wallet);
         IERC20(tokenIn).approve(VELODROME_V2_ROUTER, amountIn);
         IVelodromeV2Router.Route[] memory routes = new IVelodromeV2Router.Route[](1);
         routes[0] = IVelodromeV2Router.Route({
