@@ -16,7 +16,7 @@ abstract contract OneInchRouterV5Mixin {
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
-        bytes calldata oneInchData
+        bytes memory oneInchData
     ) internal returns (uint256) {
         IERC20(tokenIn).approve(ONEINCH_AGGREGATION_ROUTER_V5, amountIn);
 
