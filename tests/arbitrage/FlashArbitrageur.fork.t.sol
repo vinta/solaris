@@ -6,6 +6,7 @@ import { console } from "forge-std/console.sol";
 
 import { FlashArbitrageur } from "../../contracts/arbitrage/FlashArbitrageur.sol";
 import { IErrors } from "../../contracts/arbitrage/interfaces/IErrors.sol";
+import { ArbitrageFunc } from "../../contracts/arbitrage/enums/ArbitrageFunc.sol";
 import { IVelodromeV2Router } from "../../contracts/arbitrage/mixins/VelodromeV2RouterMixin.sol";
 
 import { BaseTest } from "../BaseTest.sol";
@@ -48,7 +49,7 @@ contract FlashArbitrageurForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
+            ArbitrageFunc.VelodromeV2Router
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
@@ -65,7 +66,7 @@ contract FlashArbitrageurForkTest is BaseTest {
             WETH,
             amountIn,
             minProfit,
-            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
+            ArbitrageFunc.VelodromeV2Router
         );
 
         assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
@@ -83,7 +84,7 @@ contract FlashArbitrageurForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            FlashArbitrageur.ArbitrageFunc.VelodromeV2Router
+            ArbitrageFunc.VelodromeV2Router
         );
     }
 
@@ -100,7 +101,7 @@ contract FlashArbitrageurForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            FlashArbitrageur.ArbitrageFunc.WOOFiV2Router
+            ArbitrageFunc.WOOFiV2Router
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 17026219616002745);
@@ -119,7 +120,7 @@ contract FlashArbitrageurForkTest is BaseTest {
             USDCe,
             amountIn,
             minProfit,
-            FlashArbitrageur.ArbitrageFunc.MummyRouter
+            ArbitrageFunc.MummyRouter
         );
 
         assertEq(IERC20(WETH).balanceOf(address(owner)), 12111809400000000);

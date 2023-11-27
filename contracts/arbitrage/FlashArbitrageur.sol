@@ -4,6 +4,7 @@ pragma solidity 0.8.19;
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import { IErrors } from "./interfaces/IErrors.sol";
+import { ArbitrageFunc } from "./enums/ArbitrageFunc.sol";
 import { BaseArbitrageur } from "./base/BaseArbitrageur.sol";
 import { UniswapV3FlashSwapMixin } from "./mixins/UniswapV3FlashSwapMixin.sol";
 import { VelodromeV2RouterMixin } from "./mixins/VelodromeV2RouterMixin.sol";
@@ -18,13 +19,6 @@ contract FlashArbitrageur is
     WOOFiV2RouterMixin,
     MummyRouterMixin
 {
-    // uint8
-    enum ArbitrageFunc {
-        VelodromeV2Router, // 0
-        WOOFiV2Router, // 1
-        MummyRouter // 2
-    }
-
     struct SwapCallbackData {
         address caller;
         address pool;
@@ -78,7 +72,6 @@ contract FlashArbitrageur is
         uint256 minProfit = decoded.minProfit;
         ArbitrageFunc secondArbitrageFunc = decoded.secondArbitrageFunc;
 
-        // negative means it's amountOut
         uint256 amountOutFromFirst = (tokenIn < tokenOut) ? uint(-amount1) : uint(-amount0);
 
         uint256 amountOut;
@@ -99,7 +92,6 @@ contract FlashArbitrageur is
             revert InvalidBranch();
         }
 
-        // pay back flash swap
         IERC20(tokenIn).transfer(pool, amountIn);
 
         IERC20(tokenIn).transfer(decoded.caller, amountOut - amountIn);

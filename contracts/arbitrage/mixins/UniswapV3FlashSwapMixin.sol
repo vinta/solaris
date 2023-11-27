@@ -27,6 +27,8 @@ abstract contract UniswapV3FlashSwapMixin {
         bytes memory swapCallbackData
     ) internal {
         bool zeroForOne = tokenIn < tokenOut;
+
+        // amountOut from flash swap will be the same as using swapRouter.exactInputSingle()
         IUniswapV3Pool(uniswapV3Pool).swap(
             address(this),
             zeroForOne,

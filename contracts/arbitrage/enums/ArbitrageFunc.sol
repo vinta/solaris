@@ -3,8 +3,8 @@ pragma solidity 0.8.19;
 
 // uint8
 enum ArbitrageFunc {
-    VelodromeV2Router, // 0
-    WOOFiV2Router, // 1
-    MummyRouter, // 2
-    UniswapV3SwapRouter // 3
+    UniswapV3SwapRouter, // 0
+    VelodromeV2Router, // 1
+    WOOFiV2Router, // 2
+    MummyRouter // 3
 }
