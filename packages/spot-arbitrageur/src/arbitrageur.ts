@@ -22,8 +22,19 @@ class ArbitrageurOptimism {
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
     GAS_LIMIT_PER_BLOCK = BigInt(8000000)
 
+    // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
-    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // VelodromeV2Router InsufficientOutputAmount()
+
+    // VelodromeV2Router
+    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
+
+    // WOOFiV2Router
+    ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
+    ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
+
+    // MummyRouter
+    ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
+    ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
     nonceManager = new NonceManager()
 
@@ -50,7 +61,7 @@ class ArbitrageurOptimism {
         while (true) {
             i++
 
-            const ethAmountIn = parseUnits(randomNumber(0.1, 3, 1).toString(), 18)
+            const ethAmountIn = parseUnits(randomNumber(0.1, 2, 1).toString(), 18)
             const usdAmountIn = parseUnits(randomInt(200, 4000).toString(), 6)
             // console.log(`randomEthAmount: ${formatUnits(ethAmountIn, 18)}`)
             // console.log(`randomUsdAmount: ${formatUnits(usdAmountIn, 6)}`)
@@ -77,6 +88,60 @@ class ArbitrageurOptimism {
                         ethAmountIn,
                         ethMinProfit,
                         ArbitrageFunc.VelodromeV2Router,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                        },
+                    )
+                }),
+                // WETH -> USDCe, second: WOOFiV2Router
+                this.arbitrageTx(owner, async () => {
+                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                        uniswapV3PoolAddress,
+                        TOKENS.WETH,
+                        TOKENS.USDCe,
+                        ethAmountIn,
+                        ethMinProfitForStaticCall,
+                        ArbitrageFunc.WOOFiV2Router,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                        },
+                    )
+                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                        uniswapV3PoolAddress,
+                        TOKENS.WETH,
+                        TOKENS.USDCe,
+                        ethAmountIn,
+                        ethMinProfit,
+                        ArbitrageFunc.WOOFiV2Router,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                        },
+                    )
+                }),
+                // WETH -> USDCe, second: MummyRouter
+                this.arbitrageTx(owner, async () => {
+                    await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                        uniswapV3PoolAddress,
+                        TOKENS.WETH,
+                        TOKENS.USDCe,
+                        ethAmountIn,
+                        ethMinProfitForStaticCall,
+                        ArbitrageFunc.MummyRouter,
+                        {
+                            nonce: this.nonceManager.getNonce(owner),
+                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                        },
+                    )
+                    return arbitrageur.arbitrageUniswapV3FlashSwap(
+                        uniswapV3PoolAddress,
+                        TOKENS.WETH,
+                        TOKENS.USDCe,
+                        ethAmountIn,
+                        ethMinProfit,
+                        ArbitrageFunc.MummyRouter,
                         {
                             nonce: this.nonceManager.getNonce(owner),
                             gasLimit: this.GAS_LIMIT_PER_BLOCK,
@@ -111,6 +176,62 @@ class ArbitrageurOptimism {
                         },
                     )
                 }),
+                // USDCe -> WETH, second: WOOFiV2Router
+                // TODO: WooPPV2: !ORACLE_FEASIBLE
+                // this.arbitrageTx(owner, async () => {
+                //     await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                //         uniswapV3PoolAddress,
+                //         TOKENS.USDCe,
+                //         TOKENS.WETH,
+                //         usdAmountIn,
+                //         usdMinProfitForStaticCall,
+                //         ArbitrageFunc.WOOFiV2Router,
+                //         {
+                //             nonce: this.nonceManager.getNonce(owner),
+                //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                //         },
+                //     )
+                //     return arbitrageur.arbitrageUniswapV3FlashSwap(
+                //         uniswapV3PoolAddress,
+                //         TOKENS.USDCe,
+                //         TOKENS.WETH,
+                //         usdAmountIn,
+                //         usdMinProfit,
+                //         ArbitrageFunc.WOOFiV2Router,
+                //         {
+                //             nonce: this.nonceManager.getNonce(owner),
+                //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                //         },
+                //     )
+                // }),
+                // USDCe -> WETH, second: MummyRouter
+                // TODO: Vault: poolAmount < buffer
+                // this.arbitrageTx(owner, async () => {
+                //     await arbitrageur.arbitrageUniswapV3FlashSwap.staticCall(
+                //         uniswapV3PoolAddress,
+                //         TOKENS.USDCe,
+                //         TOKENS.WETH,
+                //         usdAmountIn,
+                //         usdMinProfitForStaticCall,
+                //         ArbitrageFunc.MummyRouter,
+                //         {
+                //             nonce: this.nonceManager.getNonce(owner),
+                //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                //         },
+                //     )
+                //     return arbitrageur.arbitrageUniswapV3FlashSwap(
+                //         uniswapV3PoolAddress,
+                //         TOKENS.USDCe,
+                //         TOKENS.WETH,
+                //         usdAmountIn,
+                //         usdMinProfit,
+                //         ArbitrageFunc.MummyRouter,
+                //         {
+                //             nonce: this.nonceManager.getNonce(owner),
+                //             gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                //         },
+                //     )
+                // }),
             ])
 
             const nowTimestamp = Date.now() / 1000
@@ -144,7 +265,10 @@ class ArbitrageurOptimism {
             const errMessage = err.message || err.reason || ""
             if (
                 errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
-                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT)
+                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
+                errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
+                errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT)
+                // errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
             ) {
                 // console.log("No Profit")
             } else {
