@@ -1,11 +1,10 @@
-import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
+import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { getRandomIntentions, Intention } from "./configs"
-import { ArbitrageFunc } from "./constants"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
 class ArbitrageurOptimism {
@@ -50,7 +49,6 @@ class ArbitrageurOptimism {
         while (true) {
             i++
 
-            // default batch settings: 1900 requests/55 seconds
             const intentions = getRandomIntentions(6)
             await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
 
@@ -66,9 +64,9 @@ class ArbitrageurOptimism {
         const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
         const provider = new JsonRpcProvider(this.RPC_PROVIDER_URL, network, {
             staticNetwork: network,
-            // batchStallTime: 10,
+            // 2163 requests/55 seconds
+            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
             // batchMaxCount: 100,
-            // cacheTimeout: -1,
         })
 
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
@@ -113,7 +111,7 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: intention) {
+    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
         const tx = await this.sendTx(owner, async () => {
             return arbitrageur.arbitrage(
                 intention.borrowFromUniswapPool,
