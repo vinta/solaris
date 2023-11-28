@@ -52,12 +52,7 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(6)
-
-            // await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
-
-            const intention = intentions[0]
-            await this.tryArbitrage(owner, arbitrageur, intention)
-            return
+            await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -83,23 +78,34 @@ class ArbitrageurOptimism {
         return owner
     }
 
+    private getSequencerProvider() {
+        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
+        const provider = new JsonRpcProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {
+            staticNetwork: network,
+        })
+        return provider
+    }
+
     private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
         try {
-            // // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
-            // // requests/min drops from 1400 to 300
-            // await arbitrageur.arbitrage.staticCall(
-            //     intention.borrowFromUniswapPool,
-            //     intention.tokenIn,
-            //     intention.tokenOut,
-            //     intention.amountIn,
-            //     intention.minProfitForStaticCall,
-            //     intention.secondArbitrageFunc,
-            //     {
-            //         nonce: this.nonceManager.getNonce(owner),
-            //         gasLimit: this.GAS_LIMIT_PER_BLOCK,
-            //     },
-            // )
-            await this.arbitrage(owner, arbitrageur, intention)
+            // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
+            // requests/min drops from 1400 to 300
+            await arbitrageur.arbitrage.staticCall(
+                intention.borrowFromUniswapPool,
+                intention.tokenIn,
+                intention.tokenOut,
+                intention.amountIn,
+                intention.minProfitForStaticCall,
+                intention.secondArbitrageFunc,
+                {
+                    nonce: this.nonceManager.getNonce(owner),
+                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                },
+            )
+
+            const sequencerProvider = this.getSequencerProvider()
+            const ownerWithSequencerProvider = owner.connect(sequencerProvider)
+            await this.arbitrage(ownerWithSequencerProvider, arbitrageur, intention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -118,32 +124,12 @@ class ArbitrageurOptimism {
         }
     }
 
-    private getSequencerProvider() {
-        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
-        const provider = new JsonRpcProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {
-            staticNetwork: network,
-        })
-        return provider
-    }
-
-    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
-        const sequencerProvider = this.getSequencerProvider()
-        const ownerWithSequencerProvider = owner.connect(sequencerProvider)
-
-        const tx = await this.sendTx(owner, async () => {
-            // return arbitrageur.arbitrage(
-            //     intention.borrowFromUniswapPool,
-            //     intention.tokenIn,
-            //     intention.tokenOut,
-            //     intention.amountIn,
-            //     intention.minProfit,
-            //     intention.secondArbitrageFunc,
-            //     {
-            //         nonce: this.nonceManager.getNonce(owner),
-            //         gasLimit: this.GAS_LIMIT_PER_BLOCK,
-            //     },
-            // )
-
+    private async arbitrage(
+        ownerWithSequencerProvider: HDNodeWallet,
+        arbitrageur: FlashArbitrageur,
+        intention: Intention,
+    ) {
+        const tx = await this.sendTx(ownerWithSequencerProvider, async () => {
             const populateTx = await arbitrageur.arbitrage.populateTransaction(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
@@ -154,12 +140,11 @@ class ArbitrageurOptimism {
             )
 
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            // TODO: tx will be sent successfully,
-            // but the process will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
+            // TODO: tx will be sent successfully, but this program will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
             const tx = await ownerWithSequencerProvider.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(owner),
+                nonce: this.nonceManager.getNonce(ownerWithSequencerProvider),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: 2,
