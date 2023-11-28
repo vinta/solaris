@@ -15,6 +15,7 @@ class ArbitrageurOptimism {
     OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
+
     GAS_LIMIT_PER_BLOCK = BigInt(8000000)
 
     // UniswapV3Router
@@ -33,18 +34,22 @@ class ArbitrageurOptimism {
     ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
     nonceManager = new NonceManager()
+    owner!: HDNodeWallet
+    ownerWithSequencerProvider!: HDNodeWallet
+    arbitrageur!: FlashArbitrageur
 
     async start() {
         const startTimestamp = Date.now() / 1000
 
-        const owner = await this.getOwner()
-        const arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
+        this.owner = await this.getOwner()
+        this.ownerWithSequencerProvider = this.owner.connect(this.getSequencerProvider())
+        this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
             rpcProviderUrl: this.RPC_PROVIDER_URL,
             sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
-            owner: owner.address,
+            owner: this.owner.address,
         })
 
         let i = 0
@@ -52,7 +57,7 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(6)
-            await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
+            await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -86,11 +91,11 @@ class ArbitrageurOptimism {
         return provider
     }
 
-    private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
+    private async tryArbitrage(intention: Intention) {
         try {
             // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
             // requests/min drops from 1400 to 300
-            await arbitrageur.arbitrage.staticCall(
+            await this.arbitrageur.arbitrage.staticCall(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
                 intention.tokenOut,
@@ -98,14 +103,12 @@ class ArbitrageurOptimism {
                 intention.minProfitForStaticCall,
                 intention.secondArbitrageFunc,
                 {
-                    nonce: this.nonceManager.getNonce(owner),
+                    nonce: this.nonceManager.getNonce(this.owner),
                     gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 },
             )
 
-            const sequencerProvider = this.getSequencerProvider()
-            const ownerWithSequencerProvider = owner.connect(sequencerProvider)
-            await this.arbitrage(ownerWithSequencerProvider, arbitrageur, intention)
+            await this.arbitrage(intention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -124,13 +127,9 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async arbitrage(
-        ownerWithSequencerProvider: HDNodeWallet,
-        arbitrageur: FlashArbitrageur,
-        intention: Intention,
-    ) {
-        const tx = await this.sendTx(ownerWithSequencerProvider, async () => {
-            const populateTx = await arbitrageur.arbitrage.populateTransaction(
+    private async arbitrage(intention: Intention) {
+        const tx = await this.sendTx(this.ownerWithSequencerProvider, async () => {
+            const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
                 intention.tokenOut,
@@ -141,10 +140,10 @@ class ArbitrageurOptimism {
 
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
             // TODO: tx will be sent successfully, but this program will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
-            const tx = await ownerWithSequencerProvider.sendTransaction({
+            const tx = await this.ownerWithSequencerProvider.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(ownerWithSequencerProvider),
+                nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: 2,
