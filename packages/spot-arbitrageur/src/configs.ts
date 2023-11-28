@@ -14,7 +14,7 @@ const minProfitMap = {
     [TOKENS.SNX]: parseUnits("3", 18), // 1 USD
 }
 
-const multiplier = BigInt(3)
+const multiplier = BigInt(2)
 
 function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
     const amount = parseUnits(randomNumber(min, max, precision).toString(), decimals)
