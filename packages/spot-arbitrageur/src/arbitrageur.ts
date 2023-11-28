@@ -8,10 +8,6 @@ import { getRandomIntentions, Intention } from "./configs"
 import { ArbitrageFunc } from "./constants"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
-interface MyIntention extends Intention {
-    secondArbitrageFunc: ArbitrageFunc
-}
-
 class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
     NETWORK_CHAIN_ID = parseInt(process.env.NETWORK_CHAIN_ID!)
@@ -55,19 +51,8 @@ class ArbitrageurOptimism {
             i++
 
             // default batch settings: 1900 requests/55 seconds
-            const batchCount = 6
-            const intentions = getRandomIntentions(batchCount)
-            const myIntentions: MyIntention[] = intentions.flatMap((intention) => {
-                return intention.secondArbitrageFuncs.map((secondArbitrageFunc) => {
-                    return {
-                        ...intention,
-                        secondArbitrageFunc,
-                    }
-                })
-            })
-            // .slice(0, batchCount)
-
-            await Promise.all(myIntentions.map((myIntention) => this.tryArbitrage(owner, arbitrageur, myIntention)))
+            const intentions = getRandomIntentions(6)
+            await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -93,23 +78,23 @@ class ArbitrageurOptimism {
         return owner
     }
 
-    private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
+    private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
         try {
             // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
             // requests/min drops from 1400 to 300
             await arbitrageur.arbitrage.staticCall(
-                myIntention.borrowFromUniswapPool,
-                myIntention.tokenIn,
-                myIntention.tokenOut,
-                myIntention.amountIn,
-                myIntention.minProfitForStaticCall,
-                myIntention.secondArbitrageFunc,
+                intention.borrowFromUniswapPool,
+                intention.tokenIn,
+                intention.tokenOut,
+                intention.amountIn,
+                intention.minProfitForStaticCall,
+                intention.secondArbitrageFunc,
                 {
                     nonce: this.nonceManager.getNonce(owner),
                     gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 },
             )
-            await this.arbitrage(owner, arbitrageur, myIntention)
+            await this.arbitrage(owner, arbitrageur, intention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -128,15 +113,15 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
+    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: intention) {
         const tx = await this.sendTx(owner, async () => {
             return arbitrageur.arbitrage(
-                myIntention.borrowFromUniswapPool,
-                myIntention.tokenIn,
-                myIntention.tokenOut,
-                myIntention.amountIn,
-                myIntention.minProfit,
-                myIntention.secondArbitrageFunc,
+                intention.borrowFromUniswapPool,
+                intention.tokenIn,
+                intention.tokenOut,
+                intention.amountIn,
+                intention.minProfit,
+                intention.secondArbitrageFunc,
                 {
                     nonce: this.nonceManager.getNonce(owner),
                     gasLimit: this.GAS_LIMIT_PER_BLOCK,
