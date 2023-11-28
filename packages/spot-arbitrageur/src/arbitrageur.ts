@@ -153,8 +153,9 @@ class ArbitrageurOptimism {
                 intention.secondArbitrageFunc,
             )
 
-            // TODO: try sendUncheckedTransaction
-            // fill all required fields to avoid calling signer.populateTransaction(tx)
+            // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
+            // TODO: tx will be sent successfully,
+            // but the process will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
             const tx = await ownerWithSequencerProvider.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
@@ -165,7 +166,8 @@ class ArbitrageurOptimism {
                 maxFeePerGas: 10000000000, // Max: 10 Gwei
                 maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
             })
-            console.log(`arbitrageTx sent: ${tx.hash}`)
+            console.log(`arbitrage tx sent: ${tx.hash}`)
+
             return tx
         })
         return await tx.wait()
