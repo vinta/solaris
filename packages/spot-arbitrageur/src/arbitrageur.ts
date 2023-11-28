@@ -88,6 +88,8 @@ class ArbitrageurOptimism {
 
     private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
         try {
+            // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
+            // requests/min drops from 1400 to 300
             await arbitrageur.arbitrage.staticCall(
                 myIntention.borrowFromUniswapPool,
                 myIntention.tokenIn,
