@@ -88,18 +88,18 @@ class ArbitrageurOptimism {
 
     private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
         try {
-            await arbitrageur.arbitrage.staticCall(
-                myIntention.borrowFromUniswapPool,
-                myIntention.tokenIn,
-                myIntention.tokenOut,
-                myIntention.amountIn,
-                myIntention.minProfitForStaticCall,
-                myIntention.secondArbitrageFunc,
-                {
-                    nonce: this.nonceManager.getNonce(owner),
-                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                },
-            )
+            // await arbitrageur.arbitrage.staticCall(
+            //     myIntention.borrowFromUniswapPool,
+            //     myIntention.tokenIn,
+            //     myIntention.tokenOut,
+            //     myIntention.amountIn,
+            //     myIntention.minProfitForStaticCall,
+            //     myIntention.secondArbitrageFunc,
+            //     {
+            //         nonce: this.nonceManager.getNonce(owner),
+            //         gasLimit: this.GAS_LIMIT_PER_BLOCK,
+            //     },
+            // )
             await this.arbitrage(owner, arbitrageur, myIntention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
@@ -130,7 +130,7 @@ class ArbitrageurOptimism {
                 myIntention.secondArbitrageFunc,
                 {
                     nonce: this.nonceManager.getNonce(owner),
-                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                    // gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 },
             )
         })
