@@ -1,4 +1,4 @@
-import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network } from "ethers"
+import { TransactionResponse, HDNodeWallet, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
@@ -11,6 +11,7 @@ class ArbitrageurOptimism {
     NETWORK_NAME = process.env.NETWORK_NAME!
     NETWORK_CHAIN_ID = parseInt(process.env.NETWORK_CHAIN_ID!)
     RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
+    SEQUENCER_RPC_PROVIDER_URL = process.env.SEQUENCER_RPC_PROVIDER_URL!
     OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
@@ -41,6 +42,7 @@ class ArbitrageurOptimism {
 
         console.log("start", {
             rpcProviderUrl: this.RPC_PROVIDER_URL,
+            sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: owner.address,
         })
@@ -50,7 +52,12 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(6)
-            await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
+
+            // await Promise.all(intentions.map((intention) => this.tryArbitrage(owner, arbitrageur, intention)))
+
+            const intention = intentions[0]
+            await this.tryArbitrage(owner, arbitrageur, intention)
+            return
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -78,20 +85,20 @@ class ArbitrageurOptimism {
 
     private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
         try {
-            // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
-            // requests/min drops from 1400 to 300
-            await arbitrageur.arbitrage.staticCall(
-                intention.borrowFromUniswapPool,
-                intention.tokenIn,
-                intention.tokenOut,
-                intention.amountIn,
-                intention.minProfitForStaticCall,
-                intention.secondArbitrageFunc,
-                {
-                    nonce: this.nonceManager.getNonce(owner),
-                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                },
-            )
+            // // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
+            // // requests/min drops from 1400 to 300
+            // await arbitrageur.arbitrage.staticCall(
+            //     intention.borrowFromUniswapPool,
+            //     intention.tokenIn,
+            //     intention.tokenOut,
+            //     intention.amountIn,
+            //     intention.minProfitForStaticCall,
+            //     intention.secondArbitrageFunc,
+            //     {
+            //         nonce: this.nonceManager.getNonce(owner),
+            //         gasLimit: this.GAS_LIMIT_PER_BLOCK,
+            //     },
+            // )
             await this.arbitrage(owner, arbitrageur, intention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
@@ -111,26 +118,60 @@ class ArbitrageurOptimism {
         }
     }
 
+    private getSequencerProvider() {
+        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
+        const provider = new JsonRpcProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {
+            staticNetwork: network,
+        })
+        return provider
+    }
+
     private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, intention: Intention) {
+        const sequencerProvider = this.getSequencerProvider()
+        const ownerWithSequencerProvider = owner.connect(sequencerProvider)
+
         const tx = await this.sendTx(owner, async () => {
-            return arbitrageur.arbitrage(
+            // return arbitrageur.arbitrage(
+            //     intention.borrowFromUniswapPool,
+            //     intention.tokenIn,
+            //     intention.tokenOut,
+            //     intention.amountIn,
+            //     intention.minProfit,
+            //     intention.secondArbitrageFunc,
+            //     {
+            //         nonce: this.nonceManager.getNonce(owner),
+            //         gasLimit: this.GAS_LIMIT_PER_BLOCK,
+            //     },
+            // )
+
+            const populateTx = await arbitrageur.arbitrage.populateTransaction(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
                 intention.tokenOut,
                 intention.amountIn,
                 intention.minProfit,
                 intention.secondArbitrageFunc,
-                {
-                    nonce: this.nonceManager.getNonce(owner),
-                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                },
             )
+
+            // TODO: try sendUncheckedTransaction
+            // fill all required fields to avoid calling signer.populateTransaction(tx)
+            const tx = await ownerWithSequencerProvider.sendTransaction({
+                to: populateTx.to,
+                data: populateTx.data,
+                nonce: this.nonceManager.getNonce(owner),
+                gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                chainId: this.NETWORK_CHAIN_ID,
+                type: 2,
+                maxFeePerGas: 10000000000, // Max: 10 Gwei
+                maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
+            })
+            console.log(`arbitrageTx sent: ${tx.hash}`)
+            return tx
         })
-        console.log(`arbitrageTx sent: ${tx.hash}`)
         return await tx.wait()
     }
 
-    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
+    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<TransactionResponse>) {
         const release = await this.nonceManager.lock(wallet)
         try {
             const tx = await sendTxFn()
