@@ -45,4 +45,4 @@ plugins:
 custom:
   esbuild:
     bundle: true
-    minify: true
+    minify: false
