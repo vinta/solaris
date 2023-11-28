@@ -54,7 +54,9 @@ class ArbitrageurOptimism {
         while (true) {
             i++
 
-            const intentions = getRandomIntentions(5)
+            // default batch settings: 1900 requests/55 seconds
+            const batchCount = 6
+            const intentions = getRandomIntentions(batchCount)
             const myIntentions: MyIntention[] = intentions.flatMap((intention) => {
                 return intention.secondArbitrageFuncs.map((secondArbitrageFunc) => {
                     return {
@@ -63,6 +65,8 @@ class ArbitrageurOptimism {
                     }
                 })
             })
+            // .slice(0, batchCount)
+
             await Promise.all(myIntentions.map((myIntention) => this.tryArbitrage(owner, arbitrageur, myIntention)))
 
             const nowTimestamp = Date.now() / 1000
@@ -77,6 +81,9 @@ class ArbitrageurOptimism {
         const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
         const provider = new JsonRpcProvider(this.RPC_PROVIDER_URL, network, {
             staticNetwork: network,
+            // batchStallTime: 10,
+            // batchMaxCount: 100,
+            // cacheTimeout: -1,
         })
 
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)

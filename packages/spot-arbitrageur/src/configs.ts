@@ -38,67 +38,77 @@ export function getRandomIntentions(size: number) {
             borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.USDCe,
-            amountIn: getRandomAmount(0.5, 2, 18),
+            amountIn: getRandomAmount(1, 3, 18),
             minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
             minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFuncs: sampleSize(
-                [ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.WOOFiV2Router, ArbitrageFunc.MummyRouter],
-                2,
-            ),
+            secondArbitrageFuncs: [
+                ArbitrageFunc.VelodromeV2Router,
+                ArbitrageFunc.WOOFiV2Router,
+                ArbitrageFunc.MummyRouter,
+            ],
+            // secondArbitrageFuncs: sampleSize(
+            //     [ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.WOOFiV2Router, ArbitrageFunc.MummyRouter],
+            //     2,
+            // ),
         },
         {
             pair: "WETH/USDCe",
             borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
             tokenIn: TOKENS.USDCe,
             tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(1000, 2000, 6),
+            amountIn: getRandomAmount(2000, 4000, 6),
             minProfitForStaticCall: minProfitMap[TOKENS.USDCe] * BigInt(3),
             minProfit: minProfitMap[TOKENS.USDCe],
-            secondArbitrageFuncs: sampleSize(
-                [ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.WOOFiV2Router, ArbitrageFunc.MummyRouter],
-                2,
-            ),
+            // secondArbitrageFuncs: sampleSize(
+            //     [ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.WOOFiV2Router, ArbitrageFunc.MummyRouter],
+            //     2,
+            // ),
+            secondArbitrageFuncs: [
+                ArbitrageFunc.VelodromeV2Router,
+                ArbitrageFunc.WOOFiV2Router,
+                ArbitrageFunc.MummyRouter,
+            ],
         },
-        {
-            pair: "WETH/OP",
-            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.OP,
-            amountIn: getRandomAmount(0.5, 2, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
-        },
-        {
-            pair: "WETH/OP",
-            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
-            tokenIn: TOKENS.OP,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(1000, 2000, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.OP] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.OP],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
-        },
-        {
-            pair: "WETH/PERP",
-            borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.PERP,
-            amountIn: getRandomAmount(0.5, 2, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        },
-        {
-            pair: "WETH/PERP",
-            borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
-            tokenIn: TOKENS.PERP,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(1000, 2000, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.PERP] * BigInt(3),
-            minProfit: minProfitMap[TOKENS.PERP],
-            secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        },
+        // {
+        //     pair: "WETH/OP",
+        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+        //     tokenIn: TOKENS.WETH,
+        //     tokenOut: TOKENS.OP,
+        //     amountIn: getRandomAmount(0.5, 2, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.WETH],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
+        // },
+        // {
+        //     pair: "WETH/OP",
+        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+        //     tokenIn: TOKENS.OP,
+        //     tokenOut: TOKENS.WETH,
+        //     amountIn: getRandomAmount(1000, 2000, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.OP] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.OP],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
+        // },
+        // {
+        //     pair: "WETH/PERP",
+        //     borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
+        //     tokenIn: TOKENS.WETH,
+        //     tokenOut: TOKENS.PERP,
+        //     amountIn: getRandomAmount(0.5, 2, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.WETH],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
+        // },
+        // {
+        //     pair: "WETH/PERP",
+        //     borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
+        //     tokenIn: TOKENS.PERP,
+        //     tokenOut: TOKENS.WETH,
+        //     amountIn: getRandomAmount(1000, 2000, 18),
+        //     minProfitForStaticCall: minProfitMap[TOKENS.PERP] * BigInt(3),
+        //     minProfit: minProfitMap[TOKENS.PERP],
+        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
+        // },
         // {
         //     pair: "WETH/SNX",
         //     borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
