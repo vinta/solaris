@@ -1,17 +1,15 @@
 import { ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
 import { Handler } from "aws-lambda"
 
-import { TOKENS } from "@solaris/common/src/constants"
 import { NonceManager } from "@solaris/common/src/nonce-manager"
-import { randomInt, randomNumber, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
+import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { FlashArbitrageur__factory } from "../types"
+import { getRandomIntentions, Intention } from "./configs"
+import { ArbitrageFunc } from "./constants"
+import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
-enum ArbitrageFunc {
-    UniswapV3SwapRouter, // 0
-    VelodromeV2Router, // 1
-    WOOFiV2Router, // 2
-    MummyRouter, // 3
+interface MyIntention extends Intention {
+    secondArbitrageFunc: ArbitrageFunc
 }
 
 class ArbitrageurOptimism {
@@ -40,26 +38,11 @@ class ArbitrageurOptimism {
 
     nonceManager = new NonceManager()
 
-    private getRandomEthAmount() {
-        return parseUnits(randomNumber(0.5, 2, 1).toString(), 18)
-    }
-
-    private getRandomUsdAmount() {
-        return parseUnits(randomInt(1000, 4000).toString(), 6)
-    }
-
-    async arbitrage() {
+    async start() {
         const startTimestamp = Date.now() / 1000
 
         const owner = await this.getOwner()
         const arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, owner)
-
-        const uniswapV3PoolAddress = "0x85149247691df622eaF1a8Bd0CaFd40BC45154a9" // WETH/USDCe 500
-
-        const ethMinProfitForStaticCall = parseUnits("0.002", 18) // 4 USD
-        const ethMinProfit = parseUnits("0.0005", 18) // 1 USD
-        const usdMinProfitForStaticCall = parseUnits("4", 6)
-        const usdMinProfit = parseUnits("1", 6)
 
         console.log("start", {
             rpcProviderUrl: this.RPC_PROVIDER_URL,
@@ -71,186 +54,16 @@ class ArbitrageurOptimism {
         while (true) {
             i++
 
-            // console.log(`randomEthAmount: ${formatUnits(ethAmountIn, 18)}`)
-            // console.log(`randomUsdAmount: ${formatUnits(usdAmountIn, 6)}`)
-
-            await Promise.all([
-                // WETH -> USDCe, second: VelodromeV2Router
-                this.arbitrageTx(owner, async () => {
-                    const ethAmountIn = this.getRandomEthAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfitForStaticCall,
-                        ArbitrageFunc.VelodromeV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfit,
-                        ArbitrageFunc.VelodromeV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                // WETH -> USDCe, second: WOOFiV2Router
-                this.arbitrageTx(owner, async () => {
-                    const ethAmountIn = this.getRandomEthAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfitForStaticCall,
-                        ArbitrageFunc.WOOFiV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfit,
-                        ArbitrageFunc.WOOFiV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                // WETH -> USDCe, second: MummyRouter
-                this.arbitrageTx(owner, async () => {
-                    const ethAmountIn = this.getRandomEthAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfitForStaticCall,
-                        ArbitrageFunc.MummyRouter,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.WETH,
-                        TOKENS.USDCe,
-                        ethAmountIn,
-                        ethMinProfit,
-                        ArbitrageFunc.MummyRouter,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-
-                // USDCe -> WETH, second: VelodromeV2Router
-                this.arbitrageTx(owner, async () => {
-                    const usdAmountIn = this.getRandomUsdAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfitForStaticCall,
-                        ArbitrageFunc.VelodromeV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfit,
-                        ArbitrageFunc.VelodromeV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                // USDCe -> WETH, second: WOOFiV2Router
-                this.arbitrageTx(owner, async () => {
-                    const usdAmountIn = this.getRandomUsdAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfitForStaticCall,
-                        ArbitrageFunc.WOOFiV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfit,
-                        ArbitrageFunc.WOOFiV2Router,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-                // USDCe -> WETH, second: MummyRouter
-                this.arbitrageTx(owner, async () => {
-                    const usdAmountIn = this.getRandomUsdAmount()
-
-                    await arbitrageur.arbitrage.staticCall(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfitForStaticCall,
-                        ArbitrageFunc.MummyRouter,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                    return arbitrageur.arbitrage(
-                        uniswapV3PoolAddress,
-                        TOKENS.USDCe,
-                        TOKENS.WETH,
-                        usdAmountIn,
-                        usdMinProfit,
-                        ArbitrageFunc.MummyRouter,
-                        {
-                            nonce: this.nonceManager.getNonce(owner),
-                            gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                        },
-                    )
-                }),
-            ])
+            const intentions = getRandomIntentions(5)
+            const myIntentions: MyIntention[] = intentions.flatMap((intention) => {
+                return intention.secondArbitrageFuncs.map((secondArbitrageFunc) => {
+                    return {
+                        ...intention,
+                        secondArbitrageFunc,
+                    }
+                })
+            })
+            await Promise.all(myIntentions.map((myIntention) => this.tryArbitrage(owner, arbitrageur, myIntention)))
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -273,12 +86,23 @@ class ArbitrageurOptimism {
         return owner
     }
 
-    private async arbitrageTx(owner: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
+    private async tryArbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
         try {
-            const tx = await this.sendTx(owner, sendTxFn)
-            console.log(`arbitrageTx sent: ${tx.hash}`)
-            await tx.wait()
-            // console.log(`arbitrageTx mined: ${tx.hash}`)
+            // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
+            // requests/min drops from 1400 to 300
+            await arbitrageur.arbitrage.staticCall(
+                myIntention.borrowFromUniswapPool,
+                myIntention.tokenIn,
+                myIntention.tokenOut,
+                myIntention.amountIn,
+                myIntention.minProfitForStaticCall,
+                myIntention.secondArbitrageFunc,
+                {
+                    nonce: this.nonceManager.getNonce(owner),
+                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                },
+            )
+            await this.arbitrage(owner, arbitrageur, myIntention)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -295,6 +119,25 @@ class ArbitrageurOptimism {
                 throw err
             }
         }
+    }
+
+    private async arbitrage(owner: HDNodeWallet, arbitrageur: FlashArbitrageur, myIntention: MyIntention) {
+        const tx = await this.sendTx(owner, async () => {
+            return arbitrageur.arbitrage(
+                myIntention.borrowFromUniswapPool,
+                myIntention.tokenIn,
+                myIntention.tokenOut,
+                myIntention.amountIn,
+                myIntention.minProfit,
+                myIntention.secondArbitrageFunc,
+                {
+                    nonce: this.nonceManager.getNonce(owner),
+                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                },
+            )
+        })
+        console.log(`arbitrageTx sent: ${tx.hash}`)
+        return await tx.wait()
     }
 
     private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<ContractTransactionResponse>) {
@@ -317,7 +160,7 @@ class ArbitrageurOptimism {
 
 const handler: Handler = async (event, context) => {
     const service = new ArbitrageurOptimism()
-    await service.arbitrage()
+    await service.start()
 }
 
 export const optimism = wrapSentryHandlerIfNeeded(handler)
