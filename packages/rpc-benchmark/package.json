@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "deploy": "sls deploy -s prod --verbose",
-    "deploy:fast": "sls deploy function -s prod --function base",
+    "deploy:fast": "sls deploy function -s prod --function optimism",
     "invoke:optimism": "sls invoke -s prod --function optimism --log",
     "invoke:local:optimism": "sls invoke local -s dev --function optimism",
     "logs:optimism": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-rpc-benchmark-prod-optimism --start=\"10m\""
