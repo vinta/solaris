@@ -104,8 +104,8 @@ class ArbitrageurOptimism {
                 intention.minProfit,
                 intention.secondArbitrageFunc,
             )
-            await this.owner.call(populateTx)
-            await this.arbitrage(populateTx.to, populateTx.data)
+            await this.owner.call(populateTx) // static call
+            await this.arbitrage(populateTx.to, populateTx.data) // send
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
