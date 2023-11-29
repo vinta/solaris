@@ -135,6 +135,7 @@ class ArbitrageurOptimism {
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: 2,
+                // gasPrice = maxFeePerGas + maxPriorityFeePerGas
                 maxFeePerGas: 10000000000, // Max: 10 Gwei
                 maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
             })
