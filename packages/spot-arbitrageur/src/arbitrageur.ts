@@ -57,10 +57,7 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(6)
-
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
-            // await this.tryArbitrage(intentions[0])
-            // return
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -128,10 +125,9 @@ class ArbitrageurOptimism {
     }
 
     private async arbitrage(to: string, data: string) {
-        const tx = await this.sendTx(this.ownerWithSequencerProvider, async () => {
+        await this.sendTx(this.ownerWithSequencerProvider, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            // TODO: tx will be sent successfully, but this program will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
-            const tx = await this.ownerWithSequencerProvider.sendTransaction({
+            await this.ownerWithSequencerProvider.sendTransaction({
                 to: to,
                 data: data,
                 nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
@@ -141,23 +137,26 @@ class ArbitrageurOptimism {
                 maxFeePerGas: 10000000000, // Max: 10 Gwei
                 maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
             })
-            console.log(`arbitrage tx sent: ${tx.hash}`)
-
-            return tx
         })
-        return await tx.wait()
+        console.log("arbitrage tx sent")
     }
 
-    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<TransactionResponse>) {
+    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
         const release = await this.nonceManager.lock(wallet)
         try {
-            const tx = await sendTxFn()
+            await sendTxFn()
             this.nonceManager.increaseNonce(wallet)
-            return tx
+            return true
         } catch (err: any) {
-            if (err.code === "NONCE_EXPIRED" || err.message.includes("invalid transaction nonce")) {
+            const errMessage = err.message || err.reason || ""
+            if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {
                 await this.nonceManager.resetNonce(wallet)
                 throw new Error("ResetNonce")
+            } else if (errMessage.includes("rpc method is not whitelisted") && errMessage.includes("eth_blockNumber")) {
+                // NOTE: tx was sent successfully, but this program fails due to "rpc method is not whitelisted"
+                this.nonceManager.increaseNonce(wallet)
+                console.log("tx sent to sequencer")
+                return true
             }
             throw err
         } finally {
