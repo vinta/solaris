@@ -58,7 +58,11 @@ class ArbitrageurOptimism {
             i++
 
             const intentions = getRandomIntentions(6)
+
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
+
+            // await this.tryArbitrage(intentions[0])
+            // return
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
@@ -125,37 +129,11 @@ class ArbitrageurOptimism {
     }
 
     private calculateGas(token: string, profit: bigint) {
-        // transactionFee = gasUsage * gasPrice
-        // gasPrice = maxFeePerGas * maxPriorityFeePerGas
-
-        // let transactionFee < profit
-        // profit = transactionFee = gasUsage * maxFeePerGas * maxPriorityFeePerGas
-        // maxPriorityFeePerGas = profit / (gasUsage * maxFeePerGas)
-
-        // const minProfit = minProfitMap[token]
-        // if (profit < minProfit) {
-        //     return {
-        //         type: 2,
-        //         maxFeePerGas: 10000000000, // Max: 10 Gwei
-        //         maxPriorityFeePerGas: 1000000000, // Max Priority: 1 Gwei
-        //     }
-        // }
-
-        // // 1847951607147907
-        // // 1000000: 1 USDC
-        // 0.000492
-        // let profitBufferInEth = profit - minProfit
-        // if (token == TOKENS.USDCe) {
-        //     profitBufferInEth = profitBufferInEth * toEthPriceMap[token]
-        // }
-
-        // const gasUsage = BigInt(834000)
-        // const gasPrice = profitBufferInEth / gasUsage
-
+        // gasPrice = baseFee + maxPriorityFeePerGas
         return {
-            type: 0,
-            gasPrice: 1500000000, // Max: 1.5 Gwei
-            // gasPrice: 2000000000, // Max: 2 Gwei
+            type: 2,
+            maxFeePerGas: 2000000000, // Max: 2 Gwei
+            maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
         }
     }
 
@@ -179,9 +157,8 @@ class ArbitrageurOptimism {
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
-                gasPrice: gas.gasPrice,
-                // maxFeePerGas: gas.maxFeePerGas,
-                // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+                maxFeePerGas: gas.maxFeePerGas,
+                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
         console.log("arbitrage tx sent")

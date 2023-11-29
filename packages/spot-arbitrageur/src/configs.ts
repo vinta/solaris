@@ -6,12 +6,19 @@ import { randomNumber } from "@solaris/common/src/utils"
 
 import { ArbitrageFunc } from "./constants"
 
-const minProfitMap = {
+export const minProfitMap = {
     [TOKENS.USDCe]: parseUnits("1", 6), // 1 USD
     [TOKENS.WETH]: parseUnits("0.0005", 18), // 1 USD
     [TOKENS.OP]: parseUnits("1", 18), // 1 US
     [TOKENS.PERP]: parseUnits("1", 18), // 1 USD
     [TOKENS.SNX]: parseUnits("3", 18), // 1 USD
+}
+
+export const toEthPriceMap = {
+    [TOKENS.USDCe]: BigInt(100),
+    [TOKENS.OP]: BigInt(100),
+    [TOKENS.PERP]: BigInt(100),
+    [TOKENS.SNX]: BigInt(100),
 }
 
 const multiplier = BigInt(2)
