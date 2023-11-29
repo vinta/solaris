@@ -6,11 +6,8 @@
   "scripts": {
     "deploy": "sls deploy -s prod --verbose",
     "deploy:fast": "sls deploy function -s prod --function base",
-    "invoke:base": "sls invoke -s prod --function base --log",
-    "invoke:local:base": "sls invoke local -s dev --function base",
     "invoke:optimism": "sls invoke -s prod --function optimism --log",
     "invoke:local:optimism": "sls invoke local -s dev --function optimism",
-    "logs:base": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-rpc-benchmark-prod-base --start=\"10m\"",
     "logs:optimism": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-rpc-benchmark-prod-optimism --start=\"10m\""
   },
   "dependencies": {
