@@ -127,10 +127,13 @@ class ArbitrageurOptimism {
 
     private calculateGas(token: string, profit: bigint) {
         // gasPrice = baseFee + maxPriorityFeePerGas
+        // transactionFee = gasUsage * gasPrice
         return {
             type: 2,
-            maxFeePerGas: 2000000000, // Max: 2 Gwei
-            maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
+            // maxFeePerGas: 2000000000, // Max: 2 Gwei
+            // maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
+            maxFeePerGas: 10000000000, // Max: 10 Gwei
+            maxPriorityFeePerGas: 7000000000, // Max Priority: 7 Gwei
         }
     }
 
@@ -159,6 +162,7 @@ class ArbitrageurOptimism {
             })
         })
         console.log("arbitrage tx sent")
+        process.exit(0)
     }
 
     private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
