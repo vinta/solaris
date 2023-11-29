@@ -77,11 +77,11 @@ class ArbitrageurOptimism {
         const provider = new JsonRpcProvider(this.RPC_PROVIDER_URL, network, {
             staticNetwork: network,
 
-            // // 6 intentions: 2582 requests/58 seconds
-            // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
+            // 6 intentions: 2582 requests/58 seconds
+            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
 
             // 2 intentions: 3299 requests/58 seconds
-            batchMaxCount: 1,
+            // batchMaxCount: 1,
         })
 
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
