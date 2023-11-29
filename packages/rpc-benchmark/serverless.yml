@@ -22,12 +22,12 @@ provider:
   logRetentionInDays: 7
 
 functions:
-  base:
-    handler: handlers.base
-    reservedConcurrency: 1
-    maximumRetryAttempts: 0
-    events:
-      - schedule: rate(30 minutes)
+  # base:
+  #   handler: handlers.base
+  #   reservedConcurrency: 1
+  #   maximumRetryAttempts: 0
+  #   events:
+  #     - schedule: rate(30 minutes)
   optimism:
     handler: handlers.optimism
     reservedConcurrency: 1
