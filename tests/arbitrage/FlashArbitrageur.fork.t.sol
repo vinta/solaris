@@ -31,9 +31,9 @@ contract FlashArbitrageurForkTest is BaseTest {
         vm.prank(owner);
         arbitrageur = new FlashArbitrageur();
 
-        assertEq(IERC20(WETH).balanceOf(address(owner)), 0);
-        assertEq(IERC20(USDCe).balanceOf(address(owner)), 0);
-        assertEq(IERC20(OP).balanceOf(address(owner)), 0);
+        assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 0);
+        assertEq(IERC20(USDCe).balanceOf(address(arbitrageur)), 0);
+        assertEq(IERC20(OP).balanceOf(address(arbitrageur)), 0);
     }
 
     // VelodromeV2Router
@@ -43,9 +43,17 @@ contract FlashArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 2 ether;
         vm.prank(owner);
-        arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.VelodromeV2Router);
+        uint256 profit = arbitrageur.arbitrage(
+            UNISWAP_V3_POOL,
+            WETH,
+            USDCe,
+            amountIn,
+            minProfit,
+            ArbitrageFunc.VelodromeV2Router
+        );
 
-        assertEq(IERC20(WETH).balanceOf(address(owner)), 7096710211096831);
+        assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 7096710211096831);
+        assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), profit);
     }
 
     function testFork_arbitrage_VelodromeV2Router_2() public {
@@ -53,9 +61,17 @@ contract FlashArbitrageurForkTest is BaseTest {
 
         uint256 amountIn = 4000e6;
         vm.prank(owner);
-        arbitrageur.arbitrage(UNISWAP_V3_POOL, USDCe, WETH, amountIn, minProfit, ArbitrageFunc.VelodromeV2Router);
+        uint256 profit = arbitrageur.arbitrage(
+            UNISWAP_V3_POOL,
+            USDCe,
+            WETH,
+            amountIn,
+            minProfit,
+            ArbitrageFunc.VelodromeV2Router
+        );
 
-        assertEq(IERC20(USDCe).balanceOf(address(owner)), 753548825);
+        assertEq(IERC20(USDCe).balanceOf(address(arbitrageur)), 753548825);
+        assertEq(IERC20(USDCe).balanceOf(address(arbitrageur)), profit);
     }
 
     function testFork_arbitrage_VelodromeV2Router_RevertIf_NoProfit() public {
@@ -76,7 +92,7 @@ contract FlashArbitrageurForkTest is BaseTest {
         vm.prank(owner);
         arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.WOOFiV2Router);
 
-        assertEq(IERC20(WETH).balanceOf(address(owner)), 17026219616002745);
+        assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 17026219616002745);
     }
 
     // MummyRouter
@@ -88,6 +104,6 @@ contract FlashArbitrageurForkTest is BaseTest {
         vm.prank(owner);
         arbitrageur.arbitrage(UNISWAP_V3_POOL, WETH, USDCe, amountIn, minProfit, ArbitrageFunc.MummyRouter);
 
-        assertEq(IERC20(WETH).balanceOf(address(owner)), 12111809400000000);
+        assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 12111809400000000);
     }
 }

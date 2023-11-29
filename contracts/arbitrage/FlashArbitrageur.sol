@@ -38,7 +38,9 @@ contract FlashArbitrageur is
         uint256 amountIn,
         uint256 minProfit,
         ArbitrageFunc secondArbitrageFunc
-    ) external {
+    ) external returns (uint256) {
+        uint256 tokenInBalanceBefore = IERC20(tokenIn).balanceOf(address(this));
+
         _swapOnUniswapV3FlashSwap(
             borrowFromPool,
             tokenIn,
@@ -56,6 +58,8 @@ contract FlashArbitrageur is
                 })
             )
         );
+
+        return IERC20(tokenIn).balanceOf(address(this)) - tokenInBalanceBefore;
     }
 
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
@@ -94,6 +98,7 @@ contract FlashArbitrageur is
 
         IERC20(tokenIn).transfer(pool, amountIn);
 
-        IERC20(tokenIn).transfer(decoded.caller, amountOut - amountIn);
+        // keep profit in the contract
+        // IERC20(tokenIn).transfer(decoded.caller, amountOut - amountIn);
     }
 }
