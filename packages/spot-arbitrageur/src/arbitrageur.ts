@@ -42,12 +42,13 @@ class ArbitrageurOptimism {
         const startTimestamp = Date.now() / 1000
 
         const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
-        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
+        const providerOptions = {
             // 6 intentions: 2582 requests/58 seconds
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
             // 2 intentions: 3299 requests/58 seconds
             // batchMaxCount: 1,
-        })
+        }
+        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, providerOptions)
         const sequencerProvider = this.getProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {})
 
         this.owner = await this.getOwner(provider)
