@@ -1,4 +1,4 @@
-import { TransactionResponse, HDNodeWallet, JsonRpcProvider, Network } from "ethers"
+import { HDNodeWallet, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
@@ -97,7 +97,7 @@ class ArbitrageurOptimism {
 
     private async tryArbitrage(intention: Intention) {
         try {
-            const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
+            const profit = await this.arbitrageur.arbitrage.staticCall(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
                 intention.tokenOut,
@@ -105,8 +105,7 @@ class ArbitrageurOptimism {
                 intention.minProfit,
                 intention.secondArbitrageFunc,
             )
-            await this.owner.call(populateTx) // static call
-            await this.arbitrage(populateTx.to, populateTx.data) // send
+            await this.arbitrage(intention, profit)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -125,19 +124,64 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async arbitrage(to: string, data: string) {
+    private calculateGas(token: string, profit: bigint) {
+        // transactionFee = gasUsage * gasPrice
+        // gasPrice = maxFeePerGas * maxPriorityFeePerGas
+
+        // let transactionFee < profit
+        // profit = transactionFee = gasUsage * maxFeePerGas * maxPriorityFeePerGas
+        // maxPriorityFeePerGas = profit / (gasUsage * maxFeePerGas)
+
+        // const minProfit = minProfitMap[token]
+        // if (profit < minProfit) {
+        //     return {
+        //         type: 2,
+        //         maxFeePerGas: 10000000000, // Max: 10 Gwei
+        //         maxPriorityFeePerGas: 1000000000, // Max Priority: 1 Gwei
+        //     }
+        // }
+
+        // // 1847951607147907
+        // // 1000000: 1 USDC
+        // 0.000492
+        // let profitBufferInEth = profit - minProfit
+        // if (token == TOKENS.USDCe) {
+        //     profitBufferInEth = profitBufferInEth * toEthPriceMap[token]
+        // }
+
+        // const gasUsage = BigInt(834000)
+        // const gasPrice = profitBufferInEth / gasUsage
+
+        return {
+            type: 0,
+            gasPrice: 1500000000, // Max: 1.5 Gwei
+            // gasPrice: 2000000000, // Max: 2 Gwei
+        }
+    }
+
+    private async arbitrage(intention: Intention, profit: bigint) {
+        const gas = this.calculateGas(intention.tokenIn, profit)
+        const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
+            intention.borrowFromUniswapPool,
+            intention.tokenIn,
+            intention.tokenOut,
+            intention.amountIn,
+            intention.minProfit,
+            intention.secondArbitrageFunc,
+        )
+
         await this.sendTx(this.ownerWithSequencerProvider, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
             await this.ownerWithSequencerProvider.sendTransaction({
-                to: to,
-                data: data,
+                to: populateTx.to,
+                data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
-                type: 2,
-                // gasPrice = maxFeePerGas + maxPriorityFeePerGas
-                maxFeePerGas: 10000000000, // Max: 10 Gwei
-                maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
+                type: gas.type,
+                gasPrice: gas.gasPrice,
+                // maxFeePerGas: gas.maxFeePerGas,
+                // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
         console.log("arbitrage tx sent")
