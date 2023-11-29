@@ -96,22 +96,16 @@ class ArbitrageurOptimism {
 
     private async tryArbitrage(intention: Intention) {
         try {
-            // NOTE: not sure why, but it will be much slower if we use arbitrageur.arbitrage(..., {gasLimit: undefined})
-            // requests/min drops from 1400 to 300
-            await this.arbitrageur.arbitrage.staticCall(
+            const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
                 intention.borrowFromUniswapPool,
                 intention.tokenIn,
                 intention.tokenOut,
                 intention.amountIn,
-                intention.minProfitForStaticCall,
+                intention.minProfit,
                 intention.secondArbitrageFunc,
-                {
-                    nonce: this.nonceManager.getNonce(this.owner),
-                    gasLimit: this.GAS_LIMIT_PER_BLOCK,
-                },
             )
-
-            await this.arbitrage(intention)
+            await this.owner.call(populateTx) // static call
+            await this.arbitrage(populateTx.to, populateTx.data) // send
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -130,22 +124,12 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async arbitrage(intention: Intention) {
-        const tx = await this.sendTx(this.ownerWithSequencerProvider, async () => {
-            const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
-                intention.borrowFromUniswapPool,
-                intention.tokenIn,
-                intention.tokenOut,
-                intention.amountIn,
-                intention.minProfit,
-                intention.secondArbitrageFunc,
-            )
-
+    private async arbitrage(to: string, data: string) {
+        await this.sendTx(this.ownerWithSequencerProvider, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            // TODO: tx will be sent successfully, but this program will fail due to `rpc method is not whitelisted, "method": "eth_blockNumber"`
-            const tx = await this.ownerWithSequencerProvider.sendTransaction({
-                to: populateTx.to,
-                data: populateTx.data,
+            await this.ownerWithSequencerProvider.sendTransaction({
+                to: to,
+                data: data,
                 nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
@@ -153,23 +137,26 @@ class ArbitrageurOptimism {
                 maxFeePerGas: 10000000000, // Max: 10 Gwei
                 maxPriorityFeePerGas: 1000000, // Max Priority: 0.001 Gwei
             })
-            console.log(`arbitrage tx sent: ${tx.hash}`)
-
-            return tx
         })
-        return await tx.wait()
+        console.log("arbitrage tx sent")
     }
 
-    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<TransactionResponse>) {
+    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
         const release = await this.nonceManager.lock(wallet)
         try {
-            const tx = await sendTxFn()
+            await sendTxFn()
             this.nonceManager.increaseNonce(wallet)
-            return tx
+            return true
         } catch (err: any) {
-            if (err.code === "NONCE_EXPIRED" || err.message.includes("invalid transaction nonce")) {
+            const errMessage = err.message || err.reason || ""
+            if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {
                 await this.nonceManager.resetNonce(wallet)
                 throw new Error("ResetNonce")
+            } else if (errMessage.includes("rpc method is not whitelisted") && errMessage.includes("eth_blockNumber")) {
+                // NOTE: tx was sent successfully, but this program fails due to "rpc method is not whitelisted"
+                this.nonceManager.increaseNonce(wallet)
+                console.log("tx sent to sequencer")
+                return true
             }
             throw err
         } finally {
