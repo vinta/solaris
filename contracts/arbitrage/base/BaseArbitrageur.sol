@@ -5,7 +5,7 @@ import { Owned } from "solmate/src/auth/Owned.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 abstract contract BaseArbitrageur is Owned {
-    constructor() Owned(msg.sender) {}
+    constructor(address ownerArg) Owned(ownerArg) {}
 
     // external
 

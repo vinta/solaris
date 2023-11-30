@@ -1,22 +1,13 @@
-import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
-import { NonceManager } from "@solaris/common/src/nonce-manager"
+import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { getRandomIntentions, Intention } from "./configs"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
-class ArbitrageurOptimism {
-    NETWORK_NAME = process.env.NETWORK_NAME!
-    NETWORK_CHAIN_ID = parseInt(process.env.NETWORK_CHAIN_ID!)
-    RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
-    SEQUENCER_RPC_PROVIDER_URL = process.env.SEQUENCER_RPC_PROVIDER_URL!
-    OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
-    ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
-    TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
-
-    GAS_LIMIT_PER_BLOCK = BigInt(8000000)
+class FlashArbitrageurOnOptimism extends BaseArbitrageur {
+    arbitrageur!: FlashArbitrageur
 
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
@@ -33,15 +24,10 @@ class ArbitrageurOptimism {
     ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
     ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
-    nonceManager = new NonceManager()
-    owner!: HDNodeWallet
-    ownerWithSequencerProvider!: HDNodeWallet
-    arbitrageur!: FlashArbitrageur
-
     async start() {
         const startTimestamp = Date.now() / 1000
 
-        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
+        const network = this.getNetwork()
         const providerOptions = {
             // 6 intentions: 2582 requests/58 seconds
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
@@ -82,20 +68,6 @@ class ArbitrageurOptimism {
         }
     }
 
-    private getProvider(rpcProviderUrl: string, network: Network, options: JsonRpcApiProviderOptions) {
-        return new JsonRpcProvider(rpcProviderUrl, network, {
-            staticNetwork: network,
-            ...options,
-        })
-    }
-
-    private async getOwner(provider: JsonRpcProvider) {
-        const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
-        const owner = hdNodeWallet.connect(provider)
-        await this.nonceManager.register(owner)
-        return owner
-    }
-
     private async tryArbitrage(intention: Intention) {
         try {
             const profit = await this.arbitrageur.arbitrage.staticCall(
@@ -122,18 +94,6 @@ class ArbitrageurOptimism {
             } else {
                 throw err
             }
-        }
-    }
-
-    private calculateGas(token: string, profit: bigint) {
-        // gasPrice = baseFee + maxPriorityFeePerGas
-        // transactionFee = gasUsage * gasPrice
-        return {
-            type: 2,
-            // maxFeePerGas: 2000000000, // Max: 2 Gwei
-            // maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
-            maxFeePerGas: 10000000000, // Max: 10 Gwei
-            maxPriorityFeePerGas: 7000000000, // Max Priority: 7 Gwei
         }
     }
 
@@ -164,33 +124,10 @@ class ArbitrageurOptimism {
         console.log("arbitrage tx sent")
         process.exit(0)
     }
-
-    private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
-        const release = await this.nonceManager.lock(wallet)
-        try {
-            await sendTxFn()
-            this.nonceManager.increaseNonce(wallet)
-            return true
-        } catch (err: any) {
-            const errMessage = err.message || err.reason || ""
-            if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {
-                await this.nonceManager.resetNonce(wallet)
-                throw new Error("ResetNonce")
-            } else if (errMessage.includes("rpc method is not whitelisted") && errMessage.includes("eth_blockNumber")) {
-                // NOTE: tx was sent successfully, but this program fails due to "rpc method is not whitelisted"
-                this.nonceManager.increaseNonce(wallet)
-                console.log("tx sent to sequencer")
-                return true
-            }
-            throw err
-        } finally {
-            release()
-        }
-    }
 }
 
 const handler: Handler = async (event, context) => {
-    const service = new ArbitrageurOptimism()
+    const service = new FlashArbitrageurOnOptimism()
     await service.start()
 }
 

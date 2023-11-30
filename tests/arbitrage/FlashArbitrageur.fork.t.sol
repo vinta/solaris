@@ -29,7 +29,7 @@ contract FlashArbitrageurForkTest is BaseTest {
         console.log(block.number);
 
         vm.prank(owner);
-        arbitrageur = new FlashArbitrageur();
+        arbitrageur = new FlashArbitrageur(owner);
 
         assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 0);
         assertEq(IERC20(USDCe).balanceOf(address(arbitrageur)), 0);

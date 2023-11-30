@@ -1,10 +1,10 @@
 {
-  "name": "@solaris/spot-arbitrageur",
+  "name": "@solaris/flash-arbitrageur",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/*.json'",
+    "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/FlashArbitrageur.json'",
     "typegen": "npm run typegen:core",
     "deploy": "sls deploy -s prod --verbose",
     "deploy:fast": "sls deploy function -s prod -f optimism",
