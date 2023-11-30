@@ -1,27 +1,7 @@
-import { parseUnits } from "ethers"
 import { sampleSize } from "lodash"
 
-import { TOKENS } from "@solaris/common/src/constants"
-import { randomNumber } from "@solaris/common/src/utils"
-
-const multiplier = BigInt(10)
-
-export const minProfitMap = {
-    [TOKENS.USDC]: parseUnits("1", 6) * multiplier, // 1 USD
-    [TOKENS.USDCe]: parseUnits("1", 6) * multiplier, // 1 USD
-    [TOKENS.WETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
-    [TOKENS.OP]: parseUnits("1", 18) * multiplier, // 1 US
-    [TOKENS.PERP]: parseUnits("1", 18) * multiplier, // 1 USD
-    [TOKENS.SNX]: parseUnits("3", 18) * multiplier, // 1 USD
-    [TOKENS.wstETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
-    [TOKENS.WLD]: parseUnits("0.4", 18) * multiplier, // 1 USD
-    [TOKENS.WBTC]: parseUnits("0.000026", 8) * multiplier, // 1 USD
-}
-
-function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
-    const amount = parseUnits(randomNumber(min, max, precision).toString(), decimals)
-    return amount
-}
+import { TOKENS, minProfitMap } from "@solaris/common/src/constants"
+import { getRandomAmount } from "@solaris/common/src/utils"
 
 export interface Intention {
     tokenIn: string
@@ -139,5 +119,5 @@ export const oneInchProtocols = [
     "OPTIMISM_MUMMY_FINANCE",
     // "OPTIMISM_NOMISWAPEPCS",
     "OPTIMISM_VELODROME_V2",
-    // "OPTIMISM_WOMBATSWAP",
+    "OPTIMISM_WOMBATSWAP",
 ]

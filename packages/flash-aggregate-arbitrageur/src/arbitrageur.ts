@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda"
 
 import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
-import { randomNumber, sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
+import { getRandomNumber, sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { getRandomIntentions, Intention, oneInchProtocols } from "./configs"
 import { FlashAggregateArbitrageur, FlashAggregateArbitrageur__factory } from "../types"
@@ -61,7 +61,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             const errMessage = err.message || err.reason || ""
             if (errMessage.includes("TooManyRequests")) {
                 // console.log("Too Many Requests")
-                await sleep(1000 * randomNumber(0.2, 1))
+                await sleep(1000 * getRandomNumber(0.2, 1))
                 return
             } else {
                 console.log("Failed to fetch 1inch API")

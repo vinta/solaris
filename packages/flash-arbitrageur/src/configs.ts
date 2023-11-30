@@ -1,30 +1,13 @@
-import { formatUnits, parseUnits } from "ethers"
 import { sampleSize } from "lodash"
 
-import { ArbitrageFunc, TOKENS } from "@solaris/common/src/constants"
-import { randomNumber } from "@solaris/common/src/utils"
-
-const multiplier = BigInt(10)
-
-export const minProfitMap = {
-    [TOKENS.USDCe]: parseUnits("1", 6) * multiplier, // 1 USD
-    [TOKENS.WETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
-    [TOKENS.OP]: parseUnits("1", 18) * multiplier, // 1 US
-    [TOKENS.PERP]: parseUnits("1", 18) * multiplier, // 1 USD
-    [TOKENS.SNX]: parseUnits("3", 18) * multiplier, // 1 USD
-}
+import { TOKENS, minProfitMap, ArbitrageFunc } from "@solaris/common/src/constants"
+import { getRandomAmount } from "@solaris/common/src/utils"
 
 export const toEthPriceMap = {
     [TOKENS.USDCe]: BigInt(100),
     [TOKENS.OP]: BigInt(100),
     [TOKENS.PERP]: BigInt(100),
     [TOKENS.SNX]: BigInt(100),
-}
-
-function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
-    const amount = parseUnits(randomNumber(min, max, precision).toString(), decimals)
-    // console.log(`getRandomAmount: ${formatUnits(amount, decimals)}`)
-    return amount
 }
 
 export interface Intention {
