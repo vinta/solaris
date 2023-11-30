@@ -6,12 +6,14 @@ import { randomNumber } from "@solaris/common/src/utils"
 
 import { ArbitrageFunc } from "./constants"
 
+const multiplier = BigInt(10)
+
 export const minProfitMap = {
-    [TOKENS.USDCe]: parseUnits("1", 6), // 1 USD
-    [TOKENS.WETH]: parseUnits("0.0005", 18), // 1 USD
-    [TOKENS.OP]: parseUnits("1", 18), // 1 US
-    [TOKENS.PERP]: parseUnits("1", 18), // 1 USD
-    [TOKENS.SNX]: parseUnits("3", 18), // 1 USD
+    [TOKENS.USDCe]: parseUnits("1", 6) * multiplier, // 1 USD
+    [TOKENS.WETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
+    [TOKENS.OP]: parseUnits("1", 18) * multiplier, // 1 US
+    [TOKENS.PERP]: parseUnits("1", 18) * multiplier, // 1 USD
+    [TOKENS.SNX]: parseUnits("3", 18) * multiplier, // 1 USD
 }
 
 export const toEthPriceMap = {
@@ -20,8 +22,6 @@ export const toEthPriceMap = {
     [TOKENS.PERP]: BigInt(100),
     [TOKENS.SNX]: BigInt(100),
 }
-
-const multiplier = BigInt(2)
 
 function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
     const amount = parseUnits(randomNumber(min, max, precision).toString(), decimals)
@@ -34,7 +34,6 @@ export interface Intention {
     tokenIn: string
     tokenOut: string
     amountIn: bigint
-    minProfitForStaticCall: bigint
     minProfit: bigint
     secondArbitrageFunc: ArbitrageFunc
 }
@@ -46,7 +45,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.USDCe,
             amountIn: getRandomAmount(1, 10, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
@@ -55,7 +53,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.USDCe,
             amountIn: getRandomAmount(1, 10, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
         },
@@ -64,7 +61,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.USDCe,
             amountIn: getRandomAmount(1, 10, 18),
-            minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
@@ -74,7 +70,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.USDCe,
             tokenOut: TOKENS.WETH,
             amountIn: getRandomAmount(2000, 20000, 6),
-            minProfitForStaticCall: minProfitMap[TOKENS.USDCe] * multiplier,
             minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
@@ -83,7 +78,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.USDCe,
             tokenOut: TOKENS.WETH,
             amountIn: getRandomAmount(2000, 20000, 6),
-            minProfitForStaticCall: minProfitMap[TOKENS.USDCe] * multiplier,
             minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
         },
@@ -92,7 +86,6 @@ export function getRandomIntentions(size: number) {
             tokenIn: TOKENS.USDCe,
             tokenOut: TOKENS.WETH,
             amountIn: getRandomAmount(2000, 20000, 6),
-            minProfitForStaticCall: minProfitMap[TOKENS.USDCe] * multiplier,
             minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
@@ -103,7 +96,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.WETH,
         //     tokenOut: TOKENS.OP,
         //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
         //     minProfit: minProfitMap[TOKENS.WETH],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
         // },
@@ -113,7 +105,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.OP,
         //     tokenOut: TOKENS.WETH,
         //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.OP] * multiplier,
         //     minProfit: minProfitMap[TOKENS.OP],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
         // },
@@ -123,7 +114,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.WETH,
         //     tokenOut: TOKENS.PERP,
         //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
         //     minProfit: minProfitMap[TOKENS.WETH],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         // },
@@ -133,7 +123,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.PERP,
         //     tokenOut: TOKENS.WETH,
         //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.PERP] * multiplier,
         //     minProfit: minProfitMap[TOKENS.PERP],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         // },
@@ -143,7 +132,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.WETH,
         //     tokenOut: TOKENS.SNX,
         //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.WETH] * multiplier,
         //     minProfit: minProfitMap[TOKENS.WETH],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         // },
@@ -153,7 +141,6 @@ export function getRandomIntentions(size: number) {
         //     tokenIn: TOKENS.SNX,
         //     tokenOut: TOKENS.WETH,
         //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfitForStaticCall: minProfitMap[TOKENS.SNX] * multiplier,
         //     minProfit: minProfitMap[TOKENS.SNX],
         //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
         // },

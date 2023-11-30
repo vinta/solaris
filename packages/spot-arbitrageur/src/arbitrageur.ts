@@ -1,4 +1,4 @@
-import { HDNodeWallet, JsonRpcProvider, Network } from "ethers"
+import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
@@ -41,8 +41,18 @@ class ArbitrageurOptimism {
     async start() {
         const startTimestamp = Date.now() / 1000
 
-        this.owner = await this.getOwner()
-        this.ownerWithSequencerProvider = this.owner.connect(this.getSequencerProvider())
+        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
+        const providerOptions = {
+            // 6 intentions: 2582 requests/58 seconds
+            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
+            // 2 intentions: 3299 requests/58 seconds
+            // batchMaxCount: 1,
+        }
+        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, providerOptions)
+        const sequencerProvider = this.getProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {})
+
+        this.owner = await this.getOwner(provider)
+        this.ownerWithSequencerProvider = this.owner.connect(sequencerProvider)
         this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
@@ -72,31 +82,18 @@ class ArbitrageurOptimism {
         }
     }
 
-    private async getOwner() {
-        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
-        const provider = new JsonRpcProvider(this.RPC_PROVIDER_URL, network, {
+    private getProvider(rpcProviderUrl: string, network: Network, options: JsonRpcApiProviderOptions) {
+        return new JsonRpcProvider(rpcProviderUrl, network, {
             staticNetwork: network,
-
-            // 6 intentions: 2582 requests/58 seconds
-            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-
-            // 2 intentions: 3299 requests/58 seconds
-            // batchMaxCount: 1,
+            ...options,
         })
+    }
 
+    private async getOwner(provider: JsonRpcProvider) {
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
         await this.nonceManager.register(owner)
-
         return owner
-    }
-
-    private getSequencerProvider() {
-        const network = new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
-        const provider = new JsonRpcProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {
-            staticNetwork: network,
-        })
-        return provider
     }
 
     private async tryArbitrage(intention: Intention) {
@@ -130,10 +127,13 @@ class ArbitrageurOptimism {
 
     private calculateGas(token: string, profit: bigint) {
         // gasPrice = baseFee + maxPriorityFeePerGas
+        // transactionFee = gasUsage * gasPrice
         return {
             type: 2,
-            maxFeePerGas: 2000000000, // Max: 2 Gwei
-            maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
+            // maxFeePerGas: 2000000000, // Max: 2 Gwei
+            // maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
+            maxFeePerGas: 10000000000, // Max: 10 Gwei
+            maxPriorityFeePerGas: 7000000000, // Max Priority: 7 Gwei
         }
     }
 
@@ -162,6 +162,7 @@ class ArbitrageurOptimism {
             })
         })
         console.log("arbitrage tx sent")
+        process.exit(0)
     }
 
     private async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {

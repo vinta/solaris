@@ -4,19 +4,25 @@ service: solaris-spot-arbitrageur
 frameworkVersion: "3"
 useDotenv: true
 
+# eu-central-1 (2218)
+# us-east-1 (2196)
+# us-east-2
+# us-west-1 (744)
+# us-west-2 (400)
+# ap-southeast-1
 provider:
   name: aws
   profile: solaris
   stage: prod
-  region: eu-central-1
+  region: us-east-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 1024
+  memorySize: 1024 # it won't be faster if > 1024
   timeout: 60
   versionFunctions: false
   deploymentMethod: direct
   deploymentBucket:
-    name: solaris-serverless-deploys-eu-central-1
+    name: solaris-serverless-deploys-us-east-1
     blockPublicAccess: true
     serverSideEncryption: AES256
   logRetentionInDays: 7
