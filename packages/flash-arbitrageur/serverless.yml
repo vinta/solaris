@@ -27,14 +27,15 @@ provider:
     serverSideEncryption: AES256
   logRetentionInDays: 7
   environment:
+    # base
     NETWORK_NAME: ${env:NETWORK_NAME}
     NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
     RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
     SEQUENCER_RPC_PROVIDER_URL: ${env:SEQUENCER_RPC_PROVIDER_URL}
     OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
     ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
-    ONEINCH_API_KEY: ${env:ONEINCH_API_KEY}
     TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
+    # prod
     SENTRY_DSN: ${env:SENTRY_DSN, ""}
 
 functions:
