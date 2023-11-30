@@ -1,14 +1,28 @@
-import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network } from "ethers"
 import { Handler } from "aws-lambda"
 
+import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
-import { BaseArbitrageur } from "./base/base-arbitrageur"
 import { getRandomIntentions, Intention } from "./configs"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashArbitrageur
+
+    // UniswapV3Router
+    ERROR_TOO_LITTLE_RECEIVED = "Too little received"
+
+    // VelodromeV2Router
+    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
+
+    // WOOFiV2Router
+    ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
+    ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
+    ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
+
+    // MummyRouter
+    ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
+    ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
     async start() {
         const startTimestamp = Date.now() / 1000

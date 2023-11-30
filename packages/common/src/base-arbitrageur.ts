@@ -2,7 +2,7 @@ import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network } fro
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 
-export class BaseArbitrageur {
+export abstract class BaseArbitrageur {
     NETWORK_NAME = process.env.NETWORK_NAME!
     NETWORK_CHAIN_ID = parseInt(process.env.NETWORK_CHAIN_ID!)
     RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
@@ -13,44 +13,29 @@ export class BaseArbitrageur {
 
     GAS_LIMIT_PER_BLOCK = BigInt(8000000)
 
-    // UniswapV3Router
-    ERROR_TOO_LITTLE_RECEIVED = "Too little received"
-
-    // VelodromeV2Router
-    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
-
-    // WOOFiV2Router
-    ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
-    ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
-    ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
-
-    // MummyRouter
-    ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
-    ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
-
     nonceManager = new NonceManager()
     owner!: HDNodeWallet
     ownerWithSequencerProvider!: HDNodeWallet
 
-    protected getNetwork() {
+    getNetwork() {
         return new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)
     }
 
-    protected getProvider(rpcProviderUrl: string, network: Network, options: JsonRpcApiProviderOptions) {
+    getProvider(rpcProviderUrl: string, network: Network, options: JsonRpcApiProviderOptions) {
         return new JsonRpcProvider(rpcProviderUrl, network, {
             staticNetwork: network,
             ...options,
         })
     }
 
-    protected async getOwner(provider: JsonRpcProvider) {
+    async getOwner(provider: JsonRpcProvider) {
         const hdNodeWallet = HDNodeWallet.fromPhrase(this.OWNER_SEED_PHRASE)
         const owner = hdNodeWallet.connect(provider)
         await this.nonceManager.register(owner)
         return owner
     }
 
-    protected calculateGas(token: string, profit: bigint) {
+    calculateGas(token: string, profit: bigint) {
         // gasPrice = baseFee + maxPriorityFeePerGas
         // transactionFee = gasUsage * gasPrice
         return {
@@ -62,7 +47,7 @@ export class BaseArbitrageur {
         }
     }
 
-    protected async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
         const release = await this.nonceManager.lock(wallet)
         try {
             await sendTxFn()

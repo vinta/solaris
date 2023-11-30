@@ -1,10 +1,8 @@
 import { formatUnits, parseUnits } from "ethers"
 import { sampleSize } from "lodash"
 
-import { TOKENS } from "@solaris/common/src/constants"
+import { ArbitrageFunc, TOKENS } from "@solaris/common/src/constants"
 import { randomNumber } from "@solaris/common/src/utils"
-
-import { ArbitrageFunc } from "./constants"
 
 const multiplier = BigInt(10)
 
