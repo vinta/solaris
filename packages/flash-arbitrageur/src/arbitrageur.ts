@@ -54,11 +54,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             i++
 
             const intentions = getRandomIntentions(6)
-
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
-
-            // await this.tryArbitrage(intentions[0])
-            // return
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
