@@ -28,7 +28,7 @@ contract FlashAggregateArbitrageurForkTest is BaseTest {
         console.log(block.number);
 
         vm.prank(owner);
-        arbitrageur = new FlashAggregateArbitrageur();
+        arbitrageur = new FlashAggregateArbitrageur(owner);
     }
 
     // arbitrageOneInch

@@ -37,6 +37,8 @@ contract FlashAggregateArbitrageur is
 
     // external
 
+    constructor(address ownerArg) BaseArbitrageur(ownerArg) {}
+
     function arbitrageOneInch(
         address tokenIn,
         address tokenOut,

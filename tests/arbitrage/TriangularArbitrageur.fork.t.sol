@@ -30,7 +30,7 @@ contract FlashTriangularArbitrageurForkTest is BaseTest {
         console.log(block.number);
 
         vm.prank(owner);
-        arbitrageur = new FlashTriangularArbitrageur();
+        arbitrageur = new FlashTriangularArbitrageur(owner);
 
         assertEq(IERC20(WETH).balanceOf(address(arbitrageur)), 0);
         assertEq(IERC20(USDCe).balanceOf(address(arbitrageur)), 0);

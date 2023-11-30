@@ -31,6 +31,8 @@ contract FlashArbitrageur is
 
     // external
 
+    constructor(address ownerArg) BaseArbitrageur(ownerArg) {}
+
     function arbitrage(
         address borrowFromPool,
         address tokenIn,

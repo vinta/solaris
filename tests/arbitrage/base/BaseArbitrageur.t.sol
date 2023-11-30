@@ -7,7 +7,9 @@ import { BaseArbitrageur } from "../../../contracts/arbitrage/base/BaseArbitrage
 
 import { BaseTest } from "../../BaseTest.sol";
 
-contract TestBaseArbitrageur is BaseArbitrageur {}
+contract TestBaseArbitrageur is BaseArbitrageur {
+    constructor(address ownerArg) BaseArbitrageur(ownerArg) {}
+}
 
 contract BaseArbitrageurTest is BaseTest {
     TestBaseArbitrageur arbitrageur;
@@ -19,7 +21,7 @@ contract BaseArbitrageurTest is BaseTest {
 
     function setUp() public {
         vm.prank(owner);
-        arbitrageur = new TestBaseArbitrageur();
+        arbitrageur = new TestBaseArbitrageur(owner);
     }
 
     // owner
