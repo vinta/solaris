@@ -1,6 +1,6 @@
 # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
 # https://github.com/serverless/examples
-service: solaris-flash-aggregate-arbitrageur
+service: solaris-flash-aggregate-arb
 frameworkVersion: "3"
 useDotenv: true
 
