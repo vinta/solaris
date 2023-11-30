@@ -19,7 +19,7 @@ contract FlashArbitrageur is
     WOOFiV2RouterMixin,
     MummyRouterMixin
 {
-    struct SwapCallbackData {
+    struct UniswapV3SwapCallbackData {
         address caller;
         address pool;
         address tokenIn;
@@ -47,7 +47,7 @@ contract FlashArbitrageur is
             tokenOut,
             amountIn,
             abi.encode(
-                SwapCallbackData({
+                UniswapV3SwapCallbackData({
                     caller: msg.sender,
                     pool: borrowFromPool,
                     tokenIn: tokenIn,
@@ -63,7 +63,7 @@ contract FlashArbitrageur is
     }
 
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
-        SwapCallbackData memory decoded = abi.decode(data, (SwapCallbackData));
+        UniswapV3SwapCallbackData memory decoded = abi.decode(data, (UniswapV3SwapCallbackData));
 
         address pool = decoded.pool;
         if (msg.sender != pool) {

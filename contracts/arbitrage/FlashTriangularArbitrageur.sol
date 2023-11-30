@@ -78,6 +78,9 @@ contract FlashTriangularArbitrageur is IErrors, BaseArbitrageur, BeethovenFlashL
         }
 
         IERC20(tokenIn).transfer(BEETHOVEN_VAULT, amountIn + fee);
+
+        // keep profit in the contract
+        // IERC20(tokenIn).transfer(decoded.caller, amountOut - amountIn);
     }
 
     // internal
