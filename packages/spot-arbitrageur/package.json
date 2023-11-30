@@ -7,10 +7,10 @@
     "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/*.json'",
     "typegen": "npm run typegen:core",
     "deploy": "sls deploy -s prod --verbose",
-    "deploy:fast": "sls deploy function -s prod --function optimism",
-    "invoke": "sls invoke -s prod --function optimism --log",
-    "invoke:local": "sls invoke local -s dev --function optimism",
-    "logs": "awslogs get -w --profile=solaris --aws-region=eu-central-1 /aws/lambda/solaris-spot-arbitrageur-prod-optimism --start=\"5m\"",
+    "deploy:fast": "sls deploy function -s prod -f optimism",
+    "invoke": "sls invoke -s prod -f optimism --log",
+    "invoke:local": "sls invoke local -s dev -f optimism",
+    "logs": "sls logs -s prod -f optimism --startTime 5m -t",
     "clean": "rm -rf .esbuild/ .serverless/ types/"
   },
   "dependencies": {
