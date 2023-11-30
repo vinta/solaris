@@ -13,6 +13,9 @@ export const minProfitMap = {
     [TOKENS.OP]: parseUnits("1", 18) * multiplier, // 1 US
     [TOKENS.PERP]: parseUnits("1", 18) * multiplier, // 1 USD
     [TOKENS.SNX]: parseUnits("3", 18) * multiplier, // 1 USD
+    [TOKENS.wstETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
+    [TOKENS.WLD]: parseUnits("0.4", 18) * multiplier, // 1 USD
+    [TOKENS.WBTC]: parseUnits("0.000026", 8) * multiplier, // 1 USD
 }
 
 function getRandomAmount(min: number, max: number, decimals = 18, precision = 1) {
@@ -87,6 +90,20 @@ export function getRandomIntentions(size: number) {
             amountIn: getRandomAmount(1, 10, 18),
             minProfit: minProfitMap[TOKENS.WETH],
             uniswapV3Fee: 3000,
+        },
+        {
+            tokenIn: TOKENS.USDCe,
+            tokenOut: TOKENS.WLD,
+            amountIn: getRandomAmount(2000, 20000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            uniswapV3Fee: 10000,
+        },
+        {
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.WBTC,
+            amountIn: getRandomAmount(1, 10, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            uniswapV3Fee: 500,
         },
 
         // FIXME: OneInchSwapFail()
