@@ -3,13 +3,6 @@ import { sampleSize } from "lodash"
 import { TOKENS, minProfitMap, ArbitrageFunc } from "@solaris/common/src/constants"
 import { getRandomAmount } from "@solaris/common/src/utils"
 
-export const toEthPriceMap = {
-    [TOKENS.USDCe]: BigInt(100),
-    [TOKENS.OP]: BigInt(100),
-    [TOKENS.PERP]: BigInt(100),
-    [TOKENS.SNX]: BigInt(100),
-}
-
 export interface Intention {
     borrowFromUniswapPool: string
     tokenIn: string
@@ -71,62 +64,74 @@ export function getRandomIntentions(size: number) {
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
 
-        // {
-        //     pair: "WETH/OP",
-        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
-        //     tokenIn: TOKENS.WETH,
-        //     tokenOut: TOKENS.OP,
-        //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfit: minProfitMap[TOKENS.WETH],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
-        // },
-        // {
-        //     pair: "WETH/OP",
-        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
-        //     tokenIn: TOKENS.OP,
-        //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfit: minProfitMap[TOKENS.OP],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router, ArbitrageFunc.MummyRouter], 2),
-        // },
-        // {
-        //     pair: "WETH/PERP",
-        //     borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
-        //     tokenIn: TOKENS.WETH,
-        //     tokenOut: TOKENS.PERP,
-        //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfit: minProfitMap[TOKENS.WETH],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        // },
-        // {
-        //     pair: "WETH/PERP",
-        //     borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
-        //     tokenIn: TOKENS.PERP,
-        //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfit: minProfitMap[TOKENS.PERP],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        // },
-        // {
-        //     pair: "WETH/SNX",
-        //     borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
-        //     tokenIn: TOKENS.WETH,
-        //     tokenOut: TOKENS.SNX,
-        //     amountIn: getRandomAmount(0.5, 2, 18),
-        //     minProfit: minProfitMap[TOKENS.WETH],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        // },
-        // {
-        //     pair: "WETH/SNX",
-        //     borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
-        //     tokenIn: TOKENS.SNX,
-        //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1000, 2000, 18),
-        //     minProfit: minProfitMap[TOKENS.SNX],
-        //     secondArbitrageFuncs: sampleSize([ArbitrageFunc.VelodromeV2Router], 1),
-        // },
+        {
+            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.OP,
+            amountIn: getRandomAmount(0.5, 2, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.OP,
+            amountIn: getRandomAmount(0.5, 2, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.MummyRouter,
+        },
+
+        {
+            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+            tokenIn: TOKENS.OP,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(1000, 2000, 18),
+            minProfit: minProfitMap[TOKENS.OP],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+            tokenIn: TOKENS.OP,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(1000, 2000, 18),
+            minProfit: minProfitMap[TOKENS.OP],
+            secondArbitrageFunc: ArbitrageFunc.MummyRouter,
+        },
+
+        {
+            borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.PERP,
+            amountIn: getRandomAmount(0.5, 2, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
+            tokenIn: TOKENS.PERP,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(1000, 2000, 18),
+            minProfit: minProfitMap[TOKENS.PERP],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+
+        {
+            borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.SNX,
+            amountIn: getRandomAmount(0.5, 2, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
+            tokenIn: TOKENS.SNX,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(1000, 2000, 18),
+            minProfit: minProfitMap[TOKENS.SNX],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
     ]
 
-    // return sampleSize(intentions, size)
-    return intentions
+    return sampleSize(intentions, size)
 }
