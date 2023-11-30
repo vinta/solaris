@@ -35,6 +35,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: this.owner.address,
+            oneInchApiEndpoint: this.ONEINCH_API_ENDPOINT,
         })
 
         let i = 0
@@ -42,7 +43,6 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             i++
 
             const intentions = getRandomIntentions(6)
-
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
 
             const nowTimestamp = Date.now() / 1000
@@ -63,8 +63,10 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
                 // console.log("Too Many Requests")
                 await sleep(1000 * randomNumber(0.2, 1))
                 return
+            } else {
+                console.log("Failed to fetch 1inch API")
+                return
             }
-            throw err
         }
 
         try {
@@ -140,11 +142,11 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         })
 
         if (res.status === 429) {
-            throw new Error("FetchOneInchSwapData - TooManyRequests")
+            throw new Error("TooManyRequests")
         }
 
         if (!res.ok) {
-            const err = new Error("FetchOneInchSwapData - Error")
+            const err = new Error("Error")
             err.message = await res.text()
             throw err
         }
@@ -152,7 +154,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         const response = await res.json()
 
         if (!response.tx?.data) {
-            const err = new Error("FetchOneInchSwapData - NoData")
+            const err = new Error("NoData")
             err.message = await res.text()
             throw err
         }
