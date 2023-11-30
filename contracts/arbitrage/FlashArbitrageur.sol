@@ -64,6 +64,7 @@ contract FlashArbitrageur is
 
     function uniswapV3SwapCallback(int amount0, int amount1, bytes calldata data) external {
         SwapCallbackData memory decoded = abi.decode(data, (SwapCallbackData));
+
         address pool = decoded.pool;
         if (msg.sender != pool) {
             revert InvalidCaller();
