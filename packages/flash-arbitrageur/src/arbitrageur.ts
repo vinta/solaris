@@ -30,6 +30,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const network = this.getNetwork()
         const providerOptions = {
             // 6 intentions: 2582 requests/58 seconds
+            // 4 intentions: 2713 requests/58 seconds
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
             // 2 intentions: 3299 requests/58 seconds
             // batchMaxCount: 1,
