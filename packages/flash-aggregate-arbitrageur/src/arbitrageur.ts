@@ -62,7 +62,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             const errMessage = err.message || err.reason || ""
             if (errMessage.includes("TooManyRequests")) {
                 // console.log("Too Many Requests")
-                await sleep(1000 * getRandomNumber(0.2, 1))
+                await sleep(1000 * getRandomNumber(0.5, 1))
                 return
             } else {
                 console.log("Failed to fetch 1inch API")
