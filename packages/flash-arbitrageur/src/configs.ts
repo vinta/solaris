@@ -23,14 +23,14 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
-        {
-            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.USDCe,
-            amountIn: getRandomAmount(1, 10, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
-        },
+        // {
+        //     borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
+        //     tokenIn: TOKENS.WETH,
+        //     tokenOut: TOKENS.USDCe,
+        //     amountIn: getRandomAmount(1, 10, 18),
+        //     minProfit: minProfitMap[TOKENS.WETH],
+        //     secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        // },
         // {
         //     borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
         //     tokenIn: TOKENS.WETH,
@@ -48,14 +48,14 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
-        {
-            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
-            tokenIn: TOKENS.USDCe,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(2000, 20000, 6),
-            minProfit: minProfitMap[TOKENS.USDCe],
-            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
-        },
+        // {
+        //     borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
+        //     tokenIn: TOKENS.USDCe,
+        //     tokenOut: TOKENS.WETH,
+        //     amountIn: getRandomAmount(2000, 20000, 6),
+        //     minProfit: minProfitMap[TOKENS.USDCe],
+        //     secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        // },
         // {
         //     borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
         //     tokenIn: TOKENS.USDCe,
