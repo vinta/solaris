@@ -16,7 +16,6 @@ export abstract class BaseArbitrageur {
 
     nonceManager = new NonceManager()
     owner!: HDNodeWallet
-    ownerWithSequencerProvider!: HDNodeWallet
 
     getNetwork() {
         return new Network(this.NETWORK_NAME, this.NETWORK_CHAIN_ID)

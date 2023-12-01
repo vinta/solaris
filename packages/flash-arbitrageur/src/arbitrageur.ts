@@ -36,10 +36,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             batchMaxCount: 1,
         }
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, providerOptions)
-        const sequencerProvider = this.getProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {})
 
         this.owner = await this.getOwner(provider)
-        this.ownerWithSequencerProvider = this.owner.connect(sequencerProvider)
         this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
@@ -105,12 +103,12 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             intention.secondArbitrageFunc,
         )
 
-        await this.sendTx(this.ownerWithSequencerProvider, async () => {
+        await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.ownerWithSequencerProvider.sendTransaction({
+            await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
+                nonce: this.nonceManager.getNonce(this.owner),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 // type: gas.type,
