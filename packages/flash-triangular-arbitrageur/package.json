@@ -1,0 +1,27 @@
+{
+  "name": "@solaris/flash-triangular-arbitrageur",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "typegen:core": "typechain --target ethers-v6 --out-dir types/ '../../out/**/FlashTriangularArbitrageur.json'",
+    "typegen": "npm run typegen:core",
+    "deploy": "sls deploy -s prod --verbose",
+    "deploy:fast": "sls deploy function -s prod -f optimism",
+    "invoke": "sls invoke -s prod -f optimism --log",
+    "invoke:local": "sls invoke local -s dev -f optimism",
+    "logs": "sls logs -s prod -f optimism --startTime 5m -t",
+    "clean": "rm -rf .esbuild/ .serverless/ types/"
+  },
+  "dependencies": {
+    "@solaris/common": "*"
+  },
+  "devDependencies": {
+    "@typechain/ethers-v6": "0.5.1",
+    "esbuild": "0.19.5",
+    "serverless": "3.35.2",
+    "serverless-deployment-bucket": "1.6.0",
+    "serverless-esbuild": "1.48.5",
+    "typechain": "8.3.2"
+  }
+}

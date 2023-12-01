@@ -1,0 +1,50 @@
+# https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
+# https://github.com/serverless/examples
+service: solaris-flash-triangular-arb
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  profile: solaris
+  stage: prod
+  region: us-east-2
+  runtime: nodejs18.x
+  architecture: arm64
+  memorySize: 1024 # it won't be faster if > 1024
+  timeout: 60
+  versionFunctions: false
+  deploymentMethod: direct
+  deploymentBucket:
+    name: solaris-serverless-deploys-us-east-2
+    blockPublicAccess: true
+    serverSideEncryption: AES256
+  logRetentionInDays: 7
+  environment:
+    # base
+    NETWORK_NAME: ${env:NETWORK_NAME}
+    NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
+    RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
+    SEQUENCER_RPC_PROVIDER_URL: ${env:SEQUENCER_RPC_PROVIDER_URL}
+    OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
+    ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
+    TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
+    # prod
+    SENTRY_DSN: ${env:SENTRY_DSN, ""}
+
+functions:
+  optimism:
+    handler: handlers.optimism
+    reservedConcurrency: 1
+    maximumRetryAttempts: 0
+    events:
+      - schedule: rate(1 minute)
+
+plugins:
+  - serverless-deployment-bucket
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false

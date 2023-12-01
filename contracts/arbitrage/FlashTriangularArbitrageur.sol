@@ -15,7 +15,6 @@ contract FlashTriangularArbitrageur is IErrors, BaseArbitrageur, BeethovenFlashL
     address constant UNISWAP_V3_SWAP_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
     address constant VELODROME_V2_ROUTER = 0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858;
     address constant VELODROME_V2_POOL_FACTORY = 0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
-    address constant MUMMY_ROUTER = 0x68d1CA32Aee9a73534429D8376743Bf222ff1870;
 
     struct BeethovenFlashloanCallbackData {
         bytes path;
