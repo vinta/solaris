@@ -117,7 +117,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
-        console.log("arbitrage tx sent")
+        console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
         process.exit(0)
     }
 }
