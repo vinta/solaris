@@ -31,7 +31,7 @@ provider:
     TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
     # specific
     ONEINCH_API_ENDPOINT: ${env:ONEINCH_API_ENDPOINT}
-    ONEINCH_API_KEY: ${env:ONEINCH_API_KEY}
+    ONEINCH_API_KEYS: ${env:ONEINCH_API_KEYS}
     # prod
     SENTRY_DSN: ${env:SENTRY_DSN, ""}
 
