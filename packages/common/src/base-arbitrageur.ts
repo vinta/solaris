@@ -41,18 +41,21 @@ export abstract class BaseArbitrageur {
         // gasPrice = baseFee + maxPriorityFeePerGas
         // let transactionFee = profit * 0.5
         // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
-
         const gasUsage = BigInt(500000)
         const l1Fee = BigInt(0)
         const baseFee = BigInt(0)
+        const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
 
         const bufferedProfit = (profit * BigInt(5)) / BigInt(10)
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
-        const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
+        let maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
+        if (maxPriorityFeePerGas < minMaxPriorityFeePerGas) {
+            maxPriorityFeePerGas = minMaxPriorityFeePerGas
+        }
 
         return {
             type: 2,
-            maxFeePerGas: maxPriorityFeePerGas + BigInt(1000000000), // plus 1 Gwei
+            maxFeePerGas: maxPriorityFeePerGas,
             maxPriorityFeePerGas,
         }
     }
