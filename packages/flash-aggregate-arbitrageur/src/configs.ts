@@ -13,22 +13,20 @@ export interface Intention {
 
 export function getRandomIntentions(size: number) {
     const intentions: Intention[] = [
-        // FIXME: OneInchSwapFail()
-        // {
-        //     tokenIn: TOKENS.WETH,
-        //     tokenOut: TOKENS.USDC,
-        //     amountIn: getRandomAmount(1, 10, 18),
-        //     minProfit: minProfitMap[TOKENS.WETH],
-        //     uniswapV3Fee: 500,
-        // },
-        // {
-        //     tokenIn: TOKENS.USDC,
-        //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(2000, 20000, 6),
-        //     minProfit: minProfitMap[TOKENS.USDC],
-        //     uniswapV3Fee: 500,
-        // },
-
+        {
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.USDC,
+            amountIn: getRandomAmount(1, 10, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            uniswapV3Fee: 500,
+        },
+        {
+            tokenIn: TOKENS.USDC,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(2000, 20000, 6),
+            minProfit: minProfitMap[TOKENS.USDC],
+            uniswapV3Fee: 500,
+        },
         {
             tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.USDCe,
@@ -83,17 +81,15 @@ export function getRandomIntentions(size: number) {
             tokenOut: TOKENS.WBTC,
             amountIn: getRandomAmount(1, 10, 18),
             minProfit: minProfitMap[TOKENS.WETH],
-            uniswapV3Fee: 3000,
+            uniswapV3Fee: 500,
         },
-
-        // FIXME: OneInchSwapFail()
-        // {
-        //     tokenIn: TOKENS.wstETH,
-        //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1, 10, 18),
-        //     minProfit: minProfitMap[TOKENS.WETH],
-        //     uniswapV3Fee: 100,
-        // },
+        {
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.wstETH,
+            amountIn: getRandomAmount(1, 1, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            uniswapV3Fee: 100,
+        },
     ]
 
     return sampleSize(intentions, size)
@@ -107,7 +103,7 @@ export const oneInchProtocols = [
     "OPTIMISM_ONE_INCH_LIMIT_ORDER_V2",
     "OPTIMISM_ONE_INCH_LIMIT_ORDER_V3",
     // "OPTIMISM_CURVE",
-    "OPTIMISM_BALANCER_V2",
+    // "OPTIMISM_BALANCER_V2",
     "OPTIMISM_VELODROME",
     // "OPTIMISM_KYBERSWAP_ELASTIC",
     // "OPTIMISM_CLIPPER_COVES",
