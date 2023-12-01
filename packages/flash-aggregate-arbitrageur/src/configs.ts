@@ -83,7 +83,7 @@ export function getRandomIntentions(size: number) {
             tokenOut: TOKENS.WBTC,
             amountIn: getRandomAmount(1, 10, 18),
             minProfit: minProfitMap[TOKENS.WETH],
-            uniswapV3Fee: 500,
+            uniswapV3Fee: 3000,
         },
 
         // FIXME: OneInchSwapFail()
