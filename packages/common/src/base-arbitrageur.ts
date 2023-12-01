@@ -1,6 +1,7 @@
-import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network } from "ethers"
+import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
+import { TOKENS, tokenToEthPriceMap } from "./constants"
 
 export abstract class BaseArbitrageur {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -36,15 +37,45 @@ export abstract class BaseArbitrageur {
     }
 
     calculateGas(token: string, profit: bigint) {
+        // transactionFee = gasUsage * gasPrice + l1Fee
         // gasPrice = baseFee + maxPriorityFeePerGas
-        // transactionFee = gasUsage * gasPrice
+        // let transactionFee = profit * 0.5
+        // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
+
+        const gasUsage = BigInt(500000)
+        const l1Fee = BigInt(0)
+        const baseFee = BigInt(0)
+
+        const bufferedProfit = (profit * BigInt(5)) / BigInt(10)
+        const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
+        const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
+
         return {
             type: 2,
-            // maxFeePerGas: 2000000000, // Max: 2 Gwei
-            // maxPriorityFeePerGas: 1500000000, // Max Priority: 1.5 Gwei
-            maxFeePerGas: 10000000000, // Max: 10 Gwei
-            maxPriorityFeePerGas: 7000000000, // Max Priority: 7 Gwei
+            maxFeePerGas: maxPriorityFeePerGas + BigInt(1000000000), // plus 1 Gwei
+            maxPriorityFeePerGas,
         }
+    }
+
+    convertAmountToEth(token: string, amount: bigint) {
+        let amountInEth
+        if (token === TOKENS.WETH) {
+            amountInEth = amount
+        } else if (token === TOKENS.USDC || token === TOKENS.USDCe) {
+            const amountX10 = Number(formatUnits(amount, 6))
+            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
+            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
+        } else if (token === TOKENS.WBTC) {
+            const amountX10 = Number(formatUnits(amount, 8))
+            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
+            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
+        } else {
+            const amountX10 = Number(formatUnits(amount, 18))
+            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
+            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
+        }
+
+        return amountInEth
     }
 
     async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
