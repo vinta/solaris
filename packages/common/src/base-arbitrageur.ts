@@ -91,11 +91,6 @@ export abstract class BaseArbitrageur {
             if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {
                 await this.nonceManager.resetNonce(wallet)
                 throw new Error("ResetNonce")
-            } else if (errMessage.includes("rpc method is not whitelisted") && errMessage.includes("eth_blockNumber")) {
-                // NOTE: tx was sent successfully, but this program fails due to "rpc method is not whitelisted"
-                this.nonceManager.increaseNonce(wallet)
-                console.log("tx sent to sequencer")
-                return true
             }
             throw err
         } finally {

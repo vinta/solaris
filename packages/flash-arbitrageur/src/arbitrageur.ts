@@ -93,7 +93,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     private async arbitrage(intention: Intention, profit: bigint) {
-        // const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit)
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
             intention.borrowFromUniswapPool,
             intention.tokenIn,
@@ -111,9 +111,9 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 nonce: this.nonceManager.getNonce(this.owner),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
-                // type: gas.type,
-                // maxFeePerGas: gas.maxFeePerGas,
-                // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+                type: gas.type,
+                maxFeePerGas: gas.maxFeePerGas,
+                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
         console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
