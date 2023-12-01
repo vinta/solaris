@@ -69,7 +69,7 @@ export function getRandomIntentions(size: number) {
         //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
         //     tokenIn: TOKENS.WETH,
         //     tokenOut: TOKENS.OP,
-        //     amountIn: getRandomAmount(0.5, 2, 18),
+        //     amountIn: getRandomAmount(1, 5, 18),
         //     minProfit: minProfitMap[TOKENS.WETH],
         //     secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         // },
@@ -77,7 +77,15 @@ export function getRandomIntentions(size: number) {
         //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
         //     tokenIn: TOKENS.WETH,
         //     tokenOut: TOKENS.OP,
-        //     amountIn: getRandomAmount(0.5, 2, 18),
+        //     amountIn: getRandomAmount(1, 5, 18),
+        //     minProfit: minProfitMap[TOKENS.WETH],
+        //     secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        // },
+        // {
+        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+        //     tokenIn: TOKENS.WETH,
+        //     tokenOut: TOKENS.OP,
+        //     amountIn: getRandomAmount(1, 5, 18),
         //     minProfit: minProfitMap[TOKENS.WETH],
         //     secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         // },
@@ -86,7 +94,7 @@ export function getRandomIntentions(size: number) {
         //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
         //     tokenIn: TOKENS.OP,
         //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1000, 2000, 18),
+        //     amountIn: getRandomAmount(1000, 5000, 18),
         //     minProfit: minProfitMap[TOKENS.OP],
         //     secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         // },
@@ -94,7 +102,15 @@ export function getRandomIntentions(size: number) {
         //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
         //     tokenIn: TOKENS.OP,
         //     tokenOut: TOKENS.WETH,
-        //     amountIn: getRandomAmount(1000, 2000, 18),
+        //     amountIn: getRandomAmount(1000, 5000, 18),
+        //     minProfit: minProfitMap[TOKENS.OP],
+        //     secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        // },
+        // {
+        //     borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
+        //     tokenIn: TOKENS.OP,
+        //     tokenOut: TOKENS.WETH,
+        //     amountIn: getRandomAmount(1000, 5000, 18),
         //     minProfit: minProfitMap[TOKENS.OP],
         //     secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         // },
