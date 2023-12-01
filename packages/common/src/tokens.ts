@@ -6,13 +6,13 @@ export const TOKENS = {
     WETH: "0x4200000000000000000000000000000000000006",
     OP: "0x4200000000000000000000000000000000000042",
     PERP: "0x9e1028f5f1d5ede59748ffcee5532509976840e0",
-    SNX: "0x9e1028f5f1d5ede59748ffcee5532509976840e0",
+    SNX: "0x8700daec35af8ff88c16bdf0418774cb3d7599b4",
     wstETH: "0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
     WLD: "0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
     WBTC: "0x68f180fcce6836688e9084f035309e29bf0a2095",
 }
 
-const multiplier = BigInt(10)
+const multiplier = BigInt(1)
 
 // NOTE: must also update BaseArbitrageur.convertAmountToEth()
 export const minProfitMap = {
