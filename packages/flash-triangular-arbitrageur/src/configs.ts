@@ -1,3 +1,4 @@
+import { solidityPacked } from "ethers"
 import { sampleSize } from "lodash"
 
 import { ArbitrageFunc } from "@solaris/common/src/constants"
@@ -17,7 +18,10 @@ export function getRandomIntentions(size: number) {
     const intentions: Intention[] = [
         // UniswapV3
         {
-            path: "",
+            path: solidityPacked(
+                ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+                [TOKENS.WETH, 500, TOKENS.USDCe, 3000, TOKENS.OP, 3000, TOKENS.WETH],
+            ),
             tokens: [],
             tokenIn: TOKENS.WETH,
             amountIn: getRandomAmount(1, 10, 18),
