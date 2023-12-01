@@ -1,7 +1,8 @@
 import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
-import { TOKENS, tokenToEthPriceMap } from "./constants"
+
+import { TOKENS, tokenToEthPriceMap } from "./tokens"
 
 export abstract class BaseArbitrageur {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -60,30 +61,28 @@ export abstract class BaseArbitrageur {
     }
 
     convertAmountToEth(token: string, amount: bigint) {
-        let amountInEth
         if (token === TOKENS.WETH) {
-            amountInEth = amount
-        } else if (token === TOKENS.USDC || token === TOKENS.USDCe) {
-            const amountX10 = Number(formatUnits(amount, 6))
-            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
-            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
-        } else if (token === TOKENS.WBTC) {
-            const amountX10 = Number(formatUnits(amount, 8))
-            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
-            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
-        } else {
-            const amountX10 = Number(formatUnits(amount, 18))
-            const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
-            amountInEth = parseUnits(amountInEthX10.toFixed(18), 18)
+            return amount
         }
 
-        return amountInEth
+        let amountX10: number
+        if (token === TOKENS.USDC || token === TOKENS.USDCe) {
+            amountX10 = Number(formatUnits(amount, 6))
+        } else if (token === TOKENS.WBTC) {
+            amountX10 = Number(formatUnits(amount, 8))
+        } else {
+            amountX10 = Number(formatUnits(amount, 18))
+        }
+
+        const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
+
+        return parseUnits(amountInEthX10.toFixed(18), 18)
     }
 
-    async sendTx(wallet: HDNodeWallet, sendTxFn: () => Promise<void>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<void>) {
         const release = await this.nonceManager.lock(wallet)
         try {
-            await sendTxFn()
+            await sendTxFunc()
             this.nonceManager.increaseNonce(wallet)
             return true
         } catch (err: any) {

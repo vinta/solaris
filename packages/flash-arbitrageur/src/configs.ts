@@ -1,7 +1,8 @@
 import { sampleSize } from "lodash"
 
-import { TOKENS, minProfitMap, ArbitrageFunc } from "@solaris/common/src/constants"
+import { ArbitrageFunc } from "@solaris/common/src/constants"
 import { getRandomAmount } from "@solaris/common/src/utils"
+import { TOKENS, minProfitMap } from "@solaris/common/src/tokens"
 
 export interface Intention {
     borrowFromUniswapPool: string

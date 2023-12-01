@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/serverless"
-import { parseUnits } from "ethers"
 import { Handler } from "aws-lambda"
+import { parseUnits } from "ethers"
+import * as Sentry from "@sentry/serverless"
 
 export function wrapSentryHandlerIfNeeded(handler: Handler) {
     const SENTRY_DSN = process.env.SENTRY_DSN

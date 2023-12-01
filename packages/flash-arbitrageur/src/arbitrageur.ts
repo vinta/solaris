@@ -28,14 +28,13 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const startTimestamp = Date.now() / 1000
 
         const network = this.getNetwork()
-        const providerOptions = {
+        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
             // 6 intentions: 2582 requests/58 seconds
             // 4 intentions: 2713 requests/58 seconds
             // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
             // 2 intentions: 3663 requests/58 seconds
             batchMaxCount: 1,
-        }
-        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, providerOptions)
+        })
 
         this.owner = await this.getOwner(provider)
         this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
