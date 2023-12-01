@@ -1,4 +1,5 @@
 import { Handler } from "aws-lambda"
+import { random } from "lodash"
 
 import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { getRandomNumber, sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
@@ -8,7 +9,7 @@ import { FlashAggregateArbitrageur, FlashAggregateArbitrageur__factory } from ".
 
 class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
     ONEINCH_API_ENDPOINT = process.env.ONEINCH_API_ENDPOINT!
-    ONEINCH_API_KEY = process.env.ONEINCH_API_KEY!
+    ONEINCH_API_KEYS = process.env.ONEINCH_API_KEYS!.split(",")
 
     arbitrageur!: FlashAggregateArbitrageur
 
@@ -23,10 +24,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
 
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {})
-        const sequencerProvider = this.getProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {})
 
         this.owner = await this.getOwner(provider)
-        this.ownerWithSequencerProvider = this.owner.connect(sequencerProvider)
         this.arbitrageur = FlashAggregateArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
@@ -61,7 +60,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             const errMessage = err.message || err.reason || ""
             if (errMessage.includes("TooManyRequests")) {
                 // console.log("Too Many Requests")
-                await sleep(1000 * getRandomNumber(0.2, 1))
+                await sleep(1000 * getRandomNumber(0.5, 1))
                 return
             } else {
                 console.log("Failed to fetch 1inch API")
@@ -103,12 +102,12 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             intention.uniswapV3Fee,
         )
 
-        await this.sendTx(this.ownerWithSequencerProvider, async () => {
+        await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.ownerWithSequencerProvider.sendTransaction({
+            await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
+                nonce: this.nonceManager.getNonce(this.owner),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
@@ -133,11 +132,13 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         const urlParams = new URLSearchParams(params)
         const url = `${this.ONEINCH_API_ENDPOINT}/swap?${urlParams}`
 
+        const oneInchApiKey = this.ONEINCH_API_KEYS[random(0, this.ONEINCH_API_KEYS.length - 1)]
+
         const res = await fetch(url, {
             method: "get",
             headers: {
                 Accept: "application/json",
-                Authorization: `Bearer ${this.ONEINCH_API_KEY}`,
+                Authorization: `Bearer ${oneInchApiKey}`,
             },
         })
 

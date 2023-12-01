@@ -28,17 +28,15 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const startTimestamp = Date.now() / 1000
 
         const network = this.getNetwork()
-        const providerOptions = {
+        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
             // 6 intentions: 2582 requests/58 seconds
-            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // 2 intentions: 3299 requests/58 seconds
-            // batchMaxCount: 1,
-        }
-        const provider = this.getProvider(this.RPC_PROVIDER_URL, network, providerOptions)
-        const sequencerProvider = this.getProvider(this.SEQUENCER_RPC_PROVIDER_URL, network, {})
+            // 4 intentions: 2713 requests/58 seconds
+            // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
+            // 2 intentions: 3663 requests/58 seconds
+            batchMaxCount: 1,
+        })
 
         this.owner = await this.getOwner(provider)
-        this.ownerWithSequencerProvider = this.owner.connect(sequencerProvider)
         this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
@@ -94,7 +92,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     private async arbitrage(intention: Intention, profit: bigint) {
-        // const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit)
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
             intention.borrowFromUniswapPool,
             intention.tokenIn,
@@ -104,17 +102,17 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             intention.secondArbitrageFunc,
         )
 
-        await this.sendTx(this.ownerWithSequencerProvider, async () => {
+        await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.ownerWithSequencerProvider.sendTransaction({
+            await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(this.ownerWithSequencerProvider),
+                nonce: this.nonceManager.getNonce(this.owner),
                 gasLimit: this.GAS_LIMIT_PER_BLOCK,
                 chainId: this.NETWORK_CHAIN_ID,
-                // type: gas.type,
-                // maxFeePerGas: gas.maxFeePerGas,
-                // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+                type: gas.type,
+                maxFeePerGas: gas.maxFeePerGas,
+                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
         console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
