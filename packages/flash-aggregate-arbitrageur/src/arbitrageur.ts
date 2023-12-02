@@ -33,7 +33,6 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
-            sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: this.owner.address,
             oneInchApiEndpoint: this.ONEINCH_API_ENDPOINT,
@@ -71,15 +70,25 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         }
 
         try {
-            const profit = await this.arbitrageur.arbitrageOneInch.staticCall(
-                intention.tokenIn,
-                intention.tokenOut,
-                intention.amountIn,
-                intention.minProfit,
-                oneInchData,
-                intention.uniswapV3Fee,
-            )
-            await this.arbitrage(intention, profit, oneInchData)
+            const [profit, estimatedGas] = await Promise.all([
+                this.arbitrageur.arbitrageOneInch.staticCall(
+                    intention.tokenIn,
+                    intention.tokenOut,
+                    intention.amountIn,
+                    intention.minProfit,
+                    oneInchData,
+                    intention.uniswapV3Fee,
+                ),
+                this.arbitrageur.arbitrageOneInch.estimateGas(
+                    intention.tokenIn,
+                    intention.tokenOut,
+                    intention.amountIn,
+                    intention.minProfit,
+                    oneInchData,
+                    intention.uniswapV3Fee,
+                ),
+            ])
+            await this.arbitrage(intention, oneInchData, profit, estimatedGas)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
@@ -93,8 +102,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         }
     }
 
-    async arbitrage(intention: Intention, profit: bigint, oneInchData: string) {
-        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(2_000_000))
+    async arbitrage(intention: Intention, oneInchData: string, profit: bigint, estimatedGas: bigint) {
+        const gas = this.calculateGas(intention.tokenIn, profit, estimatedGas)
         const populateTx = await this.arbitrageur.arbitrageOneInch.populateTransaction(
             intention.tokenIn,
             intention.tokenOut,
@@ -102,6 +111,14 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             intention.minProfit,
             oneInchData,
             intention.uniswapV3Fee,
+            {
+                nonce: this.nonceManager.getNonce(this.owner),
+                chainId: this.NETWORK_CHAIN_ID,
+                gasLimit: estimatedGas,
+                type: gas.type,
+                maxFeePerGas: gas.maxFeePerGas,
+                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+            },
         )
 
         const tx = await this.sendTx(this.owner, async () => {
@@ -110,8 +127,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
                 to: populateTx.to,
                 data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.owner),
-                // gasLimit: this.GAS_LIMIT,
                 chainId: this.NETWORK_CHAIN_ID,
+                gasLimit: estimatedGas,
                 type: gas.type,
                 maxFeePerGas: gas.maxFeePerGas,
                 maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
