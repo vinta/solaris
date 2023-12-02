@@ -9,6 +9,7 @@ import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashArbitrageur
 
+    INTENTION_SIZE = 2
     GAS_LIMIT = BigInt(800_000)
 
     // UniswapV3Router
@@ -34,8 +35,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             // 6 intentions: 2582 requests/58 seconds
             // 4 intentions: 2713 requests/58 seconds
             // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // 2 intentions: 3663 requests/58 seconds
-            batchMaxCount: 2,
+            // 2 intentions: 2368 requests/58 seconds
+            batchMaxCount: this.INTENTION_SIZE * 2,
         })
 
         this.owner = await this.getOwner(provider)
@@ -44,7 +45,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
-            sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: this.owner.address,
         })
@@ -53,7 +53,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         while (true) {
             i++
 
-            const intentions = getRandomIntentions(6)
+            const intentions = getRandomIntentions(this.INTENTION_SIZE)
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
 
             const nowTimestamp = Date.now() / 1000
@@ -112,6 +112,14 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             intention.amountIn,
             intention.minProfit,
             intention.secondArbitrageFunc,
+            {
+                nonce: this.nonceManager.getNonce(this.owner),
+                chainId: this.NETWORK_CHAIN_ID,
+                gasLimit: estimatedGas,
+                type: gas.type,
+                maxFeePerGas: gas.maxFeePerGas,
+                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+            },
         )
 
         const tx = await this.sendTx(this.owner, async () => {
