@@ -13,6 +13,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
 
     arbitrageur!: FlashAggregateArbitrageur
 
+    GAS_LIMIT = BigInt(8_000_000)
+
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
 
@@ -92,7 +94,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     async arbitrage(intention: Intention, profit: bigint, oneInchData: string) {
-        const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(2_000_000))
         const populateTx = await this.arbitrageur.arbitrageOneInch.populateTransaction(
             intention.tokenIn,
             intention.tokenOut,
@@ -108,7 +110,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
                 to: populateTx.to,
                 data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.owner),
-                gasLimit: this.GAS_LIMIT,
+                // gasLimit: this.GAS_LIMIT,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
                 maxFeePerGas: gas.maxFeePerGas,

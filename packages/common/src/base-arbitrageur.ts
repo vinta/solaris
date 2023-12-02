@@ -21,8 +21,6 @@ export abstract class BaseArbitrageur {
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
 
-    GAS_LIMIT = BigInt(800_000)
-
     nonceManager = new NonceManager()
     owner!: HDNodeWallet
 
@@ -44,12 +42,11 @@ export abstract class BaseArbitrageur {
         return owner
     }
 
-    calculateGas(token: string, profit: bigint) {
+    calculateGas(token: string, profit: bigint, gasUsage: bigint) {
         // transactionFee = gasUsage * gasPrice + l1Fee
         // gasPrice = baseFee + maxPriorityFeePerGas
         // let transactionFee = profit * 0.5
         // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
-        const gasUsage = BigInt(500_000)
         const l1Fee = BigInt(0)
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei

@@ -9,6 +9,8 @@ import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashArbitrageur
 
+    GAS_LIMIT = BigInt(800_000)
+
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
 
@@ -92,7 +94,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     private async arbitrage(intention: Intention, profit: bigint) {
-        const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(500_000))
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
             intention.borrowFromUniswapPool,
             intention.tokenIn,
