@@ -102,21 +102,25 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             intention.secondArbitrageFunc,
         )
 
-        await this.sendTx(this.owner, async () => {
+        const tx = await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.owner.sendTransaction({
+            return await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.owner),
-                gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                gasLimit: this.GAS_LIMIT,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
                 maxFeePerGas: gas.maxFeePerGas,
                 maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
-        console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
-        process.exit(0)
+        console.log(
+            `arbitrage tx sent, profit: ${profit}, amountIn: ${intention.amountIn}, tokenIn: ${intention.tokenIn}`,
+        )
+
+        // no need to wait tx to be mined
+        // await tx.wait()
     }
 }
 

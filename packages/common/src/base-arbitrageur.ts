@@ -79,12 +79,12 @@ export abstract class BaseArbitrageur {
         return parseUnits(amountInEthX10.toFixed(18), 18)
     }
 
-    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<void>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<TransactionResponse>) {
         const release = await this.nonceManager.lock(wallet)
         try {
-            await sendTxFunc()
+            const tx = await sendTxFunc()
             this.nonceManager.increaseNonce(wallet)
-            return true
+            return tx
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {
