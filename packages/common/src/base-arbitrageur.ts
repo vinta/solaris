@@ -1,4 +1,12 @@
-import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
+import {
+    HDNodeWallet,
+    JsonRpcApiProviderOptions,
+    JsonRpcProvider,
+    Network,
+    TransactionResponse,
+    formatUnits,
+    parseUnits,
+} from "ethers"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 
@@ -13,7 +21,7 @@ export abstract class BaseArbitrageur {
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
 
-    GAS_LIMIT_PER_BLOCK = BigInt(8000000)
+    GAS_LIMIT = BigInt(800_000)
 
     nonceManager = new NonceManager()
     owner!: HDNodeWallet
@@ -41,14 +49,15 @@ export abstract class BaseArbitrageur {
         // gasPrice = baseFee + maxPriorityFeePerGas
         // let transactionFee = profit * 0.5
         // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
-        const gasUsage = BigInt(500000)
+        const gasUsage = BigInt(500_000)
         const l1Fee = BigInt(0)
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
 
         const bufferedProfit = (profit * BigInt(5)) / BigInt(10)
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
-        let maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
+
+        const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
         if (maxPriorityFeePerGas < minMaxPriorityFeePerGas) {
             return {}
         }
