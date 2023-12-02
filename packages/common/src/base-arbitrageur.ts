@@ -50,7 +50,7 @@ export abstract class BaseArbitrageur {
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
         let maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
         if (maxPriorityFeePerGas < minMaxPriorityFeePerGas) {
-            maxPriorityFeePerGas = minMaxPriorityFeePerGas
+            return {}
         }
 
         return {
