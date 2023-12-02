@@ -45,7 +45,7 @@ export function getRandomIntentions(size: number) {
             borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
             tokenIn: TOKENS.USDCe,
             tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(15000, 30000, 6),
+            amountIn: getRandomAmount(30000, 30000, 6),
             minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
