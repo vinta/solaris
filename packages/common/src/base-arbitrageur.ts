@@ -1,4 +1,12 @@
-import { HDNodeWallet, JsonRpcApiProviderOptions, JsonRpcProvider, Network, formatUnits, parseUnits } from "ethers"
+import {
+    HDNodeWallet,
+    JsonRpcApiProviderOptions,
+    JsonRpcProvider,
+    Network,
+    TransactionResponse,
+    formatUnits,
+    parseUnits,
+} from "ethers"
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 
@@ -12,8 +20,6 @@ export abstract class BaseArbitrageur {
     OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
-
-    GAS_LIMIT_PER_BLOCK = BigInt(8000000)
 
     nonceManager = new NonceManager()
     owner!: HDNodeWallet
@@ -36,21 +42,21 @@ export abstract class BaseArbitrageur {
         return owner
     }
 
-    calculateGas(token: string, profit: bigint) {
+    calculateGas(token: string, profit: bigint, gasUsage: bigint) {
         // transactionFee = gasUsage * gasPrice + l1Fee
         // gasPrice = baseFee + maxPriorityFeePerGas
         // let transactionFee = profit * 0.5
         // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
-        const gasUsage = BigInt(500000)
         const l1Fee = BigInt(0)
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
 
-        const bufferedProfit = (profit * BigInt(5)) / BigInt(10)
+        const bufferedProfit = (profit * BigInt(6)) / BigInt(10)
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
-        let maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
+
+        const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
         if (maxPriorityFeePerGas < minMaxPriorityFeePerGas) {
-            maxPriorityFeePerGas = minMaxPriorityFeePerGas
+            return {}
         }
 
         return {
@@ -79,12 +85,12 @@ export abstract class BaseArbitrageur {
         return parseUnits(amountInEthX10.toFixed(18), 18)
     }
 
-    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<void>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<TransactionResponse>) {
         const release = await this.nonceManager.lock(wallet)
         try {
-            await sendTxFunc()
+            const tx = await sendTxFunc()
             this.nonceManager.increaseNonce(wallet)
-            return true
+            return tx
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (err.code === "NONCE_EXPIRED" || errMessage.includes("invalid transaction nonce")) {

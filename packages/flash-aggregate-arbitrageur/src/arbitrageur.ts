@@ -13,6 +13,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
 
     arbitrageur!: FlashAggregateArbitrageur
 
+    GAS_LIMIT = BigInt(8_000_000)
+
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
 
@@ -92,7 +94,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     async arbitrage(intention: Intention, profit: bigint, oneInchData: string) {
-        const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(2_000_000))
         const populateTx = await this.arbitrageur.arbitrageOneInch.populateTransaction(
             intention.tokenIn,
             intention.tokenOut,
@@ -102,21 +104,26 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
             intention.uniswapV3Fee,
         )
 
-        await this.sendTx(this.owner, async () => {
+        const tx = await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.owner.sendTransaction({
+            return await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.owner),
-                gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                // gasLimit: this.GAS_LIMIT,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
                 maxFeePerGas: gas.maxFeePerGas,
                 maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
-        console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
-        process.exit(0)
+        console.log(
+            `arbitrage tx sent, profit: ${profit}, amountIn: ${intention.amountIn}, tokenIn: ${intention.tokenIn}`,
+        )
+
+        // no need to wait tx to be mined
+        // const txReceipt = await tx.wait()
+        // console.dir(txReceipt)
     }
 
     async fetchOneInchSwapData(intention: Intention) {
