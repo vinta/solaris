@@ -140,6 +140,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         // no need to wait tx to be mined
         // const txReceipt = await tx.wait()
         // console.dir(txReceipt)
+
+        process.exit(0)
     }
 }
 
