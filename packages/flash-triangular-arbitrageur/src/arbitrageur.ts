@@ -9,6 +9,8 @@ import { FlashTriangularArbitrageur, FlashTriangularArbitrageur__factory } from 
 class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashTriangularArbitrageur
 
+    GAS_LIMIT = BigInt(800_000)
+
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
 
@@ -56,24 +58,19 @@ class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
     private async tryArbitrage(intention: Intention) {
         try {
             const profit = await this.arbitrageur.arbitrage.staticCall(
-                intention.borrowFromUniswapPool,
+                intention.path,
+                intention.tokens,
                 intention.tokenIn,
-                intention.tokenOut,
                 intention.amountIn,
                 intention.minProfit,
-                intention.secondArbitrageFunc,
+                intention.arbitrageFunc,
             )
             await this.arbitrage(intention, profit)
         } catch (err: any) {
             const errMessage = err.message || err.reason || ""
             if (
                 errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
-                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
-                errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
-                errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
-                errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
-                errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
-                errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
+                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT)
             ) {
                 // console.log("No Profit")
             } else {
@@ -83,31 +80,36 @@ class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     private async arbitrage(intention: Intention, profit: bigint) {
-        const gas = this.calculateGas(intention.tokenIn, profit)
+        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(800_000))
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
-            intention.borrowFromUniswapPool,
+            intention.path,
+            intention.tokens,
             intention.tokenIn,
-            intention.tokenOut,
             intention.amountIn,
             intention.minProfit,
-            intention.secondArbitrageFunc,
+            intention.arbitrageFunc,
         )
 
         await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            await this.owner.sendTransaction({
+            return await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
                 nonce: this.nonceManager.getNonce(this.owner),
-                gasLimit: this.GAS_LIMIT_PER_BLOCK,
+                // gasLimit: this.GAS_LIMIT,
                 chainId: this.NETWORK_CHAIN_ID,
                 type: gas.type,
                 maxFeePerGas: gas.maxFeePerGas,
                 maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
             })
         })
-        console.log(`arbitrage tx sent, profit: ${profit} in ${intention.tokenIn}`)
-        process.exit(0)
+        console.log(
+            `arbitrage tx sent, profit: ${profit}, amountIn: ${intention.amountIn}, tokenIn: ${intention.tokenIn}`,
+        )
+
+        // no need to wait tx to be mined
+        const txReceipt = await tx.wait()
+        console.dir(txReceipt)
     }
 }
 

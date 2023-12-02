@@ -3,6 +3,8 @@ import { parseUnits } from "ethers"
 export const TOKENS = {
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     USDCe: "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
+    USDT: "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
+    DAI: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
     WETH: "0x4200000000000000000000000000000000000006",
     OP: "0x4200000000000000000000000000000000000042",
     PERP: "0x9e1028f5f1d5ede59748ffcee5532509976840e0",
@@ -18,6 +20,8 @@ export const minProfitMap = {
     // 1 USDC = ??? TOKEN
     [TOKENS.USDC]: parseUnits("1", 6), // 1 USD
     [TOKENS.USDCe]: parseUnits("1", 6), // 1 USD
+    [TOKENS.USDT]: parseUnits("1", 6), // 1 USD
+    [TOKENS.DAI]: parseUnits("1", 18), // 1 USD
     [TOKENS.WETH]: parseUnits("0.0005", 18), // 1 USD
     [TOKENS.OP]: parseUnits("1", 18), // 1 US
     [TOKENS.PERP]: parseUnits("1.474802", 18), // 1 USD
@@ -29,9 +33,11 @@ export const minProfitMap = {
 }
 
 export const toEthPriceMap = {
-    // 1 WETH = ??? TOKEN
-    [TOKENS.USDC]: 2153.278256,
-    [TOKENS.USDCe]: 2153.278256,
+    // 1 ETH = ??? TOKEN
+    [TOKENS.USDC]: 2033.847474,
+    [TOKENS.USDCe]: 2033.847474,
+    [TOKENS.USDT]: 2033.847474,
+    [TOKENS.DAI]: 2033.847474,
     [TOKENS.WETH]: 1,
     [TOKENS.OP]: 1258.072023,
     [TOKENS.PERP]: 3164.221199,
