@@ -15,7 +15,7 @@ interface ProfitResult {
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashArbitrageur
 
-    INTENTION_SIZE = 2
+    INTENTION_SIZE = 4
     AMOUNT_CHUNK_SIZE = 5
     GAS_LIMIT = BigInt(800_000)
 
@@ -39,11 +39,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
-            // 6 intentions: 2582 requests/58 seconds
-            // 4 intentions: 2713 requests/58 seconds
-            // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // 2 intentions: 2368 requests/58 seconds
-            batchMaxCount: this.INTENTION_SIZE * this.AMOUNT_CHUNK_SIZE * 2,
+            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
         })
 
         this.owner = await this.getOwner(provider)
