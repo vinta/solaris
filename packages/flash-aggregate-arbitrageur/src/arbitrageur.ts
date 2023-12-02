@@ -122,7 +122,8 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         )
 
         // no need to wait tx to be mined
-        // await tx.wait()
+        // const txReceipt = await tx.wait()
+        // console.dir(txReceipt)
     }
 
     async fetchOneInchSwapData(intention: Intention) {
