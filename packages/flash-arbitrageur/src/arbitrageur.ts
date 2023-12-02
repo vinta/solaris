@@ -105,6 +105,15 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
     private async arbitrage(intention: Intention, profit: bigint, estimatedGas: bigint) {
         const gas = this.calculateGas(intention.tokenIn, profit, estimatedGas)
+        const txOptions = {
+            nonce: this.nonceManager.getNonce(this.owner),
+            chainId: this.NETWORK_CHAIN_ID,
+            gasLimit: estimatedGas,
+            type: gas.type,
+            maxFeePerGas: gas.maxFeePerGas,
+            maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+        }
+
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
             intention.borrowFromUniswapPool,
             intention.tokenIn,
@@ -112,14 +121,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             intention.amountIn,
             intention.minProfit,
             intention.secondArbitrageFunc,
-            {
-                nonce: this.nonceManager.getNonce(this.owner),
-                chainId: this.NETWORK_CHAIN_ID,
-                gasLimit: estimatedGas,
-                type: gas.type,
-                maxFeePerGas: gas.maxFeePerGas,
-                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
-            },
+            txOptions,
         )
 
         const tx = await this.sendTx(this.owner, async () => {
@@ -127,14 +129,10 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             return await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(this.owner),
-                chainId: this.NETWORK_CHAIN_ID,
-                gasLimit: estimatedGas,
-                type: gas.type,
-                maxFeePerGas: gas.maxFeePerGas,
-                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+                ...txOptions,
             })
         })
+
         console.log(
             `arbitrage tx sent, profit: ${profit}, amountIn: ${intention.amountIn}, tokenIn: ${intention.tokenIn}`,
         )
