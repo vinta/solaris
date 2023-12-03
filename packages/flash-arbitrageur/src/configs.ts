@@ -65,24 +65,6 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
-        // WETH -> PERP
-        {
-            borrowFromUniswapPool: "0x535541f1aa08416e69dc4d610131099fa2ae7222", // 3000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.PERP,
-            amountIn: getRandomAmount(10, 25, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
-        },
-        // WETH -> SNX
-        {
-            borrowFromUniswapPool: "0x0392b358ce4547601befa962680bede836606ae2", // 3000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.SNX,
-            amountIn: getRandomAmount(10, 25, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
-        },
         // WETH -> WBTC
         {
             borrowFromUniswapPool: "0x85c31ffa3706d1cce9d525a00f1c7d4a2911754c", // 500
@@ -91,15 +73,6 @@ export function getRandomIntentions(size: number) {
             amountIn: getRandomAmount(10, 25, 18),
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
-        },
-        // WETH -> LYRA
-        {
-            borrowFromUniswapPool: "0xf334f6104a179207ddacfb41fa3567feea8595c2", // 1000
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.LYRA,
-            amountIn: getRandomAmount(10, 25, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
     ]
 
