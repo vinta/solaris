@@ -16,7 +16,6 @@ export abstract class BaseArbitrageur {
     NETWORK_NAME = process.env.NETWORK_NAME!
     NETWORK_CHAIN_ID = parseInt(process.env.NETWORK_CHAIN_ID!)
     RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL!
-    SEQUENCER_RPC_PROVIDER_URL = process.env.SEQUENCER_RPC_PROVIDER_URL!
     OWNER_SEED_PHRASE = process.env.OWNER_SEED_PHRASE!
     ARBITRAGEUR_ADDRESS = process.env.ARBITRAGEUR_ADDRESS!
     TIMEOUT_SECONDS = parseFloat(process.env.TIMEOUT_SECONDS!)
@@ -51,7 +50,7 @@ export abstract class BaseArbitrageur {
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
 
-        const bufferedProfit = (profit * BigInt(6)) / BigInt(10)
+        const bufferedProfit = (profit * BigInt(95)) / BigInt(100)
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
 
         const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee

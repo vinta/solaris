@@ -6,9 +6,17 @@ import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 import { getRandomIntentions, Intention } from "./configs"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
 
+interface ProfitResult {
+    amountIn: bigint
+    profit: bigint
+    estimatedGas: bigint
+}
+
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashArbitrageur
 
+    INTENTION_SIZE = 4
+    AMOUNT_CHUNK_SIZE = 5
     GAS_LIMIT = BigInt(800_000)
 
     // UniswapV3Router
@@ -31,11 +39,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
-            // 6 intentions: 2582 requests/58 seconds
-            // 4 intentions: 2713 requests/58 seconds
-            // batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // 2 intentions: 3663 requests/58 seconds
-            batchMaxCount: 1,
+            batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
+            // batchMaxCount: this.INTENTION_SIZE * this.AMOUNT_CHUNK_SIZE * 2,
         })
 
         this.owner = await this.getOwner(provider)
@@ -44,7 +49,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
-            sequencerRpcProviderUrl: this.SEQUENCER_RPC_PROVIDER_URL,
             arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: this.owner.address,
         })
@@ -53,7 +57,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         while (true) {
             i++
 
-            const intentions = getRandomIntentions(6)
+            const intentions = getRandomIntentions(this.INTENTION_SIZE)
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
 
             const nowTimestamp = Date.now() / 1000
@@ -64,44 +68,112 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         }
     }
 
-    private async tryArbitrage(intention: Intention) {
+    async tryArbitrage(intention: Intention) {
+        const mostProfitableResult = await this.findMostProfitableResult(intention)
+        if (!mostProfitableResult) {
+            return
+        }
+
         try {
-            const profit = await this.arbitrageur.arbitrage.staticCall(
-                intention.borrowFromUniswapPool,
-                intention.tokenIn,
-                intention.tokenOut,
-                intention.amountIn,
-                intention.minProfit,
-                intention.secondArbitrageFunc,
-            )
-            await this.arbitrage(intention, profit)
+            await this.arbitrage(intention, mostProfitableResult)
         } catch (err: any) {
-            const errMessage = err.message || err.reason || ""
-            if (
-                errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
-                errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
-                errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
-                errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
-                errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
-                errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
-                errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
-            ) {
-                // console.log("No Profit")
-            } else {
-                throw err
-            }
+            this.handleArbitrageError(err)
         }
     }
 
-    private async arbitrage(intention: Intention, profit: bigint) {
-        const gas = this.calculateGas(intention.tokenIn, profit, BigInt(500_000))
+    handleArbitrageError(err: any) {
+        const errMessage = err.message || err.reason || ""
+        if (
+            errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
+            errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
+            errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
+            errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
+            errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
+            errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
+            errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
+        ) {
+            // console.log("No Profit")
+        } else {
+            throw err
+        }
+    }
+
+    async findMostProfitableResult(intention: Intention) {
+        // amountIn: 20000, chunkSize: 10
+        // [20000, 19000, ..., 2000, 1000]
+        const step = intention.amountIn / BigInt(this.AMOUNT_CHUNK_SIZE)
+        const amountIns = Array(this.AMOUNT_CHUNK_SIZE)
+            .fill(true)
+            .map((_, i) => {
+                return intention.amountIn - step * BigInt(i)
+            })
+
+        const results = await Promise.all(amountIns.map(async (amountIn) => this.getProfitResult(intention, amountIn)))
+
+        const filteredResults = results.filter((result) => result) as ProfitResult[]
+        if (filteredResults.length === 0) {
+            return undefined
+        }
+
+        const mostProfitableResult = filteredResults.reduce((prev, cur) => (cur.profit > prev.profit ? cur : prev))
+
+        return mostProfitableResult
+    }
+
+    async getProfitResult(intention: Intention, amountIn: bigint) {
+        try {
+            const [profit, estimatedGas] = await Promise.all([
+                this.arbitrageur.arbitrage.staticCall(
+                    intention.borrowFromUniswapPool,
+                    intention.tokenIn,
+                    intention.tokenOut,
+                    amountIn,
+                    intention.minProfit,
+                    intention.secondArbitrageFunc,
+                ),
+                this.arbitrageur.arbitrage.estimateGas(
+                    intention.borrowFromUniswapPool,
+                    intention.tokenIn,
+                    intention.tokenOut,
+                    amountIn,
+                    intention.minProfit,
+                    intention.secondArbitrageFunc,
+                ),
+            ])
+            return {
+                amountIn,
+                profit,
+                estimatedGas,
+            }
+        } catch (err: any) {
+            this.handleArbitrageError(err)
+        }
+
+        return undefined
+    }
+
+    async arbitrage(intention: Intention, mostProfitableResult: ProfitResult) {
+        const gas = this.calculateGas(intention.tokenIn, mostProfitableResult.profit, mostProfitableResult.estimatedGas)
+        const maxPriorityFeePerGas = gas.maxPriorityFeePerGas
+            ? (gas.maxPriorityFeePerGas * BigInt(250)) / BigInt(100) // * 2.5
+            : undefined
+        const txOptions = {
+            nonce: this.nonceManager.getNonce(this.owner),
+            chainId: this.NETWORK_CHAIN_ID,
+            gasLimit: mostProfitableResult.estimatedGas,
+            type: gas.type,
+            maxFeePerGas: maxPriorityFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas,
+        }
+
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
             intention.borrowFromUniswapPool,
             intention.tokenIn,
             intention.tokenOut,
-            intention.amountIn,
+            mostProfitableResult.amountIn,
             intention.minProfit,
             intention.secondArbitrageFunc,
+            txOptions,
         )
 
         const tx = await this.sendTx(this.owner, async () => {
@@ -109,21 +181,19 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             return await this.owner.sendTransaction({
                 to: populateTx.to,
                 data: populateTx.data,
-                nonce: this.nonceManager.getNonce(this.owner),
-                gasLimit: this.GAS_LIMIT,
-                chainId: this.NETWORK_CHAIN_ID,
-                type: gas.type,
-                maxFeePerGas: gas.maxFeePerGas,
-                maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+                ...txOptions,
             })
         })
+
         console.log(
-            `arbitrage tx sent, profit: ${profit}, amountIn: ${intention.amountIn}, tokenIn: ${intention.tokenIn}`,
+            `arbitrage tx sent, profit: ${mostProfitableResult.profit}, amountIn: ${mostProfitableResult.amountIn}, tokenIn: ${intention.tokenIn}`,
         )
 
         // no need to wait tx to be mined
         // const txReceipt = await tx.wait()
         // console.dir(txReceipt)
+
+        process.exit(0)
     }
 }
 
