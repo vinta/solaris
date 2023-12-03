@@ -27,6 +27,16 @@ contract FlashTriangularArbitrageur is IErrors, BaseArbitrageur, BeethovenFlashL
 
     constructor(address ownerArg) BaseArbitrageur(ownerArg) {}
 
+    function arbitrageUniswapV3FlashSwap(
+        bytes memory path, // UniswapV3
+        address tokenIn,
+        uint256 amountIn,
+        uint256 minProfit,
+        ArbitrageFunc arbitrageFunc
+    ) external returns (uint256) {
+        // to token0, token1 fee from path
+    }
+
     function arbitrage(
         bytes memory path, // UniswapV3
         address[] memory tokens, // VelodromeV2
