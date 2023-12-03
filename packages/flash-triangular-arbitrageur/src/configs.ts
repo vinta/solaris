@@ -15,57 +15,16 @@ export interface Intention {
 }
 
 const uniswapV3Pairs = [
-    // WETH
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.USDCe,
-        fee: 500,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.USDCe,
-        fee: 3000,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.USDC,
-        fee: 500,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.DAI,
-        fee: 500,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.USDT,
-        fee: 500,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.OP,
-        fee: 3000,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.SNX,
-        fee: 3000,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.WBTC,
-        fee: 500,
-    },
-    {
-        token0: TOKENS.WETH,
-        token1: TOKENS.wstETH,
-        fee: 100,
-    },
     // USDCe
     {
         token0: TOKENS.USDCe,
         token1: TOKENS.USDC,
         fee: 100,
+    },
+    {
+        token0: TOKENS.USDCe,
+        token1: TOKENS.USDC,
+        fee: 500,
     },
     {
         token0: TOKENS.USDCe,
@@ -82,20 +41,22 @@ const uniswapV3Pairs = [
         token1: TOKENS.sUSD,
         fee: 100,
     },
-    {
-        token0: TOKENS.USDCe,
-        token1: TOKENS.OP,
-        fee: 3000,
-    },
-    {
-        token0: TOKENS.USDCe,
-        token1: TOKENS.WLD,
-        fee: 10000,
-    },
     // USDC
     {
         token0: TOKENS.USDC,
         token1: TOKENS.USDT,
+        fee: 100,
+    },
+    // USDT
+    {
+        token0: TOKENS.USDT,
+        token1: TOKENS.DAI,
+        fee: 100,
+    },
+    // USDT
+    {
+        token0: TOKENS.DAI,
+        token1: TOKENS.sUSD,
         fee: 100,
     },
 ]
@@ -106,45 +67,67 @@ export function getRandomIntentions(size: number) {
         {
             path: solidityPacked(
                 ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
-                [TOKENS.WETH, 500, TOKENS.USDCe, 100, TOKENS.USDT, 500, TOKENS.WETH],
+                [TOKENS.USDCe, 100, TOKENS.USDC, 100, TOKENS.USDT, 100, TOKENS.USDCe],
             ),
             tokens: [],
-            tokenIn: TOKENS.WETH,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
             arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
         },
         {
             path: solidityPacked(
                 ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
-                [TOKENS.WETH, 500, TOKENS.USDC, 100, TOKENS.USDT, 500, TOKENS.WETH],
+                [TOKENS.USDCe, 100, TOKENS.USDT, 100, TOKENS.USDC, 100, TOKENS.USDCe],
             ),
             tokens: [],
-            tokenIn: TOKENS.WETH,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
             arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
         },
         {
             path: solidityPacked(
                 ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
-                [TOKENS.WETH, 500, TOKENS.DAI, 100, TOKENS.USDT, 500, TOKENS.WETH],
+                [TOKENS.USDCe, 100, TOKENS.USDC, 100, TOKENS.DAI, 100, TOKENS.USDCe],
             ),
             tokens: [],
-            tokenIn: TOKENS.WETH,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
             arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
         },
         {
             path: solidityPacked(
                 ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
-                [TOKENS.WETH, 500, TOKENS.USDCe, 3000, TOKENS.OP, 3000, TOKENS.WETH],
+                [TOKENS.USDCe, 100, TOKENS.DAI, 100, TOKENS.USDC, 100, TOKENS.USDCe],
             ),
             tokens: [],
-            tokenIn: TOKENS.WETH,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
+        },
+        {
+            path: solidityPacked(
+                ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+                [TOKENS.USDCe, 100, TOKENS.DAI, 100, TOKENS.USDT, 100, TOKENS.USDCe],
+            ),
+            tokens: [],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
+        },
+        {
+            path: solidityPacked(
+                ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+                [TOKENS.USDCe, 100, TOKENS.USDT, 100, TOKENS.DAI, 100, TOKENS.USDCe],
+            ),
+            tokens: [],
+            tokenIn: TOKENS.USDCe,
+            amountIn: getRandomAmount(20000, 100000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
             arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
         },
     ]
