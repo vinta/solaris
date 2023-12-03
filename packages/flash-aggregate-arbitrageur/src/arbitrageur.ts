@@ -111,7 +111,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
         const txOptions = {
             nonce: this.nonceManager.getNonce(this.owner),
             chainId: this.NETWORK_CHAIN_ID,
-            gasLimit: estimatedGas,
+            gasLimit: (estimatedGas * BigInt(120)) / BigInt(100), // x 1.2
             type: gas.type,
             maxFeePerGas: gas.maxFeePerGas,
             maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
