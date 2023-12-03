@@ -41,7 +41,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // batchMaxCount: this.INTENTION_SIZE * this.AMOUNT_CHUNK_SIZE * 2,
+            // batchMaxCount: this.AMOUNT_CHUNK_SIZE,
         })
 
         this.owner = await this.getOwner(provider)
@@ -63,7 +63,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
-                console.log(`arbitrage end: ${i}`)
+                console.log(`arbitrage end: ${i * this.INTENTION_SIZE}`)
                 return
             }
         }

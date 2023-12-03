@@ -14,7 +14,7 @@ export interface Intention {
 }
 
 export function getRandomIntentions(size: number) {
-    const intentions: Intention[] = [
+    const group1: Intention[] = [
         // WETH -> USDCe
         {
             borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
@@ -38,31 +38,6 @@ export function getRandomIntentions(size: number) {
             tokenOut: TOKENS.USDCe,
             amountIn: getRandomAmount(10, 25, 18),
             minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.MummyRouter,
-        },
-        // USDCe -> WETH
-        {
-            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
-            tokenIn: TOKENS.USDCe,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(20000, 50000, 6),
-            minProfit: minProfitMap[TOKENS.USDCe],
-            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
-        },
-        {
-            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
-            tokenIn: TOKENS.USDCe,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(20000, 50000, 6),
-            minProfit: minProfitMap[TOKENS.USDCe],
-            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
-        },
-        {
-            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
-            tokenIn: TOKENS.USDCe,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(20000, 50000, 6),
-            minProfit: minProfitMap[TOKENS.USDCe],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
         // WETH -> OP
@@ -90,6 +65,43 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
+        // WETH -> WBTC
+        {
+            borrowFromUniswapPool: "0x85c31ffa3706d1cce9d525a00f1c7d4a2911754c", // 500
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.WBTC,
+            amountIn: getRandomAmount(10, 25, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        },
+    ]
+
+    const group2: Intention[] = [
+        // USDCe -> WETH
+        {
+            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
+            tokenIn: TOKENS.USDCe,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(20000, 50000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
+            tokenIn: TOKENS.USDCe,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(20000, 50000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        },
+        {
+            borrowFromUniswapPool: "0x85149247691df622eaf1a8bd0cafd40bc45154a9", // 500
+            tokenIn: TOKENS.USDCe,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(20000, 50000, 6),
+            minProfit: minProfitMap[TOKENS.USDCe],
+            secondArbitrageFunc: ArbitrageFunc.MummyRouter,
+        },
         // OP -> WETH
         {
             borrowFromUniswapPool: "0x68f5c0a2de713a54991e01858fd27a3832401849", // 3000
@@ -115,25 +127,16 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.OP],
             secondArbitrageFunc: ArbitrageFunc.MummyRouter,
         },
-        // WETH -> WBTC
-        {
-            borrowFromUniswapPool: "0x85c31ffa3706d1cce9d525a00f1c7d4a2911754c", // 500
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.WBTC,
-            amountIn: getRandomAmount(10, 25, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
-        },
         // WBTC -> WETH
         {
             borrowFromUniswapPool: "0x85c31ffa3706d1cce9d525a00f1c7d4a2911754c", // 500
             tokenIn: TOKENS.WBTC,
             tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(0.5, 1.5, 8),
+            amountIn: getRandomAmount(1, 2, 8),
             minProfit: minProfitMap[TOKENS.WBTC],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
         },
     ]
 
-    return sampleSize(intentions, size)
+    return [...sampleSize(group1, size / 2), ...sampleSize(group2, size / 2)]
 }
