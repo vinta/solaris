@@ -51,7 +51,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
-                console.log(`arbitrage end: ${i}`)
+                console.log(`arbitrage end: ${i * this.INTENTION_SIZE}`)
                 return
             }
         }

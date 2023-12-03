@@ -5,6 +5,7 @@ export const TOKENS = {
     USDCe: "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
     USDT: "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
     DAI: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+    sUSD: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
     WETH: "0x4200000000000000000000000000000000000006",
     OP: "0x4200000000000000000000000000000000000042",
     PERP: "0x9e1028f5f1d5ede59748ffcee5532509976840e0",
@@ -22,6 +23,7 @@ export const minProfitMap = {
     [TOKENS.USDCe]: parseUnits("1", 6), // 1 USD
     [TOKENS.USDT]: parseUnits("1", 6), // 1 USD
     [TOKENS.DAI]: parseUnits("1", 18), // 1 USD
+    [TOKENS.sUSD]: parseUnits("1", 18), // 1 USD
     [TOKENS.WETH]: parseUnits("0.0005", 18), // 1 USD
     [TOKENS.OP]: parseUnits("1", 18), // 1 US
     [TOKENS.PERP]: parseUnits("1.474802", 18), // 1 USD
@@ -38,6 +40,7 @@ export const toEthPriceMap = {
     [TOKENS.USDCe]: 2033.847474,
     [TOKENS.USDT]: 2033.847474,
     [TOKENS.DAI]: 2033.847474,
+    [TOKENS.sUSD]: 2033.847474,
     [TOKENS.WETH]: 1,
     [TOKENS.OP]: 1258.072023,
     [TOKENS.PERP]: 3164.221199,
