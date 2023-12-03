@@ -17,7 +17,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
     INTENTION_SIZE = 4
     AMOUNT_CHUNK_SIZE = 5
-    GAS_LIMIT = BigInt(800_000)
 
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
