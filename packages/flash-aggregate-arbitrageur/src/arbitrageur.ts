@@ -14,7 +14,6 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
     arbitrageur!: FlashAggregateArbitrageur
 
     INTENTION_SIZE = 4
-    GAS_LIMIT = BigInt(8_000_000)
 
     // UniswapV3Router
     ERROR_TOO_LITTLE_RECEIVED = "Too little received"
@@ -51,7 +50,7 @@ class FlashAggregateArbitrageurOnOptimism extends BaseArbitrageur {
 
             const nowTimestamp = Date.now() / 1000
             if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
-                console.log(`arbitrage end: ${i}`)
+                console.log(`arbitrage end: ${i * this.INTENTION_SIZE}`)
                 return
             }
         }

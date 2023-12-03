@@ -4,7 +4,7 @@ import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { getRandomIntentions, Intention } from "./configs"
-import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
+import { FlashTriangularArbitrageur, FlashTriangularArbitrageur__factory } from "../types"
 
 interface ProfitResult {
     amountIn: bigint
@@ -12,8 +12,8 @@ interface ProfitResult {
     estimatedGas: bigint
 }
 
-class FlashArbitrageurOnOptimism extends BaseArbitrageur {
-    arbitrageur!: FlashArbitrageur
+class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
+    arbitrageur!: FlashTriangularArbitrageur
 
     INTENTION_SIZE = 4
     AMOUNT_CHUNK_SIZE = 5
@@ -23,16 +23,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
     // VelodromeV2Router
     ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
-
-    // WOOFiV2Router
-    ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
-    ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
-    ERROR_LT_MINBASE2AMOUNT = "base2Amount_LT_minBase2Amount"
-    ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
-
-    // MummyRouter
-    ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
-    ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
     async start() {
         const startTimestamp = Date.now() / 1000
@@ -44,7 +34,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         })
 
         this.owner = await this.getOwner(provider)
-        this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
+        this.arbitrageur = FlashTriangularArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
@@ -57,7 +47,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         while (true) {
             i++
 
-            const intentions = getRandomIntentions(this.INTENTION_SIZE)
+            const intentions = getRandomIntentions(6)
             await Promise.all(intentions.map((intention) => this.tryArbitrage(intention)))
 
             const nowTimestamp = Date.now() / 1000
@@ -85,13 +75,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const errMessage = err.message || err.reason || ""
         if (
             errMessage.includes(this.ERROR_TOO_LITTLE_RECEIVED) ||
-            errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
-            errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
-            errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
-            errMessage.includes(this.ERROR_LT_MINBASE2AMOUNT) ||
-            errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
-            errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
-            errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
+            errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT)
         ) {
             // console.log("No Profit")
         } else {
@@ -125,20 +109,20 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         try {
             const [profit, estimatedGas] = await Promise.all([
                 this.arbitrageur.arbitrage.staticCall(
-                    intention.borrowFromUniswapPool,
+                    intention.path,
+                    intention.tokens,
                     intention.tokenIn,
-                    intention.tokenOut,
                     amountIn,
                     intention.minProfit,
-                    intention.secondArbitrageFunc,
+                    intention.arbitrageFunc,
                 ),
                 this.arbitrageur.arbitrage.estimateGas(
-                    intention.borrowFromUniswapPool,
+                    intention.path,
+                    intention.tokens,
                     intention.tokenIn,
-                    intention.tokenOut,
                     amountIn,
                     intention.minProfit,
-                    intention.secondArbitrageFunc,
+                    intention.arbitrageFunc,
                 ),
             ])
             return {
@@ -153,7 +137,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         return undefined
     }
 
-    async arbitrage(intention: Intention, mostProfitableResult: ProfitResult) {
+    private async arbitrage(intention: Intention, mostProfitableResult: ProfitResult) {
         const gas = this.calculateGas(intention.tokenIn, mostProfitableResult.profit, mostProfitableResult.estimatedGas)
         const txOptions = {
             nonce: this.nonceManager.getNonce(this.owner),
@@ -165,16 +149,16 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         }
 
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
-            intention.borrowFromUniswapPool,
+            intention.path,
+            intention.tokens,
             intention.tokenIn,
-            intention.tokenOut,
             mostProfitableResult.amountIn,
             intention.minProfit,
-            intention.secondArbitrageFunc,
+            intention.arbitrageFunc,
             txOptions,
         )
 
-        const tx = await this.sendTx(this.owner, async () => {
+        await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
             return await this.owner.sendTransaction({
                 to: populateTx.to,
@@ -196,7 +180,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 }
 
 const handler: Handler = async (event, context) => {
-    const service = new FlashArbitrageurOnOptimism()
+    const service = new FlashTriangularArbitrageurOnOptimism()
     await service.start()
 }
 

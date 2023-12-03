@@ -15,48 +15,6 @@ export function getRandomIntentions(size: number) {
     const intentions: Intention[] = [
         {
             tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.USDC,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            uniswapV3Fee: 500,
-        },
-        {
-            tokenIn: TOKENS.USDC,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(15000, 30000, 6),
-            minProfit: minProfitMap[TOKENS.USDC],
-            uniswapV3Fee: 500,
-        },
-        {
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.USDCe,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            uniswapV3Fee: 500,
-        },
-        {
-            tokenIn: TOKENS.USDCe,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(15000, 30000, 6),
-            minProfit: minProfitMap[TOKENS.USDCe],
-            uniswapV3Fee: 500,
-        },
-        {
-            tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.OP,
-            amountIn: getRandomAmount(10, 30, 18),
-            minProfit: minProfitMap[TOKENS.WETH],
-            uniswapV3Fee: 3000,
-        },
-        {
-            tokenIn: TOKENS.OP,
-            tokenOut: TOKENS.WETH,
-            amountIn: getRandomAmount(10000, 20000, 18),
-            minProfit: minProfitMap[TOKENS.OP],
-            uniswapV3Fee: 3000,
-        },
-        {
-            tokenIn: TOKENS.WETH,
             tokenOut: TOKENS.PERP,
             amountIn: getRandomAmount(10, 30, 18),
             minProfit: minProfitMap[TOKENS.WETH],
@@ -85,7 +43,7 @@ export function getRandomIntentions(size: number) {
         },
         {
             tokenIn: TOKENS.WETH,
-            tokenOut: TOKENS.wstETH,
+            tokenOut: TOKENS.LYRA,
             amountIn: getRandomAmount(10, 30, 18),
             minProfit: minProfitMap[TOKENS.WETH],
             uniswapV3Fee: 100,
