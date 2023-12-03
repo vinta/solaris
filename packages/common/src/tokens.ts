@@ -10,25 +10,26 @@ export const TOKENS = {
     wstETH: "0x1f32b1c2345538c0c6f582fcb022739c4a194ebb",
     WLD: "0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
     WBTC: "0x68f180fcce6836688e9084f035309e29bf0a2095",
+    LYRA: "0x50c5725949a6f0c72e6c4a641f24049a917db0cb",
 }
-
-const multiplier = BigInt(1)
 
 // NOTE: must also update BaseArbitrageur.convertAmountToEth()
 export const minProfitMap = {
-    [TOKENS.USDC]: parseUnits("1", 6) * multiplier, // 1 USD
-    [TOKENS.USDCe]: parseUnits("1", 6) * multiplier, // 1 USD
-    [TOKENS.WETH]: parseUnits("0.0005", 18) * multiplier, // 1 USD
-    [TOKENS.OP]: parseUnits("1", 18) * multiplier, // 1 US
-    [TOKENS.PERP]: parseUnits("1", 18) * multiplier, // 1 USD
-    [TOKENS.SNX]: parseUnits("3", 18) * multiplier, // 1 USD
-    [TOKENS.wstETH]: parseUnits("0.0004", 18) * multiplier, // 1 USD
-    [TOKENS.WLD]: parseUnits("0.4", 18) * multiplier, // 1 USD
-    [TOKENS.WBTC]: parseUnits("0.000026", 8) * multiplier, // 1 USD
+    // 1 USDC = ??? TOKEN
+    [TOKENS.USDC]: parseUnits("1", 6), // 1 USD
+    [TOKENS.USDCe]: parseUnits("1", 6), // 1 USD
+    [TOKENS.WETH]: parseUnits("0.0005", 18), // 1 USD
+    [TOKENS.OP]: parseUnits("1", 18), // 1 US
+    [TOKENS.PERP]: parseUnits("1.474802", 18), // 1 USD
+    [TOKENS.SNX]: parseUnits("3", 18), // 1 USD
+    [TOKENS.wstETH]: parseUnits("0.0004", 18), // 1 USD
+    [TOKENS.WLD]: parseUnits("0.4", 18), // 1 USD
+    [TOKENS.WBTC]: parseUnits("0.000026", 8), // 1 USD
+    [TOKENS.LYRA]: parseUnits("6.875141", 18), // 1 USD
 }
 
 export const tokenToEthPriceMap = {
-    // 1 ETH = ??? TOKEN
+    // 1 WETH = ??? TOKEN
     [TOKENS.USDC]: 2162.564556,
     [TOKENS.USDCe]: 2162.564556,
     [TOKENS.WETH]: 1,
@@ -38,4 +39,5 @@ export const tokenToEthPriceMap = {
     [TOKENS.wstETH]: 0.871631,
     [TOKENS.WLD]: 849.735719,
     [TOKENS.WBTC]: 0.054798,
+    [TOKENS.WBTC]: 14719.22586,
 }

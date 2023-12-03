@@ -74,6 +74,15 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.WETH],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
         },
+        // WETH -> LYRA
+        {
+            borrowFromUniswapPool: "0xf334f6104a179207ddacfb41fa3567feea8595c2", // 1000
+            tokenIn: TOKENS.WETH,
+            tokenOut: TOKENS.LYRA,
+            amountIn: getRandomAmount(10, 25, 18),
+            minProfit: minProfitMap[TOKENS.WETH],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
+        },
     ]
 
     const group2: Intention[] = [
@@ -135,6 +144,15 @@ export function getRandomIntentions(size: number) {
             amountIn: getRandomAmount(1, 2, 8),
             minProfit: minProfitMap[TOKENS.WBTC],
             secondArbitrageFunc: ArbitrageFunc.WOOFiV2Router,
+        },
+        // LYRA -> WETH
+        {
+            borrowFromUniswapPool: "0xf334f6104a179207ddacfb41fa3567feea8595c2", // 1000
+            tokenIn: TOKENS.LYRA,
+            tokenOut: TOKENS.WETH,
+            amountIn: getRandomAmount(72991, 144470, 18),
+            minProfit: minProfitMap[TOKENS.LYRA],
+            secondArbitrageFunc: ArbitrageFunc.VelodromeV2Router,
         },
     ]
 
