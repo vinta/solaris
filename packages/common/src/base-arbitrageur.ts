@@ -10,7 +10,7 @@ import {
 
 import { NonceManager } from "@solaris/common/src/nonce-manager"
 
-import { TOKENS, tokenToEthPriceMap } from "./tokens"
+import { TOKENS, toEthPriceMap } from "./tokens"
 
 export abstract class BaseArbitrageur {
     NETWORK_NAME = process.env.NETWORK_NAME!
@@ -50,7 +50,7 @@ export abstract class BaseArbitrageur {
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
 
-        const bufferedProfit = (profit * BigInt(95)) / BigInt(100)
+        const bufferedProfit = (profit * BigInt(90)) / BigInt(100)
         const bufferedProfitInEth = this.convertAmountToEth(token, bufferedProfit)
 
         const maxPriorityFeePerGas = (bufferedProfitInEth - l1Fee) / gasUsage - baseFee
@@ -79,7 +79,7 @@ export abstract class BaseArbitrageur {
             amountX10 = Number(formatUnits(amount, 18))
         }
 
-        const amountInEthX10 = amountX10 / tokenToEthPriceMap[token]
+        const amountInEthX10 = amountX10 / toEthPriceMap[token]
 
         return parseUnits(amountInEthX10.toFixed(18), 18)
     }

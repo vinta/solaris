@@ -28,16 +28,16 @@ export const minProfitMap = {
     [TOKENS.LYRA]: parseUnits("6.875141", 18), // 1 USD
 }
 
-export const tokenToEthPriceMap = {
+export const toEthPriceMap = {
     // 1 WETH = ??? TOKEN
-    [TOKENS.USDC]: 2162.564556,
-    [TOKENS.USDCe]: 2162.564556,
+    [TOKENS.USDC]: 2153.278256,
+    [TOKENS.USDCe]: 2153.278256,
     [TOKENS.WETH]: 1,
-    [TOKENS.OP]: 1240.795357,
-    [TOKENS.PERP]: 3074.280225,
+    [TOKENS.OP]: 1258.072023,
+    [TOKENS.PERP]: 3164.221199,
     [TOKENS.SNX]: 579.534782,
     [TOKENS.wstETH]: 0.871631,
     [TOKENS.WLD]: 849.735719,
-    [TOKENS.WBTC]: 0.054798,
-    [TOKENS.WBTC]: 14719.22586,
+    [TOKENS.WBTC]: 0.054425,
+    [TOKENS.LYRA]: 14719.22586,
 }
