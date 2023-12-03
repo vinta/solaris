@@ -28,6 +28,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     // WOOFiV2Router
     ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
     ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
+    ERROR_LT_MINBASE2AMOUNT = "base2Amount_LT_minBase2Amount"
     ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
 
     // MummyRouter
@@ -88,6 +89,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             errMessage.includes(this.ERROR_INSUFFICIENT_OUTPUT_AMOUNT) ||
             errMessage.includes(this.ERROR_LT_MINBASEAMOUNT) ||
             errMessage.includes(this.ERROR_LT_MINQUOTEAMOUNT) ||
+            errMessage.includes(this.ERROR_LT_MINBASE2AMOUNT) ||
             errMessage.includes(this.ERROR_NOT_ORACLE_FEASIBLE) ||
             errMessage.includes(this.ERROR_INSUFFICIENT_AMOUNTOUT) ||
             errMessage.includes(this.ERROR_POOLAMOUNT_LT_BUFFER)
