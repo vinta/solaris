@@ -22,7 +22,7 @@ provider:
   logRetentionInDays: 7
 
 functions:
-  # base:
+  # common:
   #   handler: handlers.base
   #   reservedConcurrency: 1
   #   maximumRetryAttempts: 0
