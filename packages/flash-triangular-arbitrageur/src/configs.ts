@@ -86,18 +86,29 @@ export function getRandomIntentions(size: number) {
             minProfit: minProfitMap[TOKENS.USDCe],
             arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
         },
+        {
+            path: solidityPacked(
+                ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+                [TOKENS.USDC, 100, TOKENS.USDCe, 100, TOKENS.USDT, 100, TOKENS.USDC],
+            ),
+            tokens: [],
+            tokenIn: TOKENS.USDC,
+            amountIn: getRandomAmount(20000, 50000, 6),
+            minProfit: minProfitMap[TOKENS.USDC],
+            arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
+        },
+        {
+            path: solidityPacked(
+                ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
+                [TOKENS.USDC, 100, TOKENS.USDT, 100, TOKENS.USDCe, 100, TOKENS.USDC],
+            ),
+            tokens: [],
+            tokenIn: TOKENS.USDC,
+            amountIn: getRandomAmount(20000, 50000, 6),
+            minProfit: minProfitMap[TOKENS.USDC],
+            arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
+        },
         // FIXME
-        // {
-        //     path: solidityPacked(
-        //         ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
-        //         [TOKENS.USDCe, 100, TOKENS.USDC, 100, TOKENS.DAI, 100, TOKENS.USDCe],
-        //     ),
-        //     tokens: [],
-        //     tokenIn: TOKENS.USDCe,
-        //     amountIn: getRandomAmount(20000, 100000, 6),
-        //     minProfit: minProfitMap[TOKENS.USDCe],
-        //     arbitrageFunc: ArbitrageFunc.UniswapV3SwapRouter,
-        // },
         // {
         //     path: solidityPacked(
         //         ["address", "uint24", "address", "uint24", "address", "uint24", "address"],
