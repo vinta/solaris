@@ -112,6 +112,7 @@ class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
                 this.arbitrageur.arbitrage.staticCall(
                     intention.path,
                     intention.tokens,
+                    intention.tokenIn,
                     amountIn,
                     intention.minProfit,
                     intention.arbitrageFunc,
@@ -119,6 +120,7 @@ class FlashTriangularArbitrageurOnOptimism extends BaseArbitrageur {
                 this.arbitrageur.arbitrage.estimateGas(
                     intention.path,
                     intention.tokens,
+                    intention.tokenIn,
                     amountIn,
                     intention.minProfit,
                     intention.arbitrageFunc,
