@@ -154,13 +154,16 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
     async arbitrage(intention: Intention, mostProfitableResult: ProfitResult) {
         const gas = this.calculateGas(intention.tokenIn, mostProfitableResult.profit, mostProfitableResult.estimatedGas)
+        const maxPriorityFeePerGas = gas.maxPriorityFeePerGas
+            ? (gas.maxPriorityFeePerGas * BigInt(250)) / BigInt(100) // * 2.5
+            : undefined
         const txOptions = {
             nonce: this.nonceManager.getNonce(this.owner),
             chainId: this.NETWORK_CHAIN_ID,
             gasLimit: mostProfitableResult.estimatedGas,
             type: gas.type,
-            maxFeePerGas: gas.maxFeePerGas,
-            maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+            maxFeePerGas: maxPriorityFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas,
         }
 
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
