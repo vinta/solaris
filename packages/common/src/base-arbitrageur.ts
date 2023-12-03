@@ -44,8 +44,8 @@ export abstract class BaseArbitrageur {
     calculateGas(token: string, profit: bigint, gasUsage: bigint) {
         // transactionFee = gasUsage * gasPrice + l1Fee
         // gasPrice = baseFee + maxPriorityFeePerGas
-        // let transactionFee = profit * 0.5
-        // maxPriorityFeePerGas = ((profit * 0.5 - l1Fee) / gasUsage) - baseFee
+        // let transactionFee = profit * bufferRatio
+        // maxPriorityFeePerGas = ((profit * bufferRatio - l1Fee) / gasUsage) - baseFee
         const l1Fee = BigInt(0)
         const baseFee = BigInt(0)
         const minMaxPriorityFeePerGas = BigInt(1000000000) // 1 Gwei
