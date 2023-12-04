@@ -1,5 +1,6 @@
 import { Handler } from "aws-lambda"
 import { random } from "lodash"
+import Big from "big.js"
 
 import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
@@ -42,6 +43,12 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
     ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
 
+    toPrice(wethAmount: bigint, usdcAmount: bigint) {
+        const _wethAmount = Big(formatUnits(wethAmount, 18))
+        const _usdcAmount = Big(formatUnits(usdcAmount, 6))
+        return _usdcAmount.div(_wethAmount)
+    }
+
     async start() {
         const startTimestamp = Date.now() / 1000
 
@@ -64,30 +71,18 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
         const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
 
-        const wethBalance = await WETH.balanceOf(this.owner.address)
-        const usdceBalance = await USDCe.balanceOf(this.owner.address)
         const wethAmount = parseUnits("1", 18)
-        const profitInEth = parseUnits("0.005", 18) // 10 USDC
+        const wethProfit = parseUnits("0.005", 18) // 10 USD
 
-        console.log(`wethBalance: ${wethBalance}`)
-        console.log(`usdceBalance: ${usdceBalance}`)
+        let [wethBalance, usdceBalance] = await Promise.all([
+            WETH.balanceOf(this.owner.address),
+            USDCe.balanceOf(this.owner.address),
+        ])
 
-        const router = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
-        const uniswapV3SwapRouter = IUniswapV3SwapRouter__factory.connect(router, this.owner)
+        let startPrice: Big | undefined = undefined
+        let sellSpreadPercent = Big(0.1) // 0.1%
+        let buySpreadPercent = -Big(0.1) // 0.1%
 
-        // const approveTx = await this.sendTx(this.owner, async () => {
-        //     // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-        //     return await WETH.approve(router, MaxUint256, {
-        //         nonce: this.nonceManager.getNonce(this.owner),
-        //         chainId: this.NETWORK_CHAIN_ID,
-        //     })
-        // })
-        // await approveTx.wait()
-
-        let startPrice: bigint
-        let startUsdceAmount: number | undefined = undefined
-        let sellSpread = 0.001 // 0.1%
-        let buySpread = -0.001 // 0.1%
         let i = 0
         while (true) {
             i++
@@ -96,62 +91,46 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
             if (wethBalance >= wethAmount) {
                 console.log("Checking swap WETH to USDCe")
-                const res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
-                const newAmount = Number(formatUnits(res.toAmount, 6))
-                console.log(`newAmount: ${newAmount}`)
 
-                // console.dir(res)
-                if (!startUsdceAmount) {
-                    startUsdceAmount = newAmount
+                const res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
+                const newPrice = this.toPrice(wethAmount, res.toAmount)
+                console.log(`newPrice: ${newPrice.toFixed()}`)
+
+                if (!startPrice) {
+                    startPrice = newPrice
                     continue
                 }
 
-                // const priceChangeRate = ((new price - old price) / old price) * 100
-                const priceChangeRate = (newAmount - startUsdceAmount) / startUsdceAmount
-                console.log(`priceChangeRate: ${priceChangeRate}`)
-                if (priceChangeRate >= sellSpread) {
+                const priceChangePercent = newPrice.sub(startPrice).div(startPrice).mul(100)
+                console.log(`priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                if (priceChangePercent.gte(sellSpreadPercent)) {
                     console.log("sell")
+                    await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount)
+                    usdceBalance = await USDCe.balanceOf(this.owner.address)
+                    continue
                 }
-
-                // const tx = await this.sendTx(this.owner, async () => {
-                //     // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-                //     return await uniswapV3SwapRouter.exactInputSingle(
-                //         {
-                //             tokenIn: TOKENS.WETH,
-                //             tokenOut: TOKENS.USDCe,
-                //             fee: 500,
-                //             recipient: this.owner.address,
-                //             deadline: MaxUint256,
-                //             amountIn: wethAmount,
-                //             amountOutMinimum: 0,
-                //             sqrtPriceLimitX96: 0,
-                //         },
-                //         {
-                //             nonce: this.nonceManager.getNonce(this.owner),
-                //             chainId: this.NETWORK_CHAIN_ID,
-                //         },
-                //     )
-                // })
-                // await tx.wait()
-
-                // const usdceBalanceAfter = await USDCe.balanceOf(this.owner.address)
-                // console.log(`usdceBalanceAfter: ${usdceBalanceAfter}`)
             } else {
                 console.log("Checking swap USDCe to WETH")
 
-                // const usdceBalance = await USDCe.balanceOf(this.owner.address)
-                // const res = await this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
-                // const toAmount = parseUnits(formatUnits(res.toAmount, 18), 18)
-                // console.log(`toAmount: ${toAmount}`)
-                // if (toAmount > wethAmount + profitInEth) {
-                // }
-            }
+                const res = await this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
+                const newPrice = this.toPrice(res.toAmount, usdceBalance)
+                console.log(`newPrice: ${newPrice.toFixed()}`)
 
-            // const nowTimestamp = Date.now() / 1000
-            // if (nowTimestamp - startTimestamp >= this.TIMEOUT_SECONDS) {
-            //     console.log(`arbitrage end: ${i * this.INTENTION_SIZE}`)
-            //     return
-            // }
+                if (!startPrice) {
+                    startPrice = newPrice
+                    continue
+                }
+
+                const broughtWethAmount = res.toAmount
+                console.log(`broughtWethAmount: ${formatUnits(broughtWethAmount)}`)
+
+                if (broughtWethAmount >= wethAmount + wethProfit) {
+                    console.log("buy")
+                    await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
+                    wethBalance = await WETH.balanceOf(this.owner.address)
+                    continue
+                }
+            }
         }
     }
 
@@ -197,6 +176,44 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         }
 
         return response
+    }
+
+    async trySwap(tokenIn: string, tokenOut: string, amountIn: bigint) {
+        const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
+        const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
+
+        const router = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
+        const uniswapV3SwapRouter = IUniswapV3SwapRouter__factory.connect(router, this.owner)
+
+        const approveTx = await this.sendTx(this.owner, async () => {
+            // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
+            return await WETH.approve(router, MaxUint256, {
+                nonce: this.nonceManager.getNonce(this.owner),
+                chainId: this.NETWORK_CHAIN_ID,
+            })
+        })
+        await approveTx.wait()
+
+        const tx = await this.sendTx(this.owner, async () => {
+            // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
+            return await uniswapV3SwapRouter.exactInputSingle(
+                {
+                    tokenIn: tokenIn,
+                    tokenOut: tokenOut,
+                    fee: 500,
+                    recipient: this.owner.address,
+                    deadline: MaxUint256,
+                    amountIn: amountIn,
+                    amountOutMinimum: 0,
+                    sqrtPriceLimitX96: 0,
+                },
+                {
+                    nonce: this.nonceManager.getNonce(this.owner),
+                    chainId: this.NETWORK_CHAIN_ID,
+                },
+            )
+        })
+        await tx.wait()
     }
 }
 
