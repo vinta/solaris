@@ -6,17 +6,8 @@ import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 import { TOKENS } from "@solaris/common/src/tokens"
 
-import { getRandomIntentions, Intention } from "./configs"
 import { FlashArbitrageur, FlashArbitrageur__factory, IERC20__factory } from "../types"
 import { formatUnits, MaxUint256, parseUnits } from "ethers"
-import { IUniswapV3SwapRouter__factory } from "../types/factories/UniswapV3SwapRouterMixin.sol"
-import { format, parse } from "path"
-
-interface ProfitResult {
-    amountIn: bigint
-    profit: bigint
-    estimatedGas: bigint
-}
 
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     ONEINCH_API_ENDPOINT = process.env.ONEINCH_API_ENDPOINT!
@@ -25,36 +16,10 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
     arbitrageur!: FlashArbitrageur
 
-    INTENTION_SIZE = 4
-    AMOUNT_CHUNK_SIZE = 5
-
-    // UniswapV3Router
-    ERROR_TOO_LITTLE_RECEIVED = "Too little received"
-
-    // VelodromeV2Router
-    ERROR_INSUFFICIENT_OUTPUT_AMOUNT = "0x42301c23" // InsufficientOutputAmount()
-
-    // WOOFiV2Router
-    ERROR_LT_MINBASEAMOUNT = "baseAmount_LT_minBaseAmount"
-    ERROR_LT_MINQUOTEAMOUNT = "quoteAmount_LT_minQuoteAmount"
-    ERROR_LT_MINBASE2AMOUNT = "base2Amount_LT_minBase2Amount"
-    ERROR_NOT_ORACLE_FEASIBLE = "!ORACLE_FEASIBLE"
-
-    // MummyRouter
-    ERROR_INSUFFICIENT_AMOUNTOUT = "insufficient amountOut"
-    ERROR_POOLAMOUNT_LT_BUFFER = "poolAmount < buffer"
-
-    toPrice(wethAmount: bigint, usdcAmount: bigint) {
-        const _wethAmount = Big(formatUnits(wethAmount, 18))
-        const _usdcAmount = Big(formatUnits(usdcAmount, 6))
-        return _usdcAmount.div(_wethAmount)
-    }
-
     async start() {
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
-            // batchMaxCount: this.AMOUNT_CHUNK_SIZE,
         })
 
         this.owner = await this.getOwner(provider)
@@ -171,6 +136,12 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 }
             }
         }
+    }
+
+    toPrice(wethAmount: bigint, usdcAmount: bigint) {
+        const _wethAmount = Big(formatUnits(wethAmount, 18))
+        const _usdcAmount = Big(formatUnits(usdcAmount, 6))
+        return _usdcAmount.div(_wethAmount)
     }
 
     async fetchOneInchSwapData(tokenIn: string, tokenOut: string, amountIn: bigint) {
