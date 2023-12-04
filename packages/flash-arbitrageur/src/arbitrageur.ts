@@ -131,6 +131,9 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                     amountIn,
                     intention.minProfit,
                     intention.secondArbitrageFunc,
+                    {
+                        blockTag: "pending",
+                    },
                 ),
                 this.arbitrageur.arbitrage.estimateGas(
                     intention.borrowFromUniswapPool,
@@ -154,14 +157,14 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     async arbitrage(intention: Intention, mostProfitableResult: ProfitResult) {
-        const gas = this.calculateGas(intention.tokenIn, mostProfitableResult.profit, mostProfitableResult.estimatedGas)
+        // const gas = this.calculateGas(intention.tokenIn, mostProfitableResult.profit, mostProfitableResult.estimatedGas)
         const txOptions = {
             nonce: this.nonceManager.getNonce(this.owner),
             chainId: this.NETWORK_CHAIN_ID,
-            gasLimit: mostProfitableResult.estimatedGas,
-            type: gas.type,
-            maxFeePerGas: gas.maxFeePerGas,
-            maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+            gasLimit: (mostProfitableResult.estimatedGas * BigInt(120)) / BigInt(100), // x 1.2
+            // type: gas.type,
+            // maxFeePerGas: gas.maxFeePerGas,
+            // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
         }
 
         const populateTx = await this.arbitrageur.arbitrage.populateTransaction(
