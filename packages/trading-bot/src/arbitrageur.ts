@@ -73,6 +73,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         {
             const allowance = await WETH.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
             if (allowance === BigInt(0)) {
+                console.log("approve WETH")
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
@@ -86,6 +87,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         {
             const allowance = await USDCe.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
             if (allowance === BigInt(0)) {
+                console.log("approve USDCe")
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
@@ -139,7 +141,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 const res = await this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
                 const newPrice = this.toPrice(res.toAmount, usdceBalance)
-                console.log(`newPrice: ${newPrice.toFixed()}`)
 
                 if (!startPrice) {
                     startPrice = newPrice
@@ -147,7 +148,10 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                     continue
                 }
 
-                const broughtWethAmount = res.toAmount
+                const priceChangePercent = newPrice.sub(startPrice).div(startPrice).mul(100)
+                console.log(`price: ${newPrice.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+
+                const broughtWethAmount = BigInt(res.toAmount)
                 console.log(`broughtWethAmount: ${formatUnits(broughtWethAmount)}`)
 
                 if (broughtWethAmount >= wethAmount + wethProfit) {
