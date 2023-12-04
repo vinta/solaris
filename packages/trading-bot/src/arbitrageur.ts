@@ -108,7 +108,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         let startPrice: Big | undefined = undefined
         let sellSpreadPercent = Big(5) // 5%
-        let buySpreadPercent = -Big(5) // 5%
+        let buySpreadPercent = -Big(1) // 1%
 
         while (true) {
             await sleep(1000)
@@ -116,19 +116,25 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             if (wethBalance >= wethAmount) {
                 console.log("Checking swap WETH to USDCe")
 
-                const res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
-                const newPrice = this.toPrice(wethAmount, res.toAmount)
+                let res
+                try {
+                    res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
+                } catch (err: any) {
+                    console.log("fetchOneInchSwapData error", err.message)
+                    continue
+                }
+                const price = this.toPrice(wethAmount, res.toAmount)
 
                 if (!startPrice) {
-                    startPrice = newPrice
-                    console.log(`startPrice: ${startPrice.toFixed()}`)
+                    startPrice = price
+                    console.log(`startPrice: ${startPrice.toFixed}`)
                     continue
                 }
 
-                const priceChangePercent = newPrice.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${newPrice.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
+                console.log(`price: ${price.toFixed}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
                 if (priceChangePercent.gte(sellSpreadPercent)) {
-                    console.log("sell")
+                    console.log(`sell at ${price.toFixed}`)
                     const success = await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
                     if (success) {
                         startPrice = undefined
@@ -140,22 +146,22 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 console.log("Checking swap USDCe to WETH")
 
                 const res = await this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
-                const newPrice = this.toPrice(res.toAmount, usdceBalance)
+                const price = this.toPrice(res.toAmount, usdceBalance)
 
                 if (!startPrice) {
-                    startPrice = newPrice
-                    console.log(`startPrice: ${startPrice.toFixed()}`)
+                    startPrice = price
+                    console.log(`startPrice: ${startPrice.toFixed}`)
                     continue
                 }
 
-                const priceChangePercent = newPrice.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${newPrice.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
+                console.log(`price: ${price.toFixed}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
 
-                const broughtWethAmount = BigInt(res.toAmount)
-                console.log(`broughtWethAmount: ${formatUnits(broughtWethAmount)}`)
+                const receivedWethAmount = BigInt(res.toAmount)
+                console.log(`receivedWethAmount: ${formatUnits(receivedWethAmount)}`)
 
-                if (broughtWethAmount >= wethAmount + wethProfit) {
-                    console.log("buy")
+                if (receivedWethAmount >= wethAmount + wethProfit && priceChangePercent.lte(buySpreadPercent)) {
+                    console.log(`buy at ${price.toFixed}`)
                     const success = await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance, res.tx.data)
                     if (success) {
                         startPrice = undefined
