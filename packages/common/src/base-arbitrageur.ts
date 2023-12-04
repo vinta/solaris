@@ -1,4 +1,5 @@
 import {
+    ContractTransactionResponse,
     HDNodeWallet,
     JsonRpcApiProviderOptions,
     JsonRpcProvider,
@@ -84,7 +85,7 @@ export abstract class BaseArbitrageur {
         return parseUnits(amountInEthX10.toFixed(18), 18)
     }
 
-    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<TransactionResponse>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<ContractTransactionResponse>) {
         const release = await this.nonceManager.lock(wallet)
         try {
             const tx = await sendTxFunc()
