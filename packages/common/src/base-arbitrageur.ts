@@ -85,7 +85,7 @@ export abstract class BaseArbitrageur {
         return parseUnits(amountInEthX10.toFixed(18), 18)
     }
 
-    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<ContractTransactionResponse>) {
+    async sendTx(wallet: HDNodeWallet, sendTxFunc: () => Promise<TransactionResponse>) {
         const release = await this.nonceManager.lock(wallet)
         try {
             const tx = await sendTxFunc()

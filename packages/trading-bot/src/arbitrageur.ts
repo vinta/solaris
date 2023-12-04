@@ -21,6 +21,7 @@ interface ProfitResult {
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     ONEINCH_API_ENDPOINT = process.env.ONEINCH_API_ENDPOINT!
     ONEINCH_API_KEYS = process.env.ONEINCH_API_KEYS!.split(",")
+    ONEINCH_AGGREGATION_ROUTER_V5 = "0x1111111254EEB25477B68fb85Ed929f73A960582"
 
     arbitrageur!: FlashArbitrageur
 
@@ -50,8 +51,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     }
 
     async start() {
-        const startTimestamp = Date.now() / 1000
-
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
             batchStallTime: 5, // QuickNode has average 3ms latency on eu-central-1
@@ -71,7 +70,33 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
         const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
 
-        const wethAmount = parseUnits("1", 18)
+        {
+            const allowance = await WETH.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
+            if (allowance === BigInt(0)) {
+                const approveTx = await this.sendTx(this.owner, async () => {
+                    return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
+                        nonce: this.nonceManager.getNonce(this.owner),
+                        chainId: this.NETWORK_CHAIN_ID,
+                    })
+                })
+                await approveTx.wait()
+            }
+        }
+
+        {
+            const allowance = await USDCe.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
+            if (allowance === BigInt(0)) {
+                const approveTx = await this.sendTx(this.owner, async () => {
+                    return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
+                        nonce: this.nonceManager.getNonce(this.owner),
+                        chainId: this.NETWORK_CHAIN_ID,
+                    })
+                })
+                await approveTx.wait()
+            }
+        }
+
+        const wethAmount = parseUnits("0.1", 18)
         const wethProfit = parseUnits("0.005", 18) // 10 USD
 
         let [wethBalance, usdceBalance] = await Promise.all([
@@ -80,13 +105,10 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         ])
 
         let startPrice: Big | undefined = undefined
-        let sellSpreadPercent = Big(0.1) // 0.1%
-        let buySpreadPercent = -Big(0.1) // 0.1%
+        let sellSpreadPercent = Big(5) // 5%
+        let buySpreadPercent = -Big(5) // 5%
 
-        let i = 0
         while (true) {
-            i++
-
             await sleep(1000)
 
             if (wethBalance >= wethAmount) {
@@ -94,20 +116,23 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 const res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
                 const newPrice = this.toPrice(wethAmount, res.toAmount)
-                console.log(`newPrice: ${newPrice.toFixed()}`)
 
                 if (!startPrice) {
                     startPrice = newPrice
+                    console.log(`startPrice: ${startPrice.toFixed()}`)
                     continue
                 }
 
                 const priceChangePercent = newPrice.sub(startPrice).div(startPrice).mul(100)
-                console.log(`priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                console.log(`price: ${newPrice.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
                 if (priceChangePercent.gte(sellSpreadPercent)) {
                     console.log("sell")
-                    await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount)
-                    usdceBalance = await USDCe.balanceOf(this.owner.address)
-                    continue
+                    const success = await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
+                    if (success) {
+                        startPrice = undefined
+                        wethBalance = await WETH.balanceOf(this.owner.address)
+                        usdceBalance = await USDCe.balanceOf(this.owner.address)
+                    }
                 }
             } else {
                 console.log("Checking swap USDCe to WETH")
@@ -118,6 +143,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 if (!startPrice) {
                     startPrice = newPrice
+                    console.log(`startPrice: ${startPrice.toFixed()}`)
                     continue
                 }
 
@@ -126,9 +152,12 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 if (broughtWethAmount >= wethAmount + wethProfit) {
                     console.log("buy")
-                    await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
-                    wethBalance = await WETH.balanceOf(this.owner.address)
-                    continue
+                    const success = await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance, res.tx.data)
+                    if (success) {
+                        startPrice = undefined
+                        wethBalance = await WETH.balanceOf(this.owner.address)
+                        usdceBalance = await USDCe.balanceOf(this.owner.address)
+                    }
                 }
             }
         }
@@ -139,9 +168,9 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             src: tokenIn,
             dst: tokenOut,
             amount: amountIn.toString(),
-            // from: this.owner.address,
-            from: "0x88F59F8826af5e695B13cA934d6c7999875A9EeA",
-            slippage: "0.05",
+            from: this.owner.address,
+            // from: "0x88F59F8826af5e695B13cA934d6c7999875A9EeA",
+            slippage: "1",
             disableEstimate: "true",
         }
         const urlParams = new URLSearchParams(params)
@@ -178,42 +207,37 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         return response
     }
 
-    async trySwap(tokenIn: string, tokenOut: string, amountIn: bigint) {
-        const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
-        const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
+    async trySwap(tokenIn: string, tokenOut: string, amountIn: bigint, data: string) {
+        try {
+            await this.swapOnOneInch(tokenIn, tokenOut, amountIn, data)
+            return true
+        } catch (err: any) {
+            console.log("swap error", err.message)
+            return false
+        }
+    }
 
-        const router = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
-        const uniswapV3SwapRouter = IUniswapV3SwapRouter__factory.connect(router, this.owner)
-
-        const approveTx = await this.sendTx(this.owner, async () => {
-            // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            return await WETH.approve(router, MaxUint256, {
-                nonce: this.nonceManager.getNonce(this.owner),
-                chainId: this.NETWORK_CHAIN_ID,
-            })
-        })
-        await approveTx.wait()
+    async swapOnOneInch(tokenIn: string, tokenOut: string, amountIn: bigint, data: string) {
+        const txOptions = {
+            nonce: this.nonceManager.getNonce(this.owner),
+            chainId: this.NETWORK_CHAIN_ID,
+            // gasLimit: (mostProfitableResult.estimatedGas * BigInt(120)) / BigInt(100), // x 1.2
+            // type: gas.type,
+            // maxFeePerGas: gas.maxFeePerGas,
+            // maxPriorityFeePerGas: gas.maxPriorityFeePerGas,
+        }
 
         const tx = await this.sendTx(this.owner, async () => {
             // NOTE: fill all required fields to avoid calling signer.populateTransaction(tx)
-            return await uniswapV3SwapRouter.exactInputSingle(
-                {
-                    tokenIn: tokenIn,
-                    tokenOut: tokenOut,
-                    fee: 500,
-                    recipient: this.owner.address,
-                    deadline: MaxUint256,
-                    amountIn: amountIn,
-                    amountOutMinimum: 0,
-                    sqrtPriceLimitX96: 0,
-                },
-                {
-                    nonce: this.nonceManager.getNonce(this.owner),
-                    chainId: this.NETWORK_CHAIN_ID,
-                },
-            )
+            return await this.owner.sendTransaction({
+                to: this.ONEINCH_AGGREGATION_ROUTER_V5,
+                data: data,
+                ...txOptions,
+            })
         })
+        console.log("swap tx sent", tx.hash)
         await tx.wait()
+        console.log("swap tx mined", tx.hash)
     }
 }
 

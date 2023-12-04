@@ -17,8 +17,8 @@ provider:
   region: us-east-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 1024 # it won't be faster if > 1024
-  timeout: 60
+  memorySize: 256 # it won't be faster if > 1024
+  timeout: 900
   versionFunctions: false
   deploymentMethod: direct
   deploymentBucket:
