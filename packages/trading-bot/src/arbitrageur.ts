@@ -6,7 +6,7 @@ import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 import { TOKENS } from "@solaris/common/src/tokens"
 
-import { FlashArbitrageur, FlashArbitrageur__factory, IERC20__factory } from "../types"
+import { IERC20__factory } from "../types"
 import { formatUnits, MaxUint256, parseUnits } from "ethers"
 
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
@@ -59,8 +59,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             }
         }
 
-        const wethAmount = parseUnits("0.1", 18)
-        const wethProfit = parseUnits("0.005", 18) // 10 USD
+        const wethAmount = parseUnits("0.8", 18)
+        const wethProfit = parseUnits("0.035", 18) // 80 USD
 
         let [wethBalance, usdceBalance] = await Promise.all([
             WETH.balanceOf(this.owner.address),
