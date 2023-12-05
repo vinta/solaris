@@ -92,14 +92,14 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 if (!startPrice) {
                     startPrice = price
-                    console.log(`startPrice: ${startPrice.toFixed}`)
+                    console.log(`startPrice: ${startPrice.toFixed()}`)
                     continue
                 }
 
                 const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${price.toFixed}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
                 if (priceChangePercent.gte(sellSpreadPercent)) {
-                    console.log(`sell at ${price.toFixed}`)
+                    console.log(`sell at ${price.toFixed()}`)
                     const success = await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
                     if (success) {
                         startPrice = undefined
@@ -115,18 +115,18 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
                 if (!startPrice) {
                     startPrice = price
-                    console.log(`startPrice: ${startPrice.toFixed}`)
+                    console.log(`startPrice: ${startPrice.toFixed()}`)
                     continue
                 }
 
                 const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${price.toFixed}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+                console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
 
                 const receivedWethAmount = BigInt(res.toAmount)
                 console.log(`receivedWethAmount: ${formatUnits(receivedWethAmount)}`)
 
                 if (receivedWethAmount >= wethAmount + wethProfit && priceChangePercent.lte(buySpreadPercent)) {
-                    console.log(`buy at ${price.toFixed}`)
+                    console.log(`buy at ${price.toFixed()}`)
                     const success = await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance, res.tx.data)
                     if (success) {
                         startPrice = undefined
