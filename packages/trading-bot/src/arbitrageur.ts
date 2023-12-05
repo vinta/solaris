@@ -69,7 +69,7 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         let startPrice: Big | undefined = undefined
         let sellSpreadPercent = Big(5) // 5%
-        let buySpreadPercent = -Big(0.5) // 0.5%
+        let buySpreadPercent = -Big(1) // 1%
 
         while (true) {
             await sleep(1000)
