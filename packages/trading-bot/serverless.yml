@@ -1,0 +1,58 @@
+# https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
+# https://github.com/serverless/examples
+service: solaris-trading-bot
+frameworkVersion: "3"
+useDotenv: true
+
+# eu-central-1 (2218)
+# us-east-1 (2196)
+# us-east-2
+# us-west-1 (744)
+# us-west-2 (400)
+# ap-southeast-1
+provider:
+  name: aws
+  profile: solaris
+  stage: prod
+  region: us-east-1
+  runtime: nodejs18.x
+  architecture: arm64
+  memorySize: 256 # it won't be faster if > 1024
+  timeout: 900
+  versionFunctions: false
+  deploymentMethod: direct
+  deploymentBucket:
+    name: solaris-serverless-deploys-us-east-1
+    blockPublicAccess: true
+    serverSideEncryption: AES256
+  logRetentionInDays: 7
+  environment:
+    # common
+    NETWORK_NAME: ${env:NETWORK_NAME}
+    NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
+    RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
+    OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
+    ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
+    TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
+    # specific
+    ONEINCH_API_ENDPOINT: ${env:ONEINCH_API_ENDPOINT}
+    ONEINCH_API_KEYS: ${env:ONEINCH_API_KEYS}
+    # prod
+    SENTRY_DSN: ${env:SENTRY_DSN, ""}
+
+functions:
+  optimism:
+    handler: handlers.optimism
+    reservedConcurrency: 1
+    maximumRetryAttempts: 0
+    events:
+      - schedule: rate(1 minute)
+
+plugins:
+  - serverless-deployment-bucket
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false

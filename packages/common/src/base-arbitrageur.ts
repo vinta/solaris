@@ -1,4 +1,5 @@
 import {
+    ContractTransactionResponse,
     HDNodeWallet,
     JsonRpcApiProviderOptions,
     JsonRpcProvider,

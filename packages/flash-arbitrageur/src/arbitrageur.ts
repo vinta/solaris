@@ -5,6 +5,7 @@ import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 
 import { getRandomIntentions, Intention } from "./configs"
 import { FlashArbitrageur, FlashArbitrageur__factory } from "../types"
+import { TOKENS } from "@solaris/common/src/tokens"
 
 interface ProfitResult {
     amountIn: bigint

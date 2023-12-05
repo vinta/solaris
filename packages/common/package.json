@@ -7,10 +7,12 @@
   "dependencies": {
     "@sentry/serverless": "7.80.1",
     "async-mutex": "0.4.0",
+    "big.js": "6.2.1",
     "ethers": "6.8.0",
     "lodash": "4.17.21"
   },
   "devDependencies": {
-    "@types/aws-lambda": "8.10.125"
+    "@types/aws-lambda": "8.10.125",
+    "@types/big.js": "6.2.2"
   }
 }
