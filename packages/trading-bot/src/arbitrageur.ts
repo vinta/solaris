@@ -14,8 +14,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     ONEINCH_API_KEYS = process.env.ONEINCH_API_KEYS!.split(",")
     ONEINCH_AGGREGATION_ROUTER_V5 = "0x1111111254EEB25477B68fb85Ed929f73A960582"
 
-    arbitrageur!: FlashArbitrageur
-
     async start() {
         const network = this.getNetwork()
         const provider = this.getProvider(this.RPC_PROVIDER_URL, network, {
@@ -23,12 +21,10 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         })
 
         this.owner = await this.getOwner(provider)
-        this.arbitrageur = FlashArbitrageur__factory.connect(this.ARBITRAGEUR_ADDRESS, this.owner)
 
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
-            arbitrageur: this.ARBITRAGEUR_ADDRESS,
             owner: this.owner.address,
         })
 
@@ -96,8 +92,12 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                     continue
                 }
 
+                const receivedUsdceAmount = BigInt(res.toAmount)
+                console.log(`receivedUsdceAmount: ${formatUnits(receivedUsdceAmount, 6)}`)
+
                 const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
                 console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+
                 if (priceChangePercent.gte(sellSpreadPercent)) {
                     console.log(`sell at ${price.toFixed()}`)
                     const success = await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
@@ -119,11 +119,11 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                     continue
                 }
 
+                const receivedWethAmount = BigInt(res.toAmount)
+                console.log(`receivedWethAmount: ${formatUnits(receivedWethAmount, 18)}`)
+
                 const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
                 console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
-
-                const receivedWethAmount = BigInt(res.toAmount)
-                console.log(`receivedWethAmount: ${formatUnits(receivedWethAmount)}`)
 
                 if (receivedWethAmount >= wethAmount + wethProfit && priceChangePercent.lte(buySpreadPercent)) {
                     console.log(`buy at ${price.toFixed()}`)
