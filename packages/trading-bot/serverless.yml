@@ -17,8 +17,8 @@ provider:
   region: us-east-1
   runtime: nodejs18.x
   architecture: arm64
-  memorySize: 256 # it won't be faster if > 1024
-  timeout: 900
+  memorySize: 512 # it won't be faster if > 1024
+  timeout: 60
   versionFunctions: false
   deploymentMethod: direct
   deploymentBucket:
@@ -26,14 +26,22 @@ provider:
     blockPublicAccess: true
     serverSideEncryption: AES256
   logRetentionInDays: 7
+  iam:
+    role:
+      # Add statements to the IAM role to give permissions to Lambda functions
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource:
+            - "arn:aws:s3:::solaris-trading-bot"
+            - "arn:aws:s3:::solaris-trading-bot/*"
   environment:
     # common
     NETWORK_NAME: ${env:NETWORK_NAME}
     NETWORK_CHAIN_ID: ${env:NETWORK_CHAIN_ID}
     RPC_PROVIDER_URL: ${env:RPC_PROVIDER_URL}
     OWNER_SEED_PHRASE: ${env:OWNER_SEED_PHRASE}
-    ARBITRAGEUR_ADDRESS: ${env:ARBITRAGEUR_ADDRESS}
-    TIMEOUT_SECONDS: ${env:TIMEOUT_SECONDS}
     # specific
     ONEINCH_API_ENDPOINT: ${env:ONEINCH_API_ENDPOINT}
     ONEINCH_API_KEYS: ${env:ONEINCH_API_KEYS}
