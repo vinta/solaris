@@ -43,12 +43,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         const wethAmount = parseUnits("0.8", 18)
         const wethProfit = parseUnits("0.035", 18) // 80 USD
-
-        const [wethBalance, usdceBalance] = await Promise.all([
-            WETH.balanceOf(this.owner.address),
-            USDCe.balanceOf(this.owner.address),
-        ])
-
         const sellSpreadPercent = Big(5) // 5%
         const buySpreadPercent = -Big(1) // 1%
 
@@ -56,8 +50,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
             owner: this.owner.address,
-            wethAmount,
-            wethProfit,
+            wethAmount: formatUnits(wethAmount, 18),
+            wethProfit: formatUnits(wethProfit, 18),
             sellSpreadPercent: sellSpreadPercent.toFixed(),
             buySpreadPercent: buySpreadPercent.toFixed(),
         })
@@ -69,7 +63,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
-                        chainId: this.NETWORK_CHAIN_ID,
                     })
                 })
                 await approveTx.wait()
@@ -83,12 +76,16 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
-                        chainId: this.NETWORK_CHAIN_ID,
                     })
                 })
                 await approveTx.wait()
             }
         }
+
+        const [wethBalance, usdceBalance] = await Promise.all([
+            WETH.balanceOf(this.owner.address),
+            USDCe.balanceOf(this.owner.address),
+        ])
 
         if (wethBalance >= wethAmount) {
             console.log("Checking swap WETH to USDCe")
