@@ -1,13 +1,29 @@
+import { backOff } from "exponential-backoff"
 import { Handler } from "aws-lambda"
 import { random } from "lodash"
 import Big from "big.js"
 
 import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
+import { S3 } from "@solaris/common/src/s3"
 import { sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 import { TOKENS } from "@solaris/common/src/tokens"
 
 import { IERC20__factory } from "../types"
 import { formatUnits, MaxUint256, parseUnits } from "ethers"
+
+interface Price {
+    timestamp: number
+    price: string
+}
+
+interface OneInchSwapResponse {
+    toAmount: string
+    tx: {
+        from: string
+        to: string
+        data: string
+    }
+}
 
 class FlashArbitrageurOnOptimism extends BaseArbitrageur {
     ONEINCH_API_ENDPOINT = process.env.ONEINCH_API_ENDPOINT!
@@ -22,14 +38,23 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         this.owner = await this.getOwner(provider)
 
+        const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
+        const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
+
+        const wethAmount = parseUnits("0.8", 18)
+        const wethProfit = parseUnits("0.035", 18) // 80 USD
+        const sellSpreadPercent = Big(5) // 5%
+        const buySpreadPercent = -Big(4) // 4%
+
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
             rpcProviderUrl: this.RPC_PROVIDER_URL,
             owner: this.owner.address,
+            wethAmount: formatUnits(wethAmount, 18),
+            wethProfit: formatUnits(wethProfit, 18),
+            sellSpreadPercent: sellSpreadPercent.toFixed(),
+            buySpreadPercent: buySpreadPercent.toFixed(),
         })
-
-        const WETH = IERC20__factory.connect(TOKENS.WETH, this.owner)
-        const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
 
         {
             const allowance = await WETH.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
@@ -38,7 +63,6 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
-                        chainId: this.NETWORK_CHAIN_ID,
                     })
                 })
                 await approveTx.wait()
@@ -52,89 +76,77 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
                 const approveTx = await this.sendTx(this.owner, async () => {
                     return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
                         nonce: this.nonceManager.getNonce(this.owner),
-                        chainId: this.NETWORK_CHAIN_ID,
                     })
                 })
                 await approveTx.wait()
             }
         }
 
-        const wethAmount = parseUnits("0.8", 18)
-        const wethProfit = parseUnits("0.035", 18) // 80 USD
-
-        let [wethBalance, usdceBalance] = await Promise.all([
+        const [wethBalance, usdceBalance] = await Promise.all([
             WETH.balanceOf(this.owner.address),
             USDCe.balanceOf(this.owner.address),
         ])
 
-        let startPrice: Big | undefined = undefined
-        let sellSpreadPercent = Big(3) // 3%
-        let buySpreadPercent = -Big(1) // 1%
+        if (wethBalance >= wethAmount) {
+            console.log("Checking swap WETH to USDCe")
 
-        while (true) {
-            await sleep(1000)
+            const s3Path = "WETH-USDCe-prices.json"
+            const oldPrices = await this.getPricesFromS3(s3Path)
 
-            if (wethBalance >= wethAmount) {
-                console.log("Checking swap WETH to USDCe")
+            const res = await backOff(() => this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount))
+            const price = this.toPrice(wethAmount, BigInt(res.toAmount))
 
-                let res
+            const prices = this.updateRollingPrices(oldPrices, price)
+            const startPrice = Big(prices[prices.length - 1].price)
+
+            const receivedUsdceAmount = BigInt(res.toAmount)
+            console.log(
+                `quote: swap ${formatUnits(wethAmount, 18)} WETH to ${formatUnits(receivedUsdceAmount, 6)} USDCe`,
+            )
+
+            const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
+            console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+
+            if (priceChangePercent.gte(sellSpreadPercent)) {
+                console.log(`sell at ${price.toFixed()}`)
                 try {
-                    res = await this.fetchOneInchSwapData(TOKENS.WETH, TOKENS.USDCe, wethAmount)
+                    await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
                 } catch (err: any) {
-                    console.log("fetchOneInchSwapData error", err.message)
-                    continue
-                }
-                const price = this.toPrice(wethAmount, res.toAmount)
-
-                if (!startPrice) {
-                    startPrice = price
-                    console.log(`startPrice: ${startPrice.toFixed()}`)
-                    continue
-                }
-
-                const receivedUsdceAmount = BigInt(res.toAmount)
-                console.log(`receivedUsdceAmount: ${formatUnits(receivedUsdceAmount, 6)}`)
-
-                const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
-
-                if (priceChangePercent.gte(sellSpreadPercent)) {
-                    console.log(`sell at ${price.toFixed()}`)
-                    const success = await this.trySwap(TOKENS.WETH, TOKENS.USDCe, wethAmount, res.tx.data)
-                    if (success) {
-                        startPrice = undefined
-                        wethBalance = await WETH.balanceOf(this.owner.address)
-                        usdceBalance = await USDCe.balanceOf(this.owner.address)
-                    }
-                }
-            } else {
-                console.log("Checking swap USDCe to WETH")
-
-                const res = await this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance)
-                const price = this.toPrice(res.toAmount, usdceBalance)
-
-                if (!startPrice) {
-                    startPrice = price
-                    console.log(`startPrice: ${startPrice.toFixed()}`)
-                    continue
-                }
-
-                const receivedWethAmount = BigInt(res.toAmount)
-                console.log(`receivedWethAmount: ${formatUnits(receivedWethAmount, 18)}`)
-
-                const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
-                console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
-
-                if (receivedWethAmount >= wethAmount + wethProfit && priceChangePercent.lte(buySpreadPercent)) {
-                    console.log(`buy at ${price.toFixed()}`)
-                    const success = await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance, res.tx.data)
-                    if (success) {
-                        startPrice = undefined
-                        wethBalance = await WETH.balanceOf(this.owner.address)
-                        usdceBalance = await USDCe.balanceOf(this.owner.address)
-                    }
+                    console.error("trySwap error", err.message)
                 }
             }
+
+            await this.updatePricesToS3(s3Path, prices)
+        } else {
+            console.log("Checking swap USDCe to WETH")
+
+            const s3Path = "USDCe-WETH-prices.json"
+            const oldPrices = await this.getPricesFromS3(s3Path)
+
+            const res = await backOff(() => this.fetchOneInchSwapData(TOKENS.USDCe, TOKENS.WETH, usdceBalance))
+            const price = this.toPrice(BigInt(res.toAmount), usdceBalance)
+
+            const prices = this.updateRollingPrices(oldPrices, price)
+            const startPrice = Big(prices[prices.length - 1].price)
+
+            const receivedWethAmount = BigInt(res.toAmount)
+            console.log(
+                `quote: swap ${formatUnits(usdceBalance, 6)} USDCe to ${formatUnits(receivedWethAmount, 18)} WETH`,
+            )
+
+            const priceChangePercent = price.sub(startPrice).div(startPrice).mul(100)
+            console.log(`price: ${price.toFixed()}, priceChangePercent: ${priceChangePercent.toFixed(3)}%`)
+
+            if (receivedWethAmount >= wethAmount + wethProfit && priceChangePercent.lte(buySpreadPercent)) {
+                console.log(`buy at ${price.toFixed()}`)
+                try {
+                    await this.trySwap(TOKENS.USDCe, TOKENS.WETH, usdceBalance, res.tx.data)
+                } catch (err: any) {
+                    console.error("trySwap error", err.message)
+                }
+            }
+
+            await this.updatePricesToS3(s3Path, prices)
         }
     }
 
@@ -149,8 +161,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             src: tokenIn,
             dst: tokenOut,
             amount: amountIn.toString(),
-            from: this.owner.address,
-            // from: "0x88F59F8826af5e695B13cA934d6c7999875A9EeA",
+            // from: this.owner.address,
+            from: "0xDBc2D0DD30313470e8134d0d1D33793700756c76",
             slippage: "1",
             disableEstimate: "true",
         }
@@ -167,25 +179,60 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             },
         })
 
-        if (res.status === 429) {
-            throw new Error("TooManyRequests")
-        }
+        // if (res.status === 429) {
+        //     throw new Error("TooManyRequests")
+        // }
 
-        if (!res.ok) {
-            const err = new Error("Error")
-            err.message = await res.text()
-            throw err
-        }
+        // if (!res.ok) {
+        //     const err = new Error("Error")
+        //     err.message = await res.text()
+        //     throw err
+        // }
 
         const response = await res.json()
 
-        if (!response.tx?.data) {
-            const err = new Error("NoData")
-            err.message = await res.text()
+        // if (!response.tx?.data) {
+        //     const err = new Error("NoData")
+        //     err.message = await res.text()
+        //     throw err
+        // }
+
+        return response as OneInchSwapResponse
+    }
+
+    async getPricesFromS3(path: string): Promise<Price[]> {
+        const s3 = new S3(process.env.AWS_REGION!)
+        const s3Bucket = "solaris-trading-bot"
+
+        try {
+            const pricesJson = await s3.download(s3Bucket, path)
+            return JSON.parse(pricesJson)
+        } catch (err: any) {
+            if (err.message.includes("The specified key does not exist.")) {
+                return []
+            }
             throw err
         }
+    }
 
-        return response
+    updateRollingPrices(prices: Price[], price: Big) {
+        const newPrices = [
+            {
+                timestamp: Math.floor(Date.now() / 1000),
+                price: price.toFixed(),
+            },
+            ...prices,
+        ].slice(0, 60)
+        console.dir(newPrices)
+
+        return newPrices
+    }
+
+    async updatePricesToS3(path: string, prices: any) {
+        const s3 = new S3(process.env.AWS_REGION!)
+        const s3Bucket = "solaris-trading-bot"
+
+        await s3.uploadJson(s3Bucket, path, prices)
     }
 
     async trySwap(tokenIn: string, tokenOut: string, amountIn: bigint, data: string) {

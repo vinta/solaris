@@ -33,8 +33,7 @@
     "hardhat:deploy": "hardhat deploy --network localhost"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.9.3",
-    "@openzeppelin/contracts-upgradeable": "4.9.3"
+    "@openzeppelin/contracts": "4.9.3"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "3.0.4",
