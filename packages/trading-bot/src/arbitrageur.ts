@@ -5,7 +5,7 @@ import Big from "big.js"
 
 import { BaseArbitrageur } from "@solaris/common/src/base-arbitrageur"
 import { S3 } from "@solaris/common/src/s3"
-import { sleep, wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
+import { wrapSentryHandlerIfNeeded } from "@solaris/common/src/utils"
 import { TOKENS } from "@solaris/common/src/tokens"
 
 import { IERC20__factory } from "../types"
@@ -56,31 +56,31 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
             buySpreadPercent: buySpreadPercent.toFixed(),
         })
 
-        {
-            const allowance = await WETH.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
-            if (allowance === BigInt(0)) {
-                console.log("approve WETH")
-                const approveTx = await this.sendTx(this.owner, async () => {
-                    return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
-                        nonce: this.nonceManager.getNonce(this.owner),
-                    })
-                })
-                await approveTx.wait()
-            }
-        }
+        // {
+        //     const allowance = await WETH.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
+        //     if (allowance === BigInt(0)) {
+        //         console.log("approve WETH")
+        //         const approveTx = await this.sendTx(this.owner, async () => {
+        //             return await WETH.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
+        //                 nonce: this.nonceManager.getNonce(this.owner),
+        //             })
+        //         })
+        //         await approveTx.wait()
+        //     }
+        // }
 
-        {
-            const allowance = await USDCe.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
-            if (allowance === BigInt(0)) {
-                console.log("approve USDCe")
-                const approveTx = await this.sendTx(this.owner, async () => {
-                    return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
-                        nonce: this.nonceManager.getNonce(this.owner),
-                    })
-                })
-                await approveTx.wait()
-            }
-        }
+        // {
+        //     const allowance = await USDCe.allowance(this.owner.address, this.ONEINCH_AGGREGATION_ROUTER_V5)
+        //     if (allowance === BigInt(0)) {
+        //         console.log("approve USDCe")
+        //         const approveTx = await this.sendTx(this.owner, async () => {
+        //             return await USDCe.approve(this.ONEINCH_AGGREGATION_ROUTER_V5, MaxUint256, {
+        //                 nonce: this.nonceManager.getNonce(this.owner),
+        //             })
+        //         })
+        //         await approveTx.wait()
+        //     }
+        // }
 
         const [wethBalance, usdceBalance] = await Promise.all([
             WETH.balanceOf(this.owner.address),
