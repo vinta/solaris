@@ -42,9 +42,9 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
         const USDCe = IERC20__factory.connect(TOKENS.USDCe, this.owner)
 
         const wethAmount = parseUnits("0.8", 18)
-        const wethProfit = parseUnits("0.035", 18) // 80 USD
-        const sellSpreadPercent = Big(5) // 5%
-        const buySpreadPercent = -Big(4) // 4%
+        const wethProfit = parseUnits("0.016", 18) // 36 USD
+        const sellSpreadPercent = Big(2) // 2%
+        const buySpreadPercent = -Big(0.5) // 0.5%
 
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
