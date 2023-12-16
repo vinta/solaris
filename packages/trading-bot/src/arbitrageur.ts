@@ -43,8 +43,8 @@ class FlashArbitrageurOnOptimism extends BaseArbitrageur {
 
         const wethAmount = parseUnits("0.8", 18)
         const wethProfit = parseUnits("0.016", 18) // 36 USD
-        const sellSpreadPercent = Big(1.5) // 1.5%
-        const buySpreadPercent = -Big(0.5) // 0.5%
+        const sellSpreadPercent = Big(1.2) // 1.2%
+        const buySpreadPercent = -Big(0.8) // 0.8%
 
         console.log("start", {
             awsRegion: process.env.AWS_REGION,
