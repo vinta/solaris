@@ -12,5 +12,5 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true
   },
-  "exclude": ["node_modules", "typechain-types"]
+  "exclude": ["node_modules"]
 }
