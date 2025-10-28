@@ -1,0 +1,12 @@
+[profile.default]
+src = 'contracts'
+test = 'tests'
+out = 'out'
+cache_path = 'cache'
+libs = ["lib"]
+via_ir = true
+
+[rpc_endpoints]
+base = "https://mainnet.base.org"
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/crates/config
