@@ -14,9 +14,9 @@
     "@solaris/common": "*"
   },
   "devDependencies": {
-    "esbuild": "0.19.5",
-    "serverless": "3.35.2",
+    "esbuild": "0.25.11",
+    "serverless": "3.40.0",
     "serverless-deployment-bucket": "1.6.0",
-    "serverless-esbuild": "1.48.5"
+    "serverless-esbuild": "1.55.1"
   }
 }
