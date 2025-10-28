@@ -3,8 +3,21 @@ src = 'contracts'
 test = 'tests'
 out = 'out'
 cache_path = 'cache'
-libs = ["lib"]
-via_ir = true
+optimizer = true
+optimizer_runs = 20000 # High runs for execution optimization
+via_ir = true          # Better gas optimization for MEV
+evm_version = "prague" # Default in 0.8.30 for Pectra upgrade
+cbor_metadata = true
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
+int_types = "long"
+multiline_func_header = "attributes_first"
+quote_style = "double"
+single_line_statement_blocks = "single"
+wrap_comments = false
 
 [rpc_endpoints]
 base = "https://mainnet.base.org"
