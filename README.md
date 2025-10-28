@@ -1,12 +1,11 @@
 # solaris
 
-## Deploy Contracts
+Some stupid smart contracts.
+
+## Developments
 
 ```bash
-npx hardhat vars set DEPLOYER_SEED_PHRASE
-
-npm run hardhat:node
-
-npm run deploy
-npm run verify
+forge install
+npm run build
+npm run test
 ```
