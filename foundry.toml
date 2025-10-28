@@ -20,6 +20,8 @@ single_line_statement_blocks = "single"
 wrap_comments = false
 
 [rpc_endpoints]
-base = "https://mainnet.base.org"
+mainnet = "${RPC_ENDPOINT_ETHEREUM}"
+base = "${RPC_ENDPOINT_BASE}"
+optimism = "${RPC_ENDPOINT_OPTIMISM}"
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/crates/config

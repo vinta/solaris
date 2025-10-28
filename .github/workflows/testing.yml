@@ -2,20 +2,34 @@ name: Testing
 
 on:
   push:
+    branches:
+      - main
+      - develop
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  run-tests:
+  contract-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
-      - name: Run tests
+      - name: Install dependencies
+        run: forge install
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run test
         run: npm run test
+        env:
+          RPC_ENDPOINT_ETHEREUM: ${{ vars.RPC_ENDPOINT_ETHEREUM }}
+          RPC_ENDPOINT_BASE: ${{ vars.RPC_ENDPOINT_BASE }}
+          RPC_ENDPOINT_OPTIMISM: ${{ vars.RPC_ENDPOINT_OPTIMISM }}
