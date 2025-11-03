@@ -17,6 +17,12 @@
       "rev": "c64a1edb67b6e3f4a15cca8909c9482ad33a02b0"
     }
   },
+  "lib/solady": {
+    "tag": {
+      "name": "v0.1.26",
+      "rev": "acd959aa4bd04720d640bf4e6a5c71037510cc4b"
+    }
+  },
   "lib/solmate": {
     "rev": "4b47a19038b798b4a33d9749d25e570443520647"
   }
