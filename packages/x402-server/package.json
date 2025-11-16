@@ -1,0 +1,33 @@
+{
+  "name": "@mev-searcher/x402-server",
+  "version": "0.0.1",
+  "description": "Minimal API server secured with the x402 payments protocol.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "generate-types": "npx wrangler types",
+    "preserver": "npm run build",
+    "server": "npx wrangler dev --local",
+    "preclient": "npm run build",
+    "client": "node dist/src/client.js",
+    "deploy": "npx wrangler deploy"
+  },
+  "dependencies": {
+    "@coinbase/x402": "0.6.6",
+    "@hono/node-server": "1.14.3",
+    "dotenv": "17.2.1",
+    "hono": "4.7.11",
+    "viem": "2.37.0",
+    "x402": "0.6.6",
+    "x402-fetch": "0.6.6",
+    "x402-hono": "0.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.17",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
