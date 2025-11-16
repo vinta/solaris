@@ -14,18 +14,18 @@
     "deploy": "npx wrangler deploy"
   },
   "dependencies": {
-    "@coinbase/x402": "0.6.6",
-    "@hono/node-server": "1.14.3",
-    "dotenv": "17.2.1",
-    "hono": "4.7.11",
-    "viem": "2.37.0",
-    "x402": "0.6.6",
-    "x402-fetch": "0.6.6",
-    "x402-hono": "0.6.5"
+    "@coinbase/x402": "0.7.1",
+    "@hono/node-server": "1.19.6",
+    "dotenv": "17.2.3",
+    "hono": "4.10.6",
+    "viem": "2.39.0",
+    "x402": "0.7.2",
+    "x402-fetch": "0.7.0",
+    "x402-hono": "0.7.1"
   },
   "devDependencies": {
-    "@types/node": "20.11.17",
-    "typescript": "5.9.2"
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
   },
   "engines": {
     "node": ">=22.0.0"
