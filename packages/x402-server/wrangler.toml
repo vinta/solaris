@@ -1,0 +1,27 @@
+name = "x402-server"
+main = "src/index.ts"
+compatibility_date = "2025-10-27"
+compatibility_flags = [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env",
+    "enable_nodejs_http_modules",
+    "enable_nodejs_http_server_modules",
+]
+tsconfig = "./tsconfig.json"
+
+[assets]
+directory = "./public"
+
+# Set your payment receiving address via environment variable or wrangler secret:
+# wrangler secret put PAY_TO_ADDRESS
+# [vars]
+# PAY_TO_ADDRESS = "0xYourAddressHere"
+
+# Configure custom domain routing if needed:
+# [[routes]]
+# pattern = "yourdomain.com"
+# custom_domain = true
+
+[observability]
+enabled = true
+head_sampling_rate = 1
