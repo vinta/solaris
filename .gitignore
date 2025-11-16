@@ -119,4 +119,8 @@ ignition/deployments/chain-31337/
 cache
 out
 
+# Cloudflare Workers build output
+.wrangler/
+worker-configuration.d.ts
+
 .env*
